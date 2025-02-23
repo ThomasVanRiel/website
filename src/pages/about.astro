@@ -2,6 +2,7 @@
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import Navigation from "../components/Navigation.astro";
+import BaseLayout from "../layouts/BaseLayout.astro";
 
 import "../styles/global.css";
 
@@ -24,14 +25,8 @@ const fontWeight = "bold";
 const textCase = "uppercase";
 ---
 
-<html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-widt  h" />
-    <meta name="generator" content={Astro.generator} />
-    <title>{pageTitle}</title>
-    <style define:vars={{ skillColor, fontWeight, textCase }}>
+<BaseLayout pageTitle={pageTitle}>
+    <style is:global define:vars={{ skillColor, fontWeight, textCase }}>
       h1 {
         color: purple;
         font-size: 4rem;
@@ -42,11 +37,6 @@ const textCase = "uppercase";
         text-transform: var(--textCase);
       }
     </style>
-  </head>
-  <body>
-    <Header />
-
-    <h1>{pageTitle}</h1>
     <p>Some facts about me:</p>
     <ul>
       <li>First name: {identity.firstName}</li>
@@ -67,9 +57,4 @@ const textCase = "uppercase";
         <p>My goal is not 3 days.</p>
       )
     }
-    <Footer />
-    <script>
-      import "../scripts/menu.js";
-    </script>
-  </body>
-</html>
+</BaseLayout>
