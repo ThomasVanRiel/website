@@ -26,11 +26,7 @@ const textCase = "uppercase";
 ---
 
 <BaseLayout pageTitle={pageTitle}>
-    <style is:global define:vars={{ skillColor, fontWeight, textCase }}>
-      h1 {
-        color: purple;
-        font-size: 4rem;
-      }
+    <style define:vars={{ skillColor, fontWeight, textCase }}>
       .skill {
         color: var(--skillColor);
         font-weight: var(--fontWeight);
