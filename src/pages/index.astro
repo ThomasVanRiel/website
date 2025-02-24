@@ -43,21 +43,19 @@ const stack = [
 
 <PageLayout title="Home" description={SITE.DESCRIPTION}>
 
-
-  
   <!-- HERO -->
-  <section class="relative h-screen w-full">
+  <section class="relative h-screen w-full bg-graphpaper">
     <div class="animate absolute h-full w-full flex items-center justify-center">
       <div class='relative w-full h-full flex items-center justify-center'>
         <div class='p-5 text-center'>
-          <p class='animated text-lg md:text-xl lg:text-2xl font-semibold opacity-75'>
+          <p class='animated text-lg md:text-xl lg:text-2xl opacity-75'>
             Hello, I am ...
           </p>
-          <p class='animated text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-black dark:text-white'>
+          <p class='animated text-4xl md:text-5xl lg:text-6xl font-serif text-black dark:text-white'>
             Thomas <span class='uppercase font-serif'>Van Riel</span>
           </p>
           <p class='animated text-sm md:text-base lg:text-lg opacity-75'>
-            Engineer, Teacher, Lifelong learner
+            Engineer, Teacher, <span class="highlight">Lifelong learner</span>
           </p>
           <div id="ctaButtons" class='animated flex flex-wrap gap-4 justify-center mt-5'>
             <a href='/blog' class='py-2 px-4 rounded truncate text-xs md:text-sm lg:text-base bg-black dark:bg-white text-white dark:text-black hover:opacity-75 blend'>
@@ -163,3 +161,12 @@ const stack = [
     </div>
   </div>
 </PageLayout>
+<script>
+  import { annotate } from 'rough-notation';
+  // Or using unpkg
+  // import { annotate } from 'https://unpkg.com/rough-notation?module';
+
+  const e = document.querySelector('.highlight');
+  const annotation = annotate(e, { type: 'highlight', color: 'gold' });
+  annotation.show();
+</script>
