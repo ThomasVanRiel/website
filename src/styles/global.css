@@ -68,9 +68,6 @@ article {
   background-image: radial-gradient(circle, rgba(255,255,255, 0.25) 1px, rgba(255,255,255, 0) 1px);
 }
 
-.dark .highlight {
-  @apply text-black;
-}
 
 /** Light theme particles on home page */
 @keyframes animateParticle {
