@@ -7,8 +7,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        "sans": ["Atkinson", ...defaultTheme.fontFamily.sans],
-        "serif": ["Source Serif Pro", ...defaultTheme.fontFamily.serif],	
+        sans: ['"Source Sans 3"', ...defaultTheme.fontFamily.sans],
+        serif: ['"Source Serif 4"', ...defaultTheme.fontFamily.serif],
       },
       typography: {
         DEFAULT: {
