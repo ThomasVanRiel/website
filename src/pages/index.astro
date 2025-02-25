@@ -2,10 +2,7 @@
 import { getCollection } from "astro:content"
 import PageLayout from "@layouts/PageLayout.astro"
 import ArrowCard from "@components/ArrowCard"
-import StackCard from "@components/StackCard.astro"
 import { SITE, SOCIALS } from "@consts"
-import TwinklingStars from "@components/TwinklingStars.astro"
-import MeteorShower from "@components/MeteorShower.astro"
 
 const posts = (await getCollection("blog"))
   .filter(post => !post.data.draft)
@@ -48,20 +45,20 @@ const stack = [
     <div class="animate absolute h-full w-full flex items-center justify-center">
       <div class='relative w-full h-full flex items-center justify-center'>
         <div class='p-5 text-center'>
-          <p class='animated text-lg md:text-xl lg:text-2xl opacity-75'>
+          <p class='animated text-lg md:text-xl lg:text-2xl'>
             Hello, I am ...
           </p>
-          <p class='animated text-4xl md:text-5xl lg:text-6xl font-serif text-black dark:text-white my-2'>
-            Thomas <span class='uppercase font-serif'>Van Riel</span>
+          <p class='animated text-4xl md:text-5xl lg:text-6xl font-serif my-2'>
+            Thomas <span class='uppercase'>Van Riel</span>
           </p>
-          <p class='animated text-sm md:text-base lg:text-lg opacity-75'>
+          <p class='animated text-sm md:text-base lg:text-lg'>
             Engineer, Teacher, Lifelong learner
           </p>
           <div id="ctaButtons" class='animated flex flex-wrap gap-4 justify-center mt-5'>
-            <a href='/blog' class=' py-2 px-4 rounded truncate text-xs md:text-sm lg:text-base bg-black dark:bg-white text-white dark:text-black hover:opacity-75 blend'>
+            <a href='/blog' class=' py-2 px-4 rounded truncate text-xs md:text-sm lg:text-base bg-brand-dk dark:bg-brand-lt text-white dark:text-brand-dk hover:opacity-75 blend'>
               Read my blog
             </a>
-            <a href='/projects' class='py-2 px-4 truncate rounded text-xs md:text-sm lg:text-base bg-white dark:bg-black border border-black/25 dark:border-white/25 hover:bg-black/5 hover:dark:bg-white/15 blend'>
+            <a href='/projects' class='py-2 px-4 truncate rounded text-xs md:text-sm lg:text-base bg-brand-lt dark:bg-brand-dk border border-black/25 dark:border-white/25 hover:bg-brand-dk/5 hover:dark:bg-brand-lt/15 blend'>
               View my projects
             </a>
           </div>
@@ -86,18 +83,18 @@ const stack = [
       <section class="animate">
         <div class="space-y-4">
           <div class="flex justify-between">
-            <p class="font-semibold text-black dark:text-white">
+            <p class="font-semibold text-brand-dk dark:text-white">
               Recent posts
             </p>
-            <a href="/blog" class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-black dark:text-white underline-offset-2 blend">
-              <span class="text-black/75 dark:text-white/75 group-hover:text-black group-hover:dark:text-white blend">
+            <a href="/blog" class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-brand-dk dark:text-white underline-offset-2 blend">
+              <span class="text-brand-dk/75 dark:text-white/75 group-hover:text-brand-dk group-hover:dark:text-white blend">
                 All posts
               </span>
             </a>
           </div>
-          <ul class="space-y-4 bg-white dark:bg-black">
+          <ul class="space-y-4">
             {posts.map((post) => (
-              <li>
+              <li class="bg-brand-lt dark:bg-brand-dk">
                 <ArrowCard entry={post} />
               </li>
             ))}
@@ -110,18 +107,18 @@ const stack = [
       <section class="animate">
         <div class="space-y-4">
           <div class="flex justify-between">
-            <p class="font-semibold text-black dark:text-white">
+            <p class="font-semibold text-brand-dk dark:text-white">
               Recent projects
             </p>
-            <a href="/projects" class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-black dark:text-white underline-offset-2 blend">
-              <span class="text-black/75 dark:text-white/75 group-hover:text-black group-hover:dark:text-white blend">
+            <a href="/projects" class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-brand-dk dark:text-white underline-offset-2 blend">
+              <span class="text-brand-dk/75 dark:text-white/75 group-hover:text-brand-dk group-hover:dark:text-white blend">
                 All projects
               </span>
             </a>
           </div>
-          <ul class="space-y-4 bg-white dark:bg-black">
+          <ul class="space-y-4">
             {projects.map((project) => (
-              <li>
+              <li class="bg-brand-lt dark:bg-brand-dk">
                 <ArrowCard entry={project} />
               </li>
             ))}
@@ -132,7 +129,7 @@ const stack = [
       <!-- Contact Section -->
       <section class="animate">
         <div>
-          <p class="font-semibold text-black dark:text-white">
+          <p class="font-semibold text-brand-dk dark:text-white">
             Let's Connect
           </p>
           <p>
@@ -146,8 +143,8 @@ const stack = [
                 </span>
               </div>
               <div class="col-span-3 truncate">
-                <a href={social.HREF} target="_blank" class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-black dark:text-white underline-offset-2 blend">
-                  <span class="text-black/75 dark:text-white/75 group-hover:text-black group-hover:dark:text-white blend">
+                <a href={social.HREF} target="_blank" class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-brand-dk dark:text-white underline-offset-2 blend">
+                  <span class="text-brand-dk/75 dark:text-white/75 group-hover:text-brand-dk group-hover:dark:text-white blend">
                     {social.TEXT}
                   </span>
                 </a>

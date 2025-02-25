@@ -10,36 +10,37 @@
 html {
   overflow-y: scroll;
   color-scheme: light;
-  background-color: white;
 }
 
 html.dark {
   color-scheme: dark;
-  background-color: black;
 }
 
 html,
 body {
   @apply h-full w-full antialiased;
-  @apply bg-white dark:bg-black;
-  @apply text-black/75 dark:text-white/75;
+  @apply text-brand-dk dark:text-brand-lt;
 }
 
 body {
   @apply relative flex flex-col;
+  @apply bg-brand-lt dark:bg-brand-dk bg-graphpaper;
 }
 
 main {
-  @apply flex flex-col flex-1 bg-white dark:bg-black bg-graphpaper;
+  @apply bg-brand-lt dark:bg-brand-dk bg-graphpaper;
+  @apply flex flex-col flex-1 ;
 }
 
 header {
   @apply border-b;
-  @apply transition-all duration-300 ease-in-out;
-  @apply bg-white/75 dark:bg-black/50;
-  @apply border-black/10 dark:border-white/25;
-  @apply backdrop-blur-sm saturate-200;
+  @apply transition-all duration-200 ease-in-out;
+  @apply bg-brand-lt/75 dark:bg-brand-dk/50;
+  @apply border-brand-dk/10 dark:border-brand-lt/25;
+  @apply backdrop-blur-sm ;
 }
+
+
 
 article {
   @apply prose dark:prose-invert max-w-full pb-12;
@@ -50,18 +51,26 @@ article {
 }
 
 .blend {
-  @apply transition-all duration-300 ease-in-out;
+  @apply transition-all duration-200 ease-in-out;
 }
 
 .bg-graphpaper {
   background-size: 2rem 2rem;
-  background-image: radial-gradient(circle, rgba(0, 0, 0, 0.25) 1px, rgba(0, 0, 0, 0) 1px);
+  background-image: radial-gradient(
+    circle,
+    rgba(0, 0, 0, 0.25) 1px,
+    rgba(0, 0, 0, 0) 1px
+  );
   background-attachment: local;
 }
 .dark .bg-graphpaper {
-  background-image: radial-gradient(circle, rgba(255,255,255, 0.25) 1px, rgba(255,255,255, 0) 1px);
+  background-image: radial-gradient(
+    circle,
+    rgba(255, 255, 255, 0.25) 1px,
+    rgba(255, 255, 255, 0) 1px
+  );
+  
 }
-
 
 /** Light theme particles on home page */
 @keyframes animateParticle {
@@ -77,7 +86,9 @@ article {
 .animate {
   opacity: 0;
   transform: translateY(50px);
-  transition: opacity 1s ease, transform 1s ease;
+  transition:
+    opacity 1s ease,
+    transform 1s ease;
 }
 
 .animate.show {
