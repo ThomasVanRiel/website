@@ -34,7 +34,7 @@ main {
 
 header {
   @apply border-b;
-  @apply transition-all duration-200 ease-in-out;
+  @apply transition-all duration-100 ease-in-out;
   @apply bg-brand-lt/75 dark:bg-brand-dk/50;
   @apply border-brand-dk/10 dark:border-brand-lt/25;
   @apply backdrop-blur-sm ;
@@ -51,7 +51,7 @@ article {
 }
 
 .blend {
-  @apply transition-all duration-200 ease-in-out;
+  @apply transition-all duration-100 ease-in-out;
 }
 
 .bg-graphpaper {
@@ -87,8 +87,8 @@ article {
   opacity: 0;
   transform: translateY(50px);
   transition:
-    opacity 1s ease,
-    transform 1s ease;
+    opacity 0.5s ease,
+    transform 0.5s ease;
 }
 
 .animate.show {
