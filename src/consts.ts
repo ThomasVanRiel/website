@@ -65,6 +65,12 @@ export const SOCIALS: Socials = [
     TEXT: "thomasvanriel",
     HREF: "https://github.com/thomasvanriel"
   },
+  { 
+    NAME: "Discord",
+    ICON: "discord",
+    TEXT: "thomasvanriel",
+    HREF: "https://discordapp.com/users/thomasvanriel"
+  },
 
 ]
 

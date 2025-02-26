@@ -18,5 +18,5 @@ I own several machine tools that enable me to express my creativity.
 - Schaublin 120 VM (Screwcutting lathe, 1957)
 - Matheys drill press (Drill press, year unknown)
 - Clarkson Mk. 1 (Tool and cutter grinder, year unknown)
-- Invertec V160-T Pulse (DC TIG welder, year unknown)
+- Lincoln Electric Invertec V160-T Pulse (DC TIG welder, year unknown)
 - Prusa MK3S+ (3D Printer, 2020)
