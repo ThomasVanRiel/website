@@ -9,9 +9,9 @@ export default {
     extend: {
       colors:{
         "brand-dk":  colors.slate['800'],
-        "brand-lt": colors.stone['100'],
-        "brand-accent-dk": colors.slate['400'],
-        "brand-accent-lt": colors.stone['400'],
+        "brand-lt": colors.zinc['50'],
+        "brand-dk-hover": colors.zinc['100'],
+        "brand-lt-hover": colors.slate['700'],
       },
       fontFamily: {
         sans: ['"Source Sans 3"', ...defaultTheme.fontFamily.sans],

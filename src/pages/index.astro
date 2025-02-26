@@ -55,10 +55,10 @@ const stack = [
             Engineer, Teacher, Lifelong learner
           </p>
           <div id="ctaButtons" class='animated flex flex-wrap gap-4 justify-center mt-5'>
-            <a href='/blog' class=' py-2 px-4 rounded truncate text-xs md:text-sm lg:text-base bg-brand-dk dark:bg-brand-lt text-white dark:text-brand-dk hover:opacity-75 blend'>
+            <a href='/blog' class='button-invert py-2 px-4 rounded truncate text-xs md:text-sm lg:text-base text-white dark:text-brand-dk hover:opacity-75 blend'>
               Read my blog
             </a>
-            <a href='/projects' class='py-2 px-4 truncate rounded text-xs md:text-sm lg:text-base bg-brand-lt dark:bg-brand-dk border border-black/25 dark:border-white/25 hover:bg-brand-dk/5 hover:dark:bg-brand-lt/15 blend'>
+            <a href='/projects' class='button py-2 px-4 truncate rounded text-xs md:text-sm lg:text-base border border-black/25 dark:border-white/25 blend'>
               View my projects
             </a>
           </div>
@@ -94,7 +94,7 @@ const stack = [
           </div>
           <ul class="space-y-4">
             {posts.map((post) => (
-              <li class="bg-brand-lt dark:bg-brand-dk">
+              <li class="button">
                 <ArrowCard entry={post} />
               </li>
             ))}
@@ -118,7 +118,7 @@ const stack = [
           </div>
           <ul class="space-y-4">
             {projects.map((project) => (
-              <li class="bg-brand-lt dark:bg-brand-dk">
+              <li class="button">
                 <ArrowCard entry={project} />
               </li>
             ))}

@@ -58,29 +58,29 @@ article {
   background-size: 2rem 2rem;
   background-image: radial-gradient(
     circle,
-    rgba(0, 0, 0, 0.25) 1px,
+    rgba(0, 0, 0, 0.15) 1px,
     rgba(0, 0, 0, 0) 1px
   );
   background-attachment: local;
 }
+
 .dark .bg-graphpaper {
   background-image: radial-gradient(
     circle,
-    rgba(255, 255, 255, 0.25) 1px,
+    rgba(255, 255, 255, 0.15) 1px,
     rgba(255, 255, 255, 0) 1px
   );
   
 }
 
-/** Light theme particles on home page */
-@keyframes animateParticle {
-  from {
-    transform: translateY(0px);
-  }
-  to {
-    transform: translateY(-2000px);
-  }
+.button {
+  @apply bg-brand-lt dark:bg-brand-dk hover:bg-brand-dk-hover hover:dark:bg-brand-lt-hover;
 }
+
+.button-invert {
+  @apply bg-brand-dk dark:bg-brand-lt hover:bg-brand-lt-hover hover:dark:bg-brand-dk-hover;
+}
+
 
 /** styles for public /animation.js */
 .animate {
