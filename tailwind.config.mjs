@@ -12,6 +12,8 @@ export default {
         "brand-lt": colors.zinc['50'],
         "brand-dk-hover": colors.zinc['100'],
         "brand-lt-hover": colors.slate['700'],
+        "brand-lt-dk": colors.zinc['200'],
+        "brand-dk-lt": colors.slate['600'],
       },
       fontFamily: {
         sans: ['"Source Sans 3"', ...defaultTheme.fontFamily.sans],
