@@ -17547,4 +17547,4 @@ tags:
 </svg>
 </img>
 
-Comments, corrections, complements? [Let me know!](mailto:thomas.van.riel@gmail.com)
+Comments, corrections, compliments? [Let me know!](mailto:thomas.van.riel@gmail.com)
