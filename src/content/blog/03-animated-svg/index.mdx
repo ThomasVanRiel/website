@@ -4,12 +4,39 @@ summary: "A funny experiment with SVG animations."
 date: "03/02/2025"
 draft: false
 tags:
-- Digital
-- Design
-- Interactive
+  - Digital
+  - Design
+  - Interactive
 ---
+
 Click a button to select a dinosaur!
 
-import Dinosaur from "./Dinosaur.astro"
+import Dinosaur from "./Dinosaur.astro";
 
 <Dinosaur />
+
+## How?
+
+Create SVG paths with identical nodes and starting node.
+Make sure all paths are absolute. [Use this tool to convert relative to absolute paths](https://codepen.io/thednp/pen/EgVqLw)
+
+The animations are implemented using [anime.js](https://animejs.com/):
+
+```javascript
+  import anime from "animejs";          // Import library
+
+  const common = {                      // Common animation settings
+    easing: "easeOutElastic(1,0.7)",    // Easing function, elastic
+    duration: 800,                      // Duration of animation
+    loop: false,                        // Don't loop
+  };
+
+  function morph() {                    // Function to transform dinosaur
+    anime({                             // Call anime.js object to animate
+      ...common,                        // Common settings (see above)
+      targets: "#...",                  // Target object id
+      d: "...",                         // New Path
+      fill: "...",                      // New fill colour
+    });
+  }
+```
