@@ -3,7 +3,7 @@ import type { Site, Page, Links, Socials } from "@types"
 // Global
 export const SITE: Site = {
   TITLE: "Thomas VAN RIEL",
-  DESCRIPTION: "Welcome to my website. Always learning, always sharing, always growing.",
+  DESCRIPTION: "Thomas Van Riel's personal website and blog.",
   AUTHOR: "Thomas Van Riel",
 }
 
@@ -71,6 +71,13 @@ export const SOCIALS: Socials = [
     TEXT: "thomasvanriel",
     HREF: "https://discordapp.com/users/thomasvanriel"
   },
-
+  /*  
+  { 
+    NAME: "Youtube",
+    ICON: "youtube",
+    TEXT: "thomas-van-riel",
+    HREF: "https://www.youtube.com/@thomas-van-riel"
+  },
+  */
 ]
 

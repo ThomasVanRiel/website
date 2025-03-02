@@ -75,10 +75,12 @@ article {
 
 .button {
   @apply bg-brand-lt dark:bg-brand-dk hover:bg-brand-dk-hover hover:dark:bg-brand-lt-hover;
+  @apply border rounded border-black/15 dark:border-white/20 px-1.5;
 }
 
 .button-invert {
   @apply bg-brand-dk dark:bg-brand-lt hover:bg-brand-lt-hover hover:dark:bg-brand-dk-hover;
+  @apply border rounded border-black/15 dark:border-white/20 px-1.5;
 }
 
 
