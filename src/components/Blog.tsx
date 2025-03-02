@@ -60,7 +60,7 @@ export default function Blog({ data, tags }: Props) {
           </div>
           <ul class="flex flex-col gap-3">
             {posts().map((post) => (
-              <li class="bg-brand-lt dark:bg-brand-dk">
+              <li>
                 <ArrowCard entry={post} />
               </li>
             ))}

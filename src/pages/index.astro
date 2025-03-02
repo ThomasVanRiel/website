@@ -71,7 +71,7 @@ const projects = (await getCollection("projects"))
           </div>
           <ul class="space-y-4">
             {posts.map((post) => (
-              <li class="button">
+              <li>
                 <ArrowCard entry={post} />
               </li>
             ))}
@@ -95,7 +95,7 @@ const projects = (await getCollection("projects"))
           </div>
           <ul class="space-y-4">
             {projects.map((project) => (
-              <li class="button">
+              <li>
                 <ArrowCard entry={project} />
               </li>
             ))}

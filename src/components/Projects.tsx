@@ -60,7 +60,7 @@ export default function Projects({ data, tags }: Props) {
           </div>
           <ul class="flex flex-col gap-3">
             {projects().map((project) => (
-              <li class="bg-brand-lt dark:bg-brand-dk">
+              <li>
                 <ArrowCard entry={project} />
               </li>
             ))}
