@@ -6,8 +6,8 @@ draft: false
 tags:
 - Digital
 - Design
+repoUrl: https://github.com/ThomasVanRiel/website
 ---
-## Webdevelopment
 This website was built with:
 - Astro
 - Javascript
