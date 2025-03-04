@@ -109,6 +109,18 @@ article>*:first-child {
   margin-top: 0;
 }
 
+article .data-footnote-backref{
+  @apply no-underline font-serif;
+}
+
+/* 
+article .data-footnote-backref:after{
+  content: "^ ∧ ↩ ↵ ↲ ↲ ← ↜";
+  @apply no-underline;
+}
+  */
+
+
 .copy-cnt {
   @apply absolute w-full;
   top: var(--copy-btn-margin);
