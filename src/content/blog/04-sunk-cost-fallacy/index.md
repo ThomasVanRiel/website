@@ -10,6 +10,8 @@ tags:
 
 One of the most dangerous ... in mechanical design is the sunken cost fallacy
 
+## The (general) process of mechanical design
+
 ## Flow chart on CAD
 
 
