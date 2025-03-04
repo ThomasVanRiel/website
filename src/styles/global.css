@@ -105,6 +105,10 @@ article img {
   margin: 0 auto;
 }
 
+article>*:first-child {
+  margin-top: 0;
+}
+
 .copy-cnt {
   @apply absolute w-full;
   top: var(--copy-btn-margin);
