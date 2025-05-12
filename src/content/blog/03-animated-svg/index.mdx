@@ -22,20 +22,20 @@ Make sure all paths are absolute. [Use this tool to convert relative to absolute
 The animations are implemented using [anime.js](https://animejs.com/):
 
 ```javascript
-  import anime from "animejs";          // Import library
+import anime from "animejs";          // Import library
 
-  const common = {                      // Common animation settings
-    easing: "easeOutElastic(1,0.7)",    // Easing function, elastic
-    duration: 800,                      // Duration of animation
-    loop: false,                        // Don't loop
-  };
+const common = {                      // Common animation settings
+  easing: "easeOutElastic(1,0.7)",    // Easing function, elastic
+  duration: 800,                      // Duration of animation
+  loop: false,                        // Don't loop
+};
 
-  function morph() {                    // Function to transform dinosaur
-    anime({                             // Call anime.js object to animate
-      ...common,                        // Common settings (see above)
-      targets: "#...",                  // Target object id
-      d: "...",                         // New Path
-      fill: "...",                      // New fill colour
-    });
-  }
+function morph() {                    // Function to transform dinosaur
+  anime({                             // Call anime.js object to animate
+    ...common,                        // Common settings (see above)
+    targets: "#...",                  // Target object id
+    d: "...",                         // New Path
+    fill: "...",                      // New fill colour
+  });
+}
 ```
