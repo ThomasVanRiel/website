@@ -2,7 +2,7 @@
 company: "KU Leuven, Campus Group T"
 role: "Teaching Assistant Mechanical Design and Manufacturing"
 dateStart: "08/17/2024"
-dateEnd: "Now"
+dateEnd: "09/30/2025"
 ---
 
 Teaching tasks:
