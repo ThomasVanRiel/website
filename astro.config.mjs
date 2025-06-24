@@ -7,5 +7,10 @@ import solidJs from "@astrojs/solid-js"
 // https://astro.build/config
 export default defineConfig({
   site: "https://thomasvanriel.com",
-  integrations: [mdx(), sitemap(), solidJs(), tailwind({ applyBaseStyles: false })],
+  integrations: [mdx(), sitemap({
+      filter: (page) =>
+        page !== 'https://thomasvanriel.com/blog/04-sunk-cost-fallacy/' &&
+        page !== 'https://thomasvanriel.com/blog/05-failing/' &&
+        page !== 'https://thomasvanriel.com/blog/06-flowchart-recipes/',
+    }), solidJs(), tailwind({ applyBaseStyles: false })],
 })
