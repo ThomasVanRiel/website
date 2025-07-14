@@ -30,7 +30,6 @@ body {
 main {
   @apply bg-brand-lt dark:bg-brand-dk bg-graphpaper;
   @apply flex flex-col flex-1 ;
-  @apply text-justify;
 }
 
 header {
@@ -45,6 +44,10 @@ header {
 
 article {
   @apply prose dark:prose-invert max-w-full pb-12;
+}
+
+article p {
+  @apply text-justify;
 }
 
 .page-heading {
