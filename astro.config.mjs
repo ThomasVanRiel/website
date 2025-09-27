@@ -11,6 +11,7 @@ export default defineConfig({
       filter: (page) =>
         page !== 'https://thomasvanriel.com/blog/04-sunk-cost-fallacy/' &&
         page !== 'https://thomasvanriel.com/blog/05-failing/' &&
-        page !== 'https://thomasvanriel.com/blog/07-mdx-test/',
+        page !== 'https://thomasvanriel.com/blog/07-mdx-test/' &&
+        page !== 'https://thomasvanriel.com/blog/08-machining-window/',
     }), solidJs(), tailwind({ applyBaseStyles: false })],
 })
