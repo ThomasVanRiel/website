@@ -41,6 +41,19 @@
         const sliderContainer = document.getElementById('slider-container');
         if (!container || !sliderContainer) return;
         
+        // Theme detection functions
+        const isDarkTheme = () => document.documentElement.classList.contains('dark');
+        const getThemeColors = () => {
+            const dark = isDarkTheme();
+            return {
+                axes: dark ? 0xffffff : 0x000000,
+                grid: dark ? 0x444444 : 0xcccccc,
+                gridHelper: dark ? 0x666666 : 0xcccccc,
+                text: dark ? '#ffffff' : '#000000',
+                dashedLine: dark ? 0xffffff : 0x000000
+            };
+        };
+        
         // Initialize slider generator
         const sliderGen = new SliderGenerator();
         
@@ -193,22 +206,27 @@
         
         container.appendChild(renderer.domElement);
         
-        const axesColor = new THREE.Color(0x000000);
+        // Get theme colors
+        let themeColors = getThemeColors();
         
-        // Create grid
-        const gridHelper = new THREE.GridHelper(1, 10, 0xcccccc, 0xcccccc);
+        // Create grid with theme colors
+        let gridHelper = new THREE.GridHelper(1, 10, themeColors.gridHelper, themeColors.grid);
         gridHelper.translateX(0.5);
         gridHelper.translateZ(0.5);
         scene.add(gridHelper);
         
-        // Create axes
+        // Create axes with theme colors
         const axesHelper = new THREE.AxesHelper(1);
-        axesHelper.setColors(axesColor, axesColor, axesColor);
+        axesHelper.setColors(
+            new THREE.Color(themeColors.axes), 
+            new THREE.Color(themeColors.axes), 
+            new THREE.Color(themeColors.axes)
+        );
         scene.add(axesHelper);
         
         // Materials
         const dashedLineMaterial = new THREE.LineDashedMaterial({ 
-            color: 0x000, 
+            color: themeColors.dashedLine, 
             linewidth: 1, 
             scale: 1, 
             dashSize: 0.03, 
@@ -238,7 +256,7 @@
             const ctx = canvas.getContext('2d');
             if (ctx) {
                 ctx.font = `bold 128px 'Source Serif 4'`;
-                ctx.fillStyle = '#000';
+                ctx.fillStyle = themeColors.text;
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'middle';
                 ctx.fillText(text, canvas.width / 2, canvas.height / 2);
@@ -252,9 +270,56 @@
         };
         
         // Axis labels
-        scene.add(createAxisLabel('v', new THREE.Vector3(0, 1.1, 0)));
-        scene.add(createAxisLabel('h', new THREE.Vector3(1.1, 0, 0)));
-        scene.add(createAxisLabel('b', new THREE.Vector3(0, 0, 1.1)));
+        const vLabel = createAxisLabel('v', new THREE.Vector3(0, 1.1, 0));
+        const hLabel = createAxisLabel('h', new THREE.Vector3(1.1, 0, 0));
+        const bLabel = createAxisLabel('b', new THREE.Vector3(0, 0, 1.1));
+        scene.add(vLabel);
+        scene.add(hLabel);
+        scene.add(bLabel);
+        
+        // Function to update theme colors dynamically
+        const updateThemeColors = () => {
+            themeColors = getThemeColors();
+            
+            // Update grid colors - need to recreate grid for color changes
+            scene.remove(gridHelper);
+            gridHelper = new THREE.GridHelper(1, 10, themeColors.gridHelper, themeColors.grid);
+            gridHelper.translateX(0.5);
+            gridHelper.translateZ(0.5);
+            scene.add(gridHelper);
+            
+            // Update axes colors
+            axesHelper.setColors(
+                new THREE.Color(themeColors.axes),
+                new THREE.Color(themeColors.axes),
+                new THREE.Color(themeColors.axes)
+            );
+            
+            // Update dashed line material
+            dashedLineMaterial.color.setHex(themeColors.dashedLine);
+            
+            // Update axis labels
+            [vLabel, hLabel, bLabel].forEach((label, index) => {
+                const texts = ['v', 'h', 'b'];
+                
+                // Recreate the label with new color
+                const canvas = document.createElement('canvas');
+                canvas.width = 256;
+                canvas.height = 256;
+                const ctx = canvas.getContext('2d');
+                if (ctx) {
+                    ctx.font = `bold 128px 'Source Serif 4'`;
+                    ctx.fillStyle = themeColors.text;
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.fillText(texts[index], canvas.width / 2, canvas.height / 2);
+                }
+                const texture = new THREE.CanvasTexture(canvas);
+                label.material.map?.dispose();
+                label.material.map = texture;
+                label.material.needsUpdate = true;
+            });
+        };
         
         const Generate = () => {
             // Remove old surface from scene
@@ -584,6 +649,19 @@
         
         window.addEventListener('resize', handleResize);
         
+        // Listen for theme changes
+        const themeObserver = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    updateThemeColors();
+                }
+            });
+        });
+        themeObserver.observe(document.documentElement, {
+            attributes: true,
+            attributeFilter: ['class']
+        });
+        
         // Start animation
         animate();
         
@@ -593,6 +671,7 @@
                 cancelAnimationFrame(animationId);
             }
             window.removeEventListener('resize', handleResize);
+            themeObserver.disconnect();
             if (container && renderer.domElement) {
                 container.removeChild(renderer.domElement);
             }
@@ -621,7 +700,7 @@
     input[type="range"] {
         -webkit-appearance: none;
         appearance: none;
-        background: #e5e7eb;
+        @apply bg-gray-200 dark:bg-gray-700;
         border-radius: 9999px;
         height: 8px;
         outline: none;
@@ -629,7 +708,7 @@
     }
     
     input[type="range"]:hover {
-        background: #d1d5db;
+        @apply bg-gray-300 dark:bg-gray-600;
     }
     
     input[type="range"]::-webkit-slider-thumb {
@@ -638,15 +717,15 @@
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: #ffffff;
-        border: 2px solid #374151;
+        @apply bg-white dark:bg-gray-800 border-gray-700 dark:border-gray-300;
+        border-width: 2px;
         cursor: pointer;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
     }
     
     input[type="range"]::-webkit-slider-thumb:hover {
-        background: #f3f4f6;
+        @apply bg-gray-100 dark:bg-gray-700;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
     
@@ -654,15 +733,15 @@
         width: 20px;
         height: 20px;
         border-radius: 50%;
-        background: #ffffff;
-        border: 2px solid #374151;
+        @apply bg-white dark:bg-gray-800 border-gray-700 dark:border-gray-300;
+        border-width: 2px;
         cursor: pointer;
         box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
         transition: all 0.3s ease;
     }
     
     input[type="range"]::-moz-range-thumb:hover {
-        background: #f3f4f6;
+        @apply bg-gray-100 dark:bg-gray-700;
         box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
     }
 </style>
