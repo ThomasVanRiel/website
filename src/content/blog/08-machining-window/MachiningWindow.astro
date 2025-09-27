@@ -13,12 +13,29 @@
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
     import { SliderGenerator } from './SliderGenerator.ts';
-    
+    import { CSG } from 'three-csg-ts';
+
     const objects: THREE.Object3D[] = [];
     
     let bhmin = 0.2;
-    let bhmax = 0.8;
-    
+    let bhmax = 0.7;
+    let T = 1;
+    let vb = 0.4;
+    let p = 0.4;
+    let q = 0.1;
+    let m = 0.25;
+    let n = 0.45;
+    let CTVB = 0.8;
+    let P = 6;
+    let ks11 = 1200;
+    let z_kienzle = 0.5;
+    let vmin = 0.6;
+    let vmax = 0.9;
+    let hmin = 0.1;
+    let hmax = 0.6;
+    let bmin = 0.1;
+    let bmax = 0.9;
+
     function initMachiningWindow() {
         const container = document.getElementById('machining-container');
         const sliderContainer = document.getElementById('slider-container');
@@ -33,7 +50,7 @@
             min: 0.01,
             max: 0.99,
             step: 0.01,
-            defaultValue: 0.2,
+            defaultValue: bhmin,
             displayPrecision: 2,
             label: 'b/h min',
             containerClass: 'flex flex-col',
@@ -48,7 +65,7 @@
             min: 0.01,
             max: 0.99,
             step: 0.01,
-            defaultValue: 0.8,
+            defaultValue: bhmax,
             displayPrecision: 2,
             label: 'b/h max',
             containerClass: 'flex flex-col',
@@ -57,10 +74,89 @@
                 Generate();
             }
         });
+        const vminSlider = sliderGen.createSlider({
+            name: 'vmin',
+            min: 0.01,
+            max: 2,
+            step: 0.01,
+            defaultValue: vmin,
+            displayPrecision: 2,
+            label: 'v min',
+            containerClass: 'flex flex-col',
+            onUpdate: (value) => {
+            vmin = value;
+            Generate();
+            }
+        });
+
+        const vmaxSlider = sliderGen.createSlider({
+            name: 'vmax',
+            min: 0.01,
+            max: 2,
+            step: 0.01,
+            defaultValue: 0.9,
+            displayPrecision: 2,
+            label: 'v max',
+            containerClass: 'flex flex-col',
+            onUpdate: (value) => {
+            vmax = value;
+            Generate();
+            }
+        });
+
+        const zkienzleSlider = sliderGen.createSlider({
+            name: 'z_kienzle',
+            min: 0.01,
+            max: 1,
+            step: 0.01,
+            defaultValue: z_kienzle,
+            displayPrecision: 2,
+            label: 'z Kienzle',
+            containerClass: 'flex flex-col',
+            onUpdate: (value) => {
+                z_kienzle = value;
+                Generate();
+            }
+        });
+
+        const PSlider = sliderGen.createSlider({
+            name: 'P',
+            min: 1,
+            max: 10,
+            step: 0.1,
+            defaultValue: P,
+            displayPrecision: 2,
+            label: 'P',
+            containerClass: 'flex flex-col',
+            onUpdate: (value) => {
+                P = value;
+                Generate();
+            }
+        });
+
+        const TSlider = sliderGen.createSlider({
+            name: 'T',
+            min: 0.01,
+            max: 2,
+            step: 0.01,
+            defaultValue: T,
+            displayPrecision: 2,
+            label: 'T',
+            containerClass: 'flex flex-col',
+            onUpdate: (value) => {
+                T = value;
+                Generate();
+            }
+        });
+        sliderContainer.appendChild(TSlider.container);
+        sliderContainer.appendChild(PSlider.container);
         
         // Add sliders to container
+        sliderContainer.appendChild(vminSlider.container);
+        sliderContainer.appendChild(vmaxSlider.container);
         sliderContainer.appendChild(bhminSlider.container);
         sliderContainer.appendChild(bhmaxSlider.container);
+        sliderContainer.appendChild(zkienzleSlider.container);
         
         // Scene setup (keeping your existing Three.js code)
         const scene = new THREE.Scene();
@@ -118,6 +214,21 @@
             dashSize: 0.03, 
             gapSize: 0.01 
         });
+
+        //const surfaceMaterial = new THREE.MeshNormalMaterial({
+        //    opacity: 0.5,
+        //    transparent: true,
+        //    side: THREE.DoubleSide
+        //});
+
+        const surfaceMaterial = new THREE.MeshMatcapMaterial({
+            color: 0xffffff,
+            opacity: 0.8,
+            transparent: true,
+            side: THREE.DoubleSide,
+        });
+
+        
         
         // Add axis labels
         const createAxisLabel = (text: string, position: THREE.Vector3, size: number = 1) => {
@@ -185,6 +296,273 @@
             bhminLine.computeLineDistances();
             objects.push(bhminLine);
             scene.add(bhminLine);
+            
+            // Use ExtrudeGeometry for the prism between bhmin and bhmax
+
+            // Define the 2D shape for extrusion (in x-z plane)
+            const prismShape = new THREE.Shape();
+            prismShape.moveTo(bhminPoints[0].x*2, bhminPoints[0].z*2);
+            prismShape.lineTo(bhminPoints[1].x*2, bhminPoints[1].z*2);
+            prismShape.lineTo(bhmaxPoints[1].x*2, bhmaxPoints[1].z*2);
+            prismShape.lineTo(bhmaxPoints[0].x*2, bhmaxPoints[0].z*2);
+            prismShape.lineTo(bhminPoints[0].x*2, bhminPoints[0].z*2); // Close the shape
+
+            // Extrude settings: height = 1 (from y=0 to y=1)
+            const extrudeSettings = {
+                steps: 1,
+                depth: -1,
+                bevelEnabled: false,
+                curveSegments: 1
+            };
+
+            // Extrude along the y-axis
+            const prismGeometry = new THREE.ExtrudeGeometry(prismShape, extrudeSettings);
+
+            // Move the geometry so its base is at y=0
+            prismGeometry.rotateX(Math.PI / 2);
+            prismGeometry.computeVertexNormals();
+
+            const prismMesh = new THREE.Mesh(prismGeometry, surfaceMaterial);
+            objects.push(prismMesh);
+            scene.add(prismMesh);
+
+            function createSurfaceMesh(surfaceFn: (x: number, z: number) => number, color = 0x2196f3) {
+                const segments = 100;
+                const geometry = new THREE.BufferGeometry();
+                const positions = [];
+                const normals = [];
+                const indices = [];
+
+                for (let i = 0; i <= segments; i++) {
+                    for (let j = 0; j <= segments; j++) {
+                        const x = i / segments;
+                        const z = j / segments;
+                        const y = surfaceFn(x, z);
+
+                        positions.push(x, y, z);
+                        normals.push(0, 1, 0); // Approximate normal
+                    }
+                }
+
+                for (let i = 0; i < segments; i++) {
+                    for (let j = 0; j < segments; j++) {
+                        const a = i * (segments + 1) + j;
+                        const b = a + 1;
+                        const c = a + (segments + 1);
+                        const d = c + 1;
+
+                        indices.push(a, b, d);
+                        indices.push(a, d, c);
+                    }
+                }
+
+                for (let i = 0; i <= segments; i++) {
+                    for (let j = 0; j <= segments; j++) {
+                        // Calculate normal using central differences
+                        const x = i / segments;
+                        const z = j / segments;
+                        const dx = 1 / segments;
+                        const dz = 1 / segments;
+
+                        // Partial derivatives
+                        const y = surfaceFn(x, z);
+                        const y_dx = surfaceFn(Math.min(x + dx, 1), z) - surfaceFn(Math.max(x - dx, 0), z);
+                        const y_dz = surfaceFn(x, Math.min(z + dz, 1)) - surfaceFn(x, Math.max(z - dz, 0));
+
+                        // Normal vector
+                        const normal = new THREE.Vector3(-y_dx, 2 * dx, -y_dz);
+                        normal.normalize();
+
+                        // Replace the approximate normal
+                        const idx = (i * (segments + 1) + j) * 3;
+                        normals[idx] = normal.x;
+                        normals[idx + 1] = normal.y;
+                        normals[idx + 2] = normal.z;
+                    }
+                }
+
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+                geometry.setIndex(indices);
+
+                return new THREE.Mesh(geometry, surfaceMaterial);
+            }
+
+            // Taylor surface
+            const taylorSurfaceFn = (x: number, z: number) => {
+                return CTVB * Math.pow(vb, n) / (Math.pow(z, q) * Math.pow(x, p) * Math.pow(T, m));
+            };
+
+            const taylorSurfaceMesh = createSurfaceMesh(taylorSurfaceFn, 0x2196f3);
+
+            // Kienzle surface
+            const kienzleSurfaceFn = (x: number, z: number) => {
+                // Example Kienzle formula: y = ks11 * P * Math.pow(x, m) * Math.pow(z, n)
+                // Adjust the formula as needed for your use case
+                return P * 60 / (ks11 * x*Math.pow(z, 1-z_kienzle));
+            };
+
+            const kienzleSurfaceMesh = createSurfaceMesh(kienzleSurfaceFn, 0x2196f3);
+
+            // vmax limit plane
+            const vmaxPlaneFn = (x: number, z: number) => {
+                return vmax;
+            };
+            const vmaxPlaneMesh = createSurfaceMesh(vmaxPlaneFn, 0x4caf50);
+
+            // Combine into a mesh: at each (x, z), y = max(vminPlane, min(taylorSurface, kienzleSurface))
+            function combinedSurfaceFn(x: number, z: number) {
+                const taylorY = taylorSurfaceFn(x, z);
+                const kienzleY = kienzleSurfaceFn(x, z);
+                const vminY = vmaxPlaneFn(x, z);
+                return Math.min(taylorY, kienzleY, vminY);
+            }
+
+            const combinedSurfaceMesh = createSurfaceMesh(combinedSurfaceFn, 0xff9800);
+            //objects.push(combinedSurfaceMesh);
+            //scene.add(combinedSurfaceMesh);
+
+            // Create a mesh from the base plane (y=0) up to the combined surface
+            function createVolumeMesh(surfaceFn: (x: number, z: number) => number, color = 0x90caf9) {
+                const segments = 50;
+                const geometry = new THREE.BufferGeometry();
+                const positions = [];
+                const normals = [];
+                const indices = [];
+
+                // Top surface (combined)
+                for (let i = 0; i <= segments; i++) {
+                    for (let j = 0; j <= segments; j++) {
+                        const x = i / segments;
+                        const z = j / segments;
+                        const y = surfaceFn(x, z);
+                        positions.push(x, y, z);
+                        normals.push(0, 1, 0); // Approximate normal
+                    }
+                }
+                // Bottom surface (y=0)
+                for (let i = 0; i <= segments; i++) {
+                    for (let j = 0; j <= segments; j++) {
+                        const x = i / segments;
+                        const z = j / segments;
+                        positions.push(x, 0, z);
+                        normals.push(0, -1, 0);
+                    }
+                }
+
+                // Top surface indices
+                for (let i = 0; i < segments; i++) {
+                    for (let j = 0; j < segments; j++) {
+                        const a = i * (segments + 1) + j;
+                        const b = a + 1;
+                        const c = a + (segments + 1);
+                        const d = c + 1;
+                        indices.push(a, b, d);
+                        indices.push(a, d, c);
+                    }
+                }
+                // Bottom surface indices (reverse order for correct normal)
+                const offset = (segments + 1) * (segments + 1);
+                for (let i = 0; i < segments; i++) {
+                    for (let j = 0; j < segments; j++) {
+                        const a = offset + i * (segments + 1) + j;
+                        const b = a + 1;
+                        const c = a + (segments + 1);
+                        const d = c + 1;
+                        indices.push(a, d, b);
+                        indices.push(a, c, d);
+                    }
+                }
+                // Side faces
+                for (let i = 0; i < segments; i++) {
+                    // z=0 edge
+                    let topA = i * (segments + 1);
+                    let topB = (i + 1) * (segments + 1);
+                    let botA = offset + i * (segments + 1);
+                    let botB = offset + (i + 1) * (segments + 1);
+                    indices.push(topA, botB, botA);
+                    indices.push(topA, topB, botB);
+
+                    // z=segments edge
+                    topA = i * (segments + 1) + segments;
+                    topB = (i + 1) * (segments + 1) + segments;
+                    botA = offset + i * (segments + 1) + segments;
+                    botB = offset + (i + 1) * (segments + 1) + segments;
+                    indices.push(topA, botA, botB);
+                    indices.push(topA, botB, topB);
+                }
+                for (let j = 0; j < segments; j++) {
+                    // x=0 edge
+                    let topA = j;
+                    let topB = j + 1;
+                    let botA = offset + j;
+                    let botB = offset + j + 1;
+                    indices.push(topA, botA, botB);
+                    indices.push(topA, botB, topB);
+
+                    // x=segments edge
+                    topA = segments * (segments + 1) + j;
+                    topB = segments * (segments + 1) + j + 1;
+                    botA = offset + segments * (segments + 1) + j;
+                    botB = offset + segments * (segments + 1) + j + 1;
+                    indices.push(topA, botB, botA);
+                    indices.push(topA, topB, botB);
+                }
+
+                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
+                geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
+                geometry.setIndex(indices);
+
+                geometry.computeVertexNormals();
+
+                return new THREE.Mesh(geometry, surfaceMaterial);
+            }
+
+            const volumeMesh = createVolumeMesh(combinedSurfaceFn, 0x90caf9);
+            objects.push(volumeMesh);
+            scene.add(volumeMesh);
+            // Create box geometry with limits in x (hmin, hmax) and z (bmin, bmax)
+            const boxWidth = hmax - hmin;
+            const boxHeight = vmax - vmin;
+            const boxDepth = bmax - bmin;
+            const boxGeometry = new THREE.BoxGeometry(boxWidth, boxHeight, boxDepth);
+
+            // Center the box at the middle of the limits
+            const boxMesh = new THREE.Mesh(boxGeometry, surfaceMaterial);
+            boxMesh.position.set(
+                hmin + boxWidth / 2,
+                vmin + boxHeight / 2,
+                bmin + boxDepth / 2
+            );
+            boxMesh.updateMatrix();
+            objects.push(boxMesh);
+            scene.add(boxMesh);
+
+            // Boolean intersection (conjunction) of volumeMesh and boxMesh
+            // Using ThreeCSG for mesh boolean operations
+
+            try {
+                // Convert meshes to CSG
+                const volumeCSG = CSG.fromMesh(volumeMesh);
+                const boxCSG = CSG.fromMesh(boxMesh);
+                const prismCSG = CSG.fromMesh(prismMesh);
+
+                // Perform intersection: volume ∩ box ∩ prism
+                const intersectCSG = volumeCSG.intersect(boxCSG).subtract(prismCSG);
+
+                // Create mesh from result
+                const intersectMesh = CSG.toMesh(intersectCSG, volumeMesh.matrix, surfaceMaterial);
+                intersectMesh.material = surfaceMaterial;
+                objects.push(intersectMesh);
+                scene.add(intersectMesh);
+
+                // Optionally hide original meshes
+                volumeMesh.visible = false;
+                boxMesh.visible = false;
+                prismMesh.visible = false;
+            } catch (err) {
+                console.warn('CSG intersection failed:', err);
+            }
         };
         
         // Initial generation
