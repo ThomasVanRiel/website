@@ -1,0 +1,29 @@
+Subprocess Grill {
+    Add meat
+    Grill (in butter)
+    Out meat
+    Add beer
+    Cook
+    Out .
+}
+
+Subprocess Bread {
+    Add Bread
+    Add Mustard
+    Smear
+    Out .
+}
+
+Add 2 onion
+Chop
+Sauté (in butter)
+Add meat from Grill
+Add . from Grill
+Add Laurel
+Add Thyme
+Add Cloves
+Add Sirup
+Add . from Bread
+Simmer (on low heat)
+Add Vinegar
+Out
