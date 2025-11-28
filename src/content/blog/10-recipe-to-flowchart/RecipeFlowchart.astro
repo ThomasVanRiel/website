@@ -307,7 +307,7 @@ Out"
         const getRectEdgePoint = (centerX: number, centerY: number, toX: number, toY: number, isIngredient: boolean) => {
           if (isIngredient) {
             // For ingredients, use simple offset
-            const offset = 15;
+            const offset = 20;
             return {
               x: centerX + ((toX - centerX) * offset) / dr,
               y: centerY + ((toY - centerY) * offset) / dr
@@ -427,15 +427,37 @@ Out"
         subprocessLines.forEach((subLine: string, idx: number) => {
           if (subLine.startsWith('Add ')) {
             const ingredient = subLine.substring(4).trim();
-            if (!nodeMap.has(ingredient)) {
-              const id = `node${nodeId++}`;
-              const node: Node = { id, label: ingredient, group: "ingredient" };
-              nodes.push(node);
-              nodeMap.set(ingredient, node);
-            }
-            const ingredientNode = nodeMap.get(ingredient);
-            if (ingredientNode) {
-              pendingSubIngredients.push(ingredientNode);
+            
+            // Check if it's from another subprocess
+            const fromMatch = ingredient.match(/^(.+?)\s+from\s+(\w+)$/);
+            if (fromMatch) {
+              const [, outputName, fromSubprocessName] = fromMatch;
+              const fromSubOutputs = subprocesses.get(fromSubprocessName) || [];
+              
+              // Find the matching output from the other subprocess
+              let fromSubOutput;
+              if (outputName === '.') {
+                fromSubOutput = fromSubOutputs[fromSubOutputs.length - 1];
+              } else {
+                fromSubOutput = fromSubOutputs.find((o: any) => o.name === outputName);
+              }
+              
+              // Add this output node to pending ingredients
+              if (fromSubOutput && fromSubOutput.node) {
+                pendingSubIngredients.push(fromSubOutput.node);
+              }
+            } else {
+              // Regular ingredient
+              if (!nodeMap.has(ingredient)) {
+                const id = `node${nodeId++}`;
+                const node: Node = { id, label: ingredient, group: "ingredient" };
+                nodes.push(node);
+                nodeMap.set(ingredient, node);
+              }
+              const ingredientNode = nodeMap.get(ingredient);
+              if (ingredientNode) {
+                pendingSubIngredients.push(ingredientNode);
+              }
             }
           } else if (subLine.startsWith('Out ')) {
             const outputName = subLine.substring(4).trim();
@@ -452,8 +474,8 @@ Out"
                 
                 subOutputs.push({ node: outputNode, name: outputName });
               } else {
-                // For '.', just use the last process node directly
-                subOutputs.push({ node: subLastNode, name: outputName });
+                // For '.', use the last process node directly
+                subOutputs.push({ node: subLastNode, name: '.' });
               }
             }
           } else {
@@ -533,6 +555,15 @@ Out"
           // Link from last process step
           if (lastProcessNode) {
             addLink(lastProcessNode.id, id);
+          }
+          
+          // Link subprocess outputs if this is their target
+          for (const [subName, outputs] of subprocesses) {
+            outputs.forEach((output: any) => {
+              if (output.pendingLinks && output.pendingLinks.includes(i)) {
+                addLink(output.node.id, id);
+              }
+            });
           }
           
           // Link any immediately preceding ingredients to this final node

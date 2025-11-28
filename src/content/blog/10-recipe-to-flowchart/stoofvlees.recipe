@@ -4,7 +4,7 @@ Subprocess Grill {
     Out meat
     Add beer
     Cook
-    Out .
+    Out sauce
 }
 
 Subprocess Bread {
@@ -18,7 +18,7 @@ Add 2 onion
 Chop
 Sauté (in butter)
 Add meat from Grill
-Add . from Grill
+Add sauce from Grill
 Add Laurel
 Add Thyme
 Add Cloves
