@@ -21,7 +21,9 @@ The generator is still work in progress as e.g. quantities of ingredients are no
 
 ## Recipe syntax[^1]
 
-This example is based on the stoofvlees recipe from [the previous post on the topic](/blog/06-flowchart-recipes).
+These examples are based on the recipes from [the previous post on the topic](/blog/06-flowchart-recipes).
+
+### Flemish beef stew
 ```
 Subprocess Grill {
     Add meat
@@ -51,6 +53,42 @@ Add Sirup
 Add . from Bread
 Simmer (on low heat)
 Add Vinegar
+Out
+```
+
+### Brussels Wafels
+```
+Subprocess A {
+    Add egg
+    Separate
+    Out White
+    Out Yolk
+}
+
+Subprocess B {
+    Add White from A
+    Beat
+    Out .
+}
+
+Subprocess C {
+    Add Butter
+    Melt
+    Out .
+}
+
+Add Yolk from A
+Add Yeast
+Add Milk
+Add Water
+Mix
+Add Flour
+Add . from C
+Mix
+Add . from B
+Mix (Carefully)
+Rest (0.5 to 1 hour)
+Bake
 Out
 ```
 
