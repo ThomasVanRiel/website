@@ -63,8 +63,31 @@ Out"
 <script>
   import * as d3 from 'd3';
 
+  // Type definitions
+  type NodeGroup = 'ingredient' | 'process' | 'output';
+  
+  interface Node {
+    id: string;
+    label: string;
+    group: NodeGroup;
+    x?: number;
+    y?: number;
+    fx?: number | null;
+    fy?: number | null;
+  }
+  
+  interface Link {
+    source: string | Node;
+    target: string | Node;
+  }
+  
+  interface GraphData {
+    nodes: Node[];
+    links: Link[];
+  }
+
   // Default recipe data
-  const defaultRecipeData = {
+  const defaultRecipeData: GraphData = {
     nodes: [
       // Ingredients
       { id: "eggs", label: "2 Eggs", group: "ingredient" },
@@ -99,8 +122,8 @@ Out"
     ]
   };
 
-  let currentData = defaultRecipeData;
-  let svg, simulation, link, node, linkGroup, nodeGroup;
+  let currentData: GraphData = defaultRecipeData;
+  let svg: any, simulation: any, link: any, node: any, linkGroup: any, nodeGroup: any;
 
   const width = 800;
   const height = 800;
@@ -129,7 +152,7 @@ Out"
     svg.append("defs").selectAll("marker")
       .data(["arrowhead"])
       .join("marker")
-      .attr("id", d => d)
+      .attr("id", (d: string) => d)
       .attr("viewBox", "0 0 10 10")
       .attr("refX", 9)
       .attr("refY", 5)
@@ -146,7 +169,7 @@ Out"
     nodeGroup = svg.append("g");
   }
 
-  function renderFlowchart(data) {
+  function renderFlowchart(data: GraphData) {
     currentData = data;
     
     // Create force simulation
@@ -156,11 +179,11 @@ Out"
     
     simulation = d3.forceSimulation(data.nodes)
       .force("link", d3.forceLink(data.links)
-        .id(d => d.id)
+        .id((d: any) => d.id)
         .distance(linkDistance))
       .force("charge", d3.forceManyBody().strength(nodeRepulsion))
       .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius(d => d.group === "ingredient" ? 25 : nodeRadius * 1.3))
+      .force("collision", d3.forceCollide().radius((d: any) => d.group === "ingredient" ? 25 : nodeRadius * 1.3))
       .force("x", d3.forceX(width / 2).strength(0.1))
       .force("y", d3.forceY(height / 2).strength(0.1));
 
@@ -186,7 +209,7 @@ Out"
         .on("end", dragended));
 
     // Add rounded rectangles to nodes (only for non-ingredient nodes)
-    node.filter(d => d.group !== "ingredient")
+    node.filter((d: Node) => d.group !== "ingredient")
       .append("rect")
       .attr("x", -nodeRadius * 1.2)
       .attr("y", -nodeRadius * 0.8)
@@ -194,14 +217,14 @@ Out"
       .attr("height", nodeRadius * 1.6)
       .attr("rx", 8)
       .attr("ry", 8)
-      .attr("fill", d => d.group === "output" ? "var(--output-fill)" : "none")
+      .attr("fill", (d: Node) => d.group === "output" ? "var(--output-fill)" : "none")
       .attr("stroke", "var(--node-stroke)")
       .attr("stroke-width", 2)
       .style("filter", "url(#sketch)")
       .style("cursor", "grab");
 
     // Add invisible overlay for process nodes to make them draggable
-    node.filter(d => d.group === "process")
+    node.filter((d: Node) => d.group === "process")
       .append("rect")
       .attr("x", -nodeRadius * 1.2)
       .attr("y", -nodeRadius * 0.8)
@@ -230,7 +253,7 @@ Out"
       .attr("yChannelSelector", "G");
 
     // Add invisible larger circle for ingredient nodes to make them draggable
-    node.filter(d => d.group === "ingredient")
+    node.filter((d: Node) => d.group === "ingredient")
       .append("circle")
       .attr("r", 20)
       .attr("fill", "transparent")
@@ -245,7 +268,7 @@ Out"
       .attr("fill", "var(--text-color)")
       .style("pointer-events", "none")
       .style("user-select", "none")
-      .each(function(d) {
+      .each(function(this: SVGTextElement, d: Node) {
         const text = d3.select(this);
         
         // Check for clarification in brackets
@@ -289,19 +312,19 @@ Out"
     // Update positions on simulation tick
     simulation.on("tick", () => {
       // Constrain node positions within canvas bounds
-      data.nodes.forEach(d => {
+      data.nodes.forEach((d: Node) => {
         const margin = d.group === "ingredient" ? 30 : nodeRadius * 1.5;
-        d.x = Math.max(margin, Math.min(width - margin, d.x));
-        d.y = Math.max(margin, Math.min(height - margin, d.y));
+        d.x = Math.max(margin, Math.min(width - margin, d.x ?? 0));
+        d.y = Math.max(margin, Math.min(height - margin, d.y ?? 0));
       });
       
-      link.each(function(d) {
+      link.each(function(this: SVGLineElement, d: any) {
         const dx = d.target.x - d.source.x;
         const dy = d.target.y - d.source.y;
         const dr = Math.sqrt(dx * dx + dy * dy);
         
         // Function to calculate intersection with rectangle edge
-        const getRectEdgePoint = (centerX, centerY, toX, toY, isIngredient) => {
+        const getRectEdgePoint = (centerX: number, centerY: number, toX: number, toY: number, isIngredient: boolean) => {
           if (isIngredient) {
             // For ingredients, use simple offset
             const offset = 15;
@@ -352,41 +375,41 @@ Out"
           .attr("y2", targetPoint.y);
       });
 
-      node.attr("transform", d => `translate(${d.x},${d.y})`);
+      node.attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
     });
   }
 
-  // Drag functions  // Drag functions
-  function dragstarted(event) {
+  // Drag functions
+  function dragstarted(event: any) {
     if (!event.active) simulation.alphaTarget(0.3).restart();
     event.subject.fx = event.subject.x;
     event.subject.fy = event.subject.y;
   }
 
-  function dragged(event) {
+  function dragged(event: any) {
     event.subject.fx = event.x;
     event.subject.fy = event.y;
   }
 
-  function dragended(event) {
+  function dragended(event: any) {
     if (!event.active) simulation.alphaTarget(0);
     event.subject.fx = null;
     event.subject.fy = null;
   }
 
   // Parse recipe text input
-  function parseRecipe(text) {
+  function parseRecipe(text: string): GraphData {
     const lines = text.trim().split('\n').filter(line => line.trim());
     
-    const nodes = [];
-    const links = [];
-    const nodeMap = new Map(); // Track nodes by their content
-    const linkSet = new Set(); // Prevent duplicate links
+    const nodes: Node[] = [];
+    const links: Link[] = [];[] = [];
+    const nodeMap = new Map<string, Node>(); // Track nodes by their content
+    const linkSet = new Set<string>(); // Prevent duplicate links
     let nodeId = 0;
-    let lastProcessNode = null;
-    const subprocesses = new Map(); // Track subprocess outputs
+    let lastProcessNode: Node | null = null;
+    const subprocesses = new Map<string, any[]>(); // Track subprocess outputs
     
-    const addLink = (source, target) => {
+    const addLink = (source: string, target: string) => {
       const key = `${source}->${target}`;
       if (!linkSet.has(key)) {
         links.push({ source, target });
@@ -400,7 +423,12 @@ Out"
       
       // Handle subprocess definition
       if (line.startsWith('Subprocess ')) {
-        const subprocessName = line.match(/Subprocess\s+(\w+)/)[1];
+        const match = line.match(/Subprocess\s+(\w+)/);
+        if (!match) {
+          i++;
+          continue;
+        }
+        const subprocessName = match[1];
         const subprocessLines = [];
         i++; // Skip opening brace line
         
@@ -412,27 +440,30 @@ Out"
         }
         
         // Process subprocess
-        let subLastNode = null;
-        let subOutputs = [];
-        let pendingSubIngredients = [];
+        let subLastNode: Node | null = null;
+        let subOutputs: any[] = [];
+        let pendingSubIngredients: Node[] = [];
         
-        subprocessLines.forEach((subLine, idx) => {
+        subprocessLines.forEach((subLine: string, idx: number) => {
           if (subLine.startsWith('Add ')) {
             const ingredient = subLine.substring(4).trim();
             if (!nodeMap.has(ingredient)) {
               const id = `node${nodeId++}`;
-              const node = { id, label: ingredient, group: "ingredient" };
+              const node: Node = { id, label: ingredient, group: "ingredient" };
               nodes.push(node);
               nodeMap.set(ingredient, node);
             }
-            pendingSubIngredients.push(nodeMap.get(ingredient));
+            const ingredientNode = nodeMap.get(ingredient);
+            if (ingredientNode) {
+              pendingSubIngredients.push(ingredientNode);
+            }
           } else if (subLine.startsWith('Out ')) {
             const outputName = subLine.substring(4).trim();
             if (subLastNode) {
               // Create an intermediary ingredient node for named outputs
               if (outputName !== '.') {
                 const outputId = `node${nodeId++}`;
-                const outputNode = { id: outputId, label: outputName, group: "ingredient" };
+                const outputNode: Node = { id: outputId, label: outputName, group: "ingredient" };
                 nodes.push(outputNode);
                 nodeMap.set(`${subprocessName}_${outputName}`, outputNode);
                 
@@ -448,11 +479,11 @@ Out"
           } else {
             // Process step
             const id = `node${nodeId++}`;
-            const node = { id, label: subLine, group: "process" };
+            const node: Node = { id, label: subLine, group: "process" };
             nodes.push(node);
             
             // Link pending ingredients to this step
-            pendingSubIngredients.forEach(ingNode => {
+            pendingSubIngredients.forEach((ingNode: Node) => {
               addLink(ingNode.id, id);
             });
             pendingSubIngredients = [];
@@ -484,7 +515,7 @@ Out"
             // '.' refers to the last output of the subprocess
             subOutput = subOutputs[subOutputs.length - 1];
           } else {
-            subOutput = subOutputs.find(o => o.name === outputName);
+            subOutput = subOutputs.find((o: any) => o.name === outputName);
           }
           
           // Find the next process step and link to it
@@ -506,7 +537,7 @@ Out"
           // Regular ingredient
           if (!nodeMap.has(ingredient)) {
             const id = `node${nodeId++}`;
-            const node = { id, label: ingredient, group: "ingredient" };
+            const node: Node = { id, label: ingredient, group: "ingredient" };
             nodes.push(node);
             nodeMap.set(ingredient, node);
           }
@@ -516,7 +547,7 @@ Out"
         // Check if this is an Out statement at the end (final output)
         if (line.startsWith('Out')) {
           const id = `node${nodeId++}`;
-          const node = { id, label: 'Serve', group: "output" };
+          const node: Node = { id, label: 'Serve', group: "output" };
           nodes.push(node);
           
           // Link from last process step
@@ -529,8 +560,9 @@ Out"
             const prevLine = lines[j].trim();
             if (prevLine.startsWith('Add ') && !prevLine.includes(' from ')) {
               const ingredient = prevLine.substring(4).trim();
-              if (nodeMap.has(ingredient)) {
-                addLink(nodeMap.get(ingredient).id, id);
+              const ingredientNode = nodeMap.get(ingredient);
+              if (ingredientNode) {
+                addLink(ingredientNode.id, id);
               }
             } else if (!prevLine.startsWith('Add ')) {
               break;
@@ -542,8 +574,8 @@ Out"
           // Process step
           const id = `node${nodeId++}`;
           // Check if there's an Out after this line
-          const hasOutAfter = lines.slice(i + 1).some(l => l.trim().startsWith('Out'));
-          const node = { id, label: line, group: hasOutAfter ? "process" : "output" };
+          const hasOutAfter = lines.slice(i + 1).some((l: string) => l.trim().startsWith('Out'));
+          const node: Node = { id, label: line, group: hasOutAfter ? "process" : "output" };
           nodes.push(node);
           
           // Link to previous process step
@@ -556,8 +588,9 @@ Out"
             const prevLine = lines[j].trim();
             if (prevLine.startsWith('Add ') && !prevLine.includes(' from ')) {
               const ingredient = prevLine.substring(4).trim();
-              if (nodeMap.has(ingredient)) {
-                addLink(nodeMap.get(ingredient).id, id);
+              const ingredientNode = nodeMap.get(ingredient);
+              if (ingredientNode) {
+                addLink(ingredientNode.id, id);
               }
             } else if (!prevLine.startsWith('Add ')) {
               break;
@@ -566,7 +599,7 @@ Out"
           
           // Link subprocess outputs if this is their target
           for (const [subName, outputs] of subprocesses) {
-            outputs.forEach(output => {
+            outputs.forEach((output: any) => {
               if (output.pendingLinks && output.pendingLinks.includes(i)) {
                 addLink(output.node.id, id);
               }
@@ -618,20 +651,20 @@ Out`;
   renderFlowchart(parseRecipe(stoofvleesRecipe));
 
   // Set up button handlers
-  document.getElementById('generate-flowchart').addEventListener('click', () => {
-    const input = document.getElementById('recipe-input').value;
+  document.getElementById('generate-flowchart')!.addEventListener('click', () => {
+    const input = (document.getElementById('recipe-input') as HTMLTextAreaElement).value;
     if (input.trim()) {
       const parsedData = parseRecipe(input);
       renderFlowchart(parsedData);
     }
   });
 
-  document.getElementById('save-svg').addEventListener('click', () => {
-    const svgElement = document.querySelector('#recipe-flowchart svg');
+  document.getElementById('save-svg')!.addEventListener('click', () => {
+    const svgElement = document.querySelector('#recipe-flowchart svg') as SVGSVGElement;
     if (!svgElement) return;
     
     // Clone the SVG to avoid modifying the original
-    const svgClone = svgElement.cloneNode(true);
+    const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
     
     // Get the SVG markup
     const svgData = new XMLSerializer().serializeToString(svgClone);
