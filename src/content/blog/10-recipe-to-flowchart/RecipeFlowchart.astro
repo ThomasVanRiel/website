@@ -104,6 +104,9 @@ Out"
   const width = 800;
   const height = 800;
   const nodeRadius = 40;
+  const rectWidthMultiplier = 2.4;
+  const rectHeightMultiplier = 1.2;
+  const rectPadding = 5; // Gap between rectangle edge and links
   const arrowSize = 5;
   const linkDistance = 140;
   const nodeRepulsion = -500;
@@ -122,7 +125,7 @@ Out"
       .attr("width", "100%")
       .attr("height", height)
       .attr("viewBox", [0, 0, width, height])
-      .attr("style", "max-width: 100%; height: auto; font-family: sans-serif;");
+      .attr("style", "max-width: 100%; height: auto;");
 
     // Create arrow marker for directed edges
     svg.append("defs").selectAll("marker")
@@ -159,7 +162,7 @@ Out"
         .distance(linkDistance))
       .force("charge", d3.forceManyBody().strength(nodeRepulsion))
       .force("center", d3.forceCenter(width / 2, height / 2))
-      .force("collision", d3.forceCollide().radius((d: any) => d.group === "ingredient" ? 25 : nodeRadius * 1.3))
+      .force("collision", d3.forceCollide().radius((d: any) => d.group === "ingredient" ? 25 : nodeRadius * Math.max(rectWidthMultiplier, rectHeightMultiplier) / 2))
       .force("x", d3.forceX(width / 2).strength(0.1))
       .force("y", d3.forceY(height / 2).strength(0.1));
 
@@ -187,10 +190,10 @@ Out"
     // Add rounded rectangles to nodes (only for non-ingredient nodes)
     node.filter((d: Node) => d.group !== "ingredient")
       .append("rect")
-      .attr("x", -nodeRadius * 1.2)
-      .attr("y", -nodeRadius * 0.8)
-      .attr("width", nodeRadius * 2.4)
-      .attr("height", nodeRadius * 1.6)
+      .attr("x", -nodeRadius * rectWidthMultiplier / 2)
+      .attr("y", -nodeRadius * rectHeightMultiplier / 2)
+      .attr("width", nodeRadius * rectWidthMultiplier)
+      .attr("height", nodeRadius * rectHeightMultiplier)
       .attr("rx", 8)
       .attr("ry", 8)
       .attr("fill", (d: Node) => d.group === "output" ? "var(--output-fill)" : "none")
@@ -202,10 +205,10 @@ Out"
     // Add invisible overlay for process nodes to make them draggable
     node.filter((d: Node) => d.group === "process")
       .append("rect")
-      .attr("x", -nodeRadius * 1.2)
-      .attr("y", -nodeRadius * 0.8)
-      .attr("width", nodeRadius * 2.4)
-      .attr("height", nodeRadius * 1.6)
+      .attr("x", -nodeRadius * rectWidthMultiplier / 2)
+      .attr("y", -nodeRadius * rectHeightMultiplier / 2)
+      .attr("width", nodeRadius * rectWidthMultiplier)
+      .attr("height", nodeRadius * rectHeightMultiplier)
       .attr("fill", "transparent")
       .attr("stroke", "none")
       .style("cursor", "grab");
@@ -216,15 +219,15 @@ Out"
       .attr("id", "sketch")
       .append("feTurbulence")
       .attr("type", "fractalNoise")
-      .attr("baseFrequency", "0.05")
-      .attr("numOctaves", "3")
+      .attr("baseFrequency", "0.01")
+      .attr("numOctaves", "1")
       .attr("result", "noise");
     
     defs.select("#sketch")
       .append("feDisplacementMap")
       .attr("in", "SourceGraphic")
       .attr("in2", "noise")
-      .attr("scale", "2")
+      .attr("scale", "10")
       .attr("xChannelSelector", "R")
       .attr("yChannelSelector", "G");
 
@@ -240,7 +243,8 @@ Out"
     node.append("text")
       .attr("text-anchor", "middle")
       .attr("dy", "0.3em")
-      .attr("font-size", "12px")
+      .attr("font-size", "16px")
+      .attr("font-family", "xkcd Script, cursive")
       .attr("fill", "var(--text-color)")
       .style("pointer-events", "none")
       .style("user-select", "none")
@@ -262,7 +266,7 @@ Out"
           text.append("tspan")
             .attr("x", 0)
             .attr("dy", "1.2em")
-            .attr("font-size", "10px")
+            .attr("font-size", "14px")
             .attr("fill", "var(--text-muted)")
             .text(`(${clarification})`);
         } else {
@@ -289,7 +293,7 @@ Out"
     simulation.on("tick", () => {
       // Constrain node positions within canvas bounds
       data.nodes.forEach((d: Node) => {
-        const margin = d.group === "ingredient" ? 30 : nodeRadius * 1.5;
+        const margin = d.group === "ingredient" ? 30 : nodeRadius * Math.max(rectWidthMultiplier, rectHeightMultiplier) / 2 * 1.2;
         d.x = Math.max(margin, Math.min(width - margin, d.x ?? 0));
         d.y = Math.max(margin, Math.min(height - margin, d.y ?? 0));
       });
@@ -311,8 +315,8 @@ Out"
           }
           
           // For rectangles
-          const rectWidth = nodeRadius * 2.4;
-          const rectHeight = nodeRadius * 1.6;
+          const rectWidth = nodeRadius * rectWidthMultiplier;
+          const rectHeight = nodeRadius * rectHeightMultiplier;
           const angle = Math.atan2(toY - centerY, toX - centerX);
           
           // Check which edge the line intersects
@@ -322,19 +326,19 @@ Out"
           let edgeX, edgeY;
           if (absAngle < cornerAngle) {
             // Right edge
-            edgeX = centerX + rectWidth / 2;
+            edgeX = centerX + (rectWidth / 2 + rectPadding);
             edgeY = centerY + (edgeX - centerX) * Math.tan(angle);
           } else if (absAngle > Math.PI - cornerAngle) {
             // Left edge
-            edgeX = centerX - rectWidth / 2;
+            edgeX = centerX - (rectWidth / 2 + rectPadding);
             edgeY = centerY + (edgeX - centerX) * Math.tan(angle);
           } else if (angle > 0) {
             // Bottom edge
-            edgeY = centerY + rectHeight / 2;
+            edgeY = centerY + (rectHeight / 2 + rectPadding);
             edgeX = centerX + (edgeY - centerY) / Math.tan(angle);
           } else {
             // Top edge
-            edgeY = centerY - rectHeight / 2;
+            edgeY = centerY - (rectHeight / 2 + rectPadding);
             edgeX = centerX + (edgeY - centerY) / Math.tan(angle);
           }
           
@@ -659,6 +663,14 @@ Out`;
 </script>
 
 <style>
+  @font-face {
+    font-family: "xkcd Script";
+    src: url("/fonts/xkcd-script.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+
   #recipe-flowchart {
     border: 0px solid #e5e7eb;
     border-radius: 0.5rem;
@@ -671,6 +683,10 @@ Out`;
     --text-color: #1f2937;
     --text-muted: #6b7280;
     --output-fill: rgba(156, 163, 175, 0.2);
+  }
+  
+  #recipe-flowchart text {
+    font-family: "xkcd Script", cursive;
   }
   
   :global(.dark) #recipe-flowchart {

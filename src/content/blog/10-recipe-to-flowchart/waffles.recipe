@@ -1,0 +1,17 @@
+Subprocess A {
+Add egg
+Separate white and yolk
+Out White
+Out Yolk
+}
+
+Subprocess B {
+Add White from A
+Beat
+Out .
+}
+
+Add Yolk from A
+Rest
+Add . from B
+Out
