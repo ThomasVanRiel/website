@@ -34,7 +34,6 @@ Out"
     </div>
   </div>
   <div id="recipe-flowchart"></div>
-  <div id="ingredient-list" class="mt-4"></div>
 </div>
 
 <script>
@@ -107,7 +106,7 @@ Out"
   let currentData: GraphData = defaultRecipeData;
   let svg: any, simulation: any, link: any, node: any, linkGroup: any, nodeGroup: any;
 
-  const width = 800;
+  const width = 700;
   const height = 800;
   const nodeRadius = 40;
   const rectWidthMultiplier = 2.4;
@@ -116,6 +115,22 @@ Out"
   const arrowSize = 5;
   const linkDistance = 140;
   const nodeRepulsion = -500;
+  
+  // Font sizes
+  const titleFontSize = 24;
+  const nodeFontSize = 16;
+  const nodeSubtextFontSize = 14;
+  const ingredientListFontSize = 16;
+  
+  // Quadrant dimensions
+  const topRowHeight = 40;
+  const leftColumnWidth = width / 4; // 1 part
+  const rightColumnWidth = (width * 3) / 4; // 3 parts
+  const quadrantHeight = height - topRowHeight;
+  const quadrantPadding = 4; // Padding for quadrant rectangles
+  
+  // Toggle options
+  const showFlowchartBorder = false; // Set to true to show border around flowchart quadrant
 
   // Color scale for different node types
   const colorScale = d3.scaleOrdinal()
@@ -133,6 +148,100 @@ Out"
       .attr("viewBox", [0, 0, width, height])
       .attr("style", "max-width: 100%; height: auto;");
 
+    // Add title blocks
+    // Top-left: Ingredients
+    svg.append("text")
+      .attr("x", leftColumnWidth / 2)
+      .attr("y", 28)
+      .attr("text-anchor", "middle")
+      .attr("font-size", `${titleFontSize}px`)
+      .attr("font-family", "xkcd Script, cursive")
+      .attr("font-weight", "bold")
+      .attr("fill", "var(--text-color)")
+      .text("Ingredients");
+    
+    // Top-right: Instructions
+    svg.append("text")
+      .attr("x", leftColumnWidth + rightColumnWidth / 2)
+      .attr("y", 28)
+      .attr("text-anchor", "middle")
+      .attr("font-size", `${titleFontSize}px`)
+      .attr("font-family", "xkcd Script, cursive")
+      .attr("font-weight", "bold")
+      .attr("fill", "var(--text-color)")
+      .text("Instructions");
+
+    // Add sketch filter for comic style
+    const defs = svg.select("defs").empty() ? svg.append("defs") : svg.select("defs");
+    
+    defs.append("filter")
+      .attr("id", "sketch")
+      .append("feTurbulence")
+      .attr("type", "fractalNoise")
+      .attr("baseFrequency", "0.01")
+      .attr("numOctaves", "1")
+      .attr("result", "noise");
+    
+    defs.select("#sketch")
+      .append("feDisplacementMap")
+      .attr("in", "SourceGraphic")
+      .attr("in2", "noise")
+      .attr("scale", "10")
+      .attr("xChannelSelector", "R")
+      .attr("yChannelSelector", "G");
+
+    // Draw sketch-style rectangles in each quadrant
+    // Top-left quadrant (Ingredients title)
+    svg.append("rect")
+      .attr("x", quadrantPadding)
+      .attr("y", quadrantPadding)
+      .attr("width", leftColumnWidth - 2 * quadrantPadding)
+      .attr("height", topRowHeight - 2 * quadrantPadding)
+      .attr("rx", 5)
+      .attr("fill", "none")
+      .attr("stroke", "var(--border-color)")
+      .attr("stroke-width", 2)
+      .style("filter", "url(#sketch)");
+    
+    // Top-right quadrant (Instructions title)
+    svg.append("rect")
+      .attr("x", leftColumnWidth + quadrantPadding)
+      .attr("y", quadrantPadding)
+      .attr("width", rightColumnWidth - 2 * quadrantPadding)
+      .attr("height", topRowHeight - 2 * quadrantPadding)
+      .attr("rx", 5)
+      .attr("fill", "none")
+      .attr("stroke", "var(--border-color)")
+      .attr("stroke-width", 2)
+      .style("filter", "url(#sketch)");
+    
+    // Bottom-left quadrant (Ingredients list) - will be updated by displayIngredients
+    svg.append("rect")
+      .attr("class", "ingredients-border")
+      .attr("x", quadrantPadding)
+      .attr("y", topRowHeight + quadrantPadding)
+      .attr("width", leftColumnWidth - 2 * quadrantPadding)
+      .attr("height", quadrantHeight - 2 * quadrantPadding)
+      .attr("rx", 5)
+      .attr("fill", "none")
+      .attr("stroke", "var(--border-color)")
+      .attr("stroke-width", 2)
+      .style("filter", "url(#sketch)");
+    
+    // Bottom-right quadrant (Flowchart)
+    if (showFlowchartBorder) {
+      svg.append("rect")
+        .attr("x", leftColumnWidth + quadrantPadding)
+        .attr("y", topRowHeight + quadrantPadding)
+        .attr("width", rightColumnWidth - 2 * quadrantPadding)
+        .attr("height", quadrantHeight - 2 * quadrantPadding)
+        .attr("rx", 5)
+        .attr("fill", "none")
+        .attr("stroke", "var(--border-color)")
+        .attr("stroke-width", 2)
+        .style("filter", "url(#sketch)");
+    }
+
     // Create arrow marker for directed edges
     svg.append("defs").selectAll("marker")
       .data(["arrowhead"])
@@ -149,15 +258,15 @@ Out"
       .attr("fill", "currentColor")
       .style("color", "var(--arrow-color)");
 
-    // Create groups for links and nodes
-    linkGroup = svg.append("g");
-    nodeGroup = svg.append("g");
+    // Create groups for links and nodes (bottom-right quadrant for flowchart)
+    linkGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight})`);
+    nodeGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight})`);
   }
 
   function renderFlowchart(data: GraphData) {
     currentData = data;
     
-    // Create force simulation
+    // Create force simulation (within bottom-right quadrant)
     if (simulation) {
       simulation.stop();
     }
@@ -167,10 +276,10 @@ Out"
         .id((d: any) => d.id)
         .distance(linkDistance))
       .force("charge", d3.forceManyBody().strength(nodeRepulsion))
-      .force("center", d3.forceCenter(width / 2, height / 2))
+      .force("center", d3.forceCenter(rightColumnWidth / 2, quadrantHeight / 2))
       .force("collision", d3.forceCollide().radius((d: any) => d.group === "ingredient" ? 25 : nodeRadius * Math.max(rectWidthMultiplier, rectHeightMultiplier) / 2))
-      .force("x", d3.forceX(width / 2).strength(0.1))
-      .force("y", d3.forceY(height / 2).strength(0.1));
+      .force("x", d3.forceX(rightColumnWidth / 2).strength(0.1))
+      .force("y", d3.forceY((d: any) => d.group === "output" ? quadrantHeight - 80 : quadrantHeight / 2).strength((d: any) => d.group === "output" ? 0.5 : 0.1));
 
     // Create links
     linkGroup.selectAll("*").remove();
@@ -219,24 +328,6 @@ Out"
       .attr("stroke", "none")
       .style("cursor", "grab");
 
-    // Add sketch filter for comic style
-    const defs = svg.select("defs");
-    defs.append("filter")
-      .attr("id", "sketch")
-      .append("feTurbulence")
-      .attr("type", "fractalNoise")
-      .attr("baseFrequency", "0.01")
-      .attr("numOctaves", "1")
-      .attr("result", "noise");
-    
-    defs.select("#sketch")
-      .append("feDisplacementMap")
-      .attr("in", "SourceGraphic")
-      .attr("in2", "noise")
-      .attr("scale", "10")
-      .attr("xChannelSelector", "R")
-      .attr("yChannelSelector", "G");
-
     // Add invisible larger circle for ingredient nodes to make them draggable
     node.filter((d: Node) => d.group === "ingredient")
       .append("circle")
@@ -249,7 +340,7 @@ Out"
     node.append("text")
       .attr("text-anchor", "middle")
       .attr("dy", "0.3em")
-      .attr("font-size", "16px")
+      .attr("font-size", `${nodeFontSize}px`)
       .attr("font-family", "xkcd Script, cursive")
       .attr("fill", "var(--text-color)")
       .style("pointer-events", "none")
@@ -272,7 +363,7 @@ Out"
           text.append("tspan")
             .attr("x", 0)
             .attr("dy", "1.2em")
-            .attr("font-size", "14px")
+            .attr("font-size", `${nodeSubtextFontSize}px`)
             .attr("fill", "var(--text-muted)")
             .text(`(${clarification})`);
         } else {
@@ -297,11 +388,11 @@ Out"
 
     // Update positions on simulation tick
     simulation.on("tick", () => {
-      // Constrain node positions within canvas bounds
+      // Constrain node positions within quadrant bounds
       data.nodes.forEach((d: Node) => {
         const margin = d.group === "ingredient" ? 30 : nodeRadius * Math.max(rectWidthMultiplier, rectHeightMultiplier) / 2 * 1.2;
-        d.x = Math.max(margin, Math.min(width - margin, d.x ?? 0));
-        d.y = Math.max(margin, Math.min(height - margin, d.y ?? 0));
+        d.x = Math.max(margin, Math.min(rightColumnWidth - margin, d.x ?? 0));
+        d.y = Math.max(margin, Math.min(quadrantHeight - margin, d.y ?? 0));
       });
       
       link.each(function(this: SVGLineElement, d: any) {
@@ -705,39 +796,102 @@ Out`;
   const parsedRecipe = parseRecipe(stoofvleesRecipe);
   renderFlowchart(parsedRecipe.graphData);
   displayIngredients(parsedRecipe.ingredients);
+  displayInstructions();
 
   // Function to display ingredients list
   function displayIngredients(ingredients: Ingredient[]) {
-    const listDiv = document.getElementById('ingredient-list')!;
+    // Remove previous ingredient text
+    svg.selectAll(".ingredient-text").remove();
     
     if (ingredients.length === 0) {
-      listDiv.innerHTML = '';
+      // Update border to minimal height when no ingredients
+      svg.select(".ingredients-border")
+        .attr("height", 60);
       return;
     }
     
-    let html = '<div class="border border-gray-300 dark:border-gray-600 rounded-md p-4">';
-    html += '<h3 class="text-lg font-semibold mb-2">Ingredients</h3>';
-    html += '<ul class="list-disc list-inside space-y-1">';
+    // Sort ingredients alphabetically
+    const sortedIngredients = [...ingredients].sort((a, b) => 
+      a.name.localeCompare(b.name)
+    );
     
-    ingredients.forEach(ing => {
+    // Display in bottom-left quadrant
+    const startY = topRowHeight + 40;
+    const lineHeight = 24;
+    const nameX = 20;
+    const amountX = leftColumnWidth - 20; // Right-aligned position
+    
+    sortedIngredients.forEach((ing, index) => {
+      const yPos = startY + index * lineHeight;
+      
+      // Ingredient name (left-aligned)
+      svg.append("text")
+        .attr("class", "ingredient-text")
+        .attr("x", nameX)
+        .attr("y", yPos)
+        .attr("font-size", `${ingredientListFontSize}px`)
+        .attr("font-family", "xkcd Script, cursive")
+        .attr("fill", "var(--text-color)")
+        .text(ing.name);
+      
+      // Amount (right-aligned)
       if (ing.amount) {
-        html += `<li><span class="font-medium">${ing.amount}</span> ${ing.name}</li>`;
-      } else {
-        html += `<li>${ing.name}</li>`;
+        svg.append("text")
+          .attr("class", "ingredient-text")
+          .attr("x", amountX)
+          .attr("y", yPos)
+          .attr("text-anchor", "end")
+          .attr("font-size", `${ingredientListFontSize}px`)
+          .attr("font-family", "xkcd Script, cursive")
+          .attr("fill", "var(--text-muted)")
+          .text(`(${ing.amount})`);
       }
     });
     
-    html += '</ul></div>';
-    listDiv.innerHTML = html;
+    // Update border height to fit the ingredient list
+    const listHeight = sortedIngredients.length * lineHeight + 60; // 60 = startY offset + bottom padding
+    svg.select(".ingredients-border")
+      .attr("height", Math.min(listHeight, quadrantHeight - 2 * quadrantPadding));
+  }
+  
+  // Function to display instructions in top-right quadrant
+  function displayInstructions() {
+    // No instructions to display, only title
+  }
+
+  // Function to update generate button state
+  function updateGenerateButtonState() {
+    const input = (document.getElementById('recipe-input') as HTMLTextAreaElement).value;
+    const button = document.getElementById('generate-flowchart') as HTMLButtonElement;
+    const hasContent = input.trim().length > 0;
+    
+    button.disabled = !hasContent;
+    if (!hasContent) {
+      button.classList.add('opacity-50', 'cursor-not-allowed');
+      button.classList.remove('hover:bg-blue-600');
+    } else {
+      button.classList.remove('opacity-50', 'cursor-not-allowed');
+      button.classList.add('hover:bg-blue-600');
+    }
   }
 
   // Set up button handlers
+  const recipeInput = document.getElementById('recipe-input') as HTMLTextAreaElement;
+  
+  // Update button state on input
+  recipeInput.addEventListener('input', updateGenerateButtonState);
+  
+  // Initial button state check
+  updateGenerateButtonState();
+  
   document.getElementById('generate-flowchart')!.addEventListener('click', () => {
-    const input = (document.getElementById('recipe-input') as HTMLTextAreaElement).value;
+    const input = recipeInput.value;
     if (input.trim()) {
+      initSVG();
       const parsedRecipe = parseRecipe(input);
       renderFlowchart(parsedRecipe.graphData);
       displayIngredients(parsedRecipe.ingredients);
+      displayInstructions();
     }
   });
 
@@ -785,6 +939,7 @@ Out`;
     --text-color: #1f2937;
     --text-muted: #6b7280;
     --output-fill: rgba(156, 163, 175, 0.2);
+    --border-color: #333;
   }
   
   #recipe-flowchart text {
@@ -801,5 +956,6 @@ Out`;
     --text-color: #f3f4f6;
     --text-muted: #9ca3af;
     --output-fill: rgba(156, 163, 175, 0.15);
+    --border-color: #e5e7eb;
   }
 </style>

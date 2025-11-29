@@ -1,6 +1,6 @@
 Subprocess A {
     Add egg {1}
-    Separate white and yolk
+    Separate
     Out White
     Out Yolk
 }

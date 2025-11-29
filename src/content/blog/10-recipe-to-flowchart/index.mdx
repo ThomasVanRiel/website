@@ -15,8 +15,6 @@ Building on the idea that [recipes should be flowcharts](/blog/06-flowchart-reci
 Using D3.js, a node network is generated from a recipe. The process steps and ingredients are dragable for flexibility and clarity.
 Fill in your recipe in the text box (see example syntax below) and click <kbd>Generate Flowchart</kbd>.
 
-The generator is still work in progress as e.g. quantities of ingredients are not yet included. As always, constructive feedback is appreciated.
-
 <RecipeFlowchart />
 
 ## Recipe syntax[^1]
@@ -24,7 +22,7 @@ The generator is still work in progress as e.g. quantities of ingredients are no
 These examples are based on the recipes from [the previous post on the topic](/blog/06-flowchart-recipes).
 
 ### Flemish beef stew
-```javascript
+```python
 Subprocess Grill {
     Add meat {1 kg}
     Grill (in butter)
@@ -57,10 +55,10 @@ Out
 ```
 
 ### Brussels Wafels
-```javascript
+```python
 Subprocess A {
     Add egg {1}
-    Separate white and yolk
+    Separate
     Out White
     Out Yolk
 }
@@ -86,7 +84,7 @@ Add Flour {150 g}
 Add . from C
 Mix
 Add . from B
-Mix Carefully
+Mix (Carefully)
 Bake
 Out
 ```
