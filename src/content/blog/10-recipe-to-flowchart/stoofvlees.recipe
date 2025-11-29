@@ -1,28 +1,28 @@
 Subprocess Grill {
-    Add meat
+    Add meat {1 kg}
     Grill (in butter)
     Out meat
-    Add beer
+    Add Beer {2 bottles}
     Cook
     Out sauce
 }
 
 Subprocess Bread {
-    Add Bread
-    Add Mustard
+    Add Bread {1 slice}
+    Add Mustard {2 Tb.}
     Smear
     Out .
 }
 
-Add 2 onion
+Add Onion {2}
 Chop
 Sauté (in butter)
 Add meat from Grill
 Add sauce from Grill
 Add Laurel
 Add Thyme
-Add Cloves
-Add Sirup
+Add Cloves {1}
+Add Sirup {1 Tb.}
 Add . from Bread
 Simmer (on low heat)
 Add Vinegar

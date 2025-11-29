@@ -34,6 +34,7 @@ Out"
     </div>
   </div>
   <div id="recipe-flowchart"></div>
+  <div id="ingredient-list" class="mt-4"></div>
 </div>
 
 <script>
@@ -60,6 +61,11 @@ Out"
   interface GraphData {
     nodes: Node[];
     links: Link[];
+  }
+
+  interface Ingredient {
+    name: string;
+    amount: string;
   }
 
   // Default recipe data
@@ -378,11 +384,12 @@ Out"
   }
 
   // Parse recipe text input
-  function parseRecipe(text: string): GraphData {
+  function parseRecipe(text: string): { graphData: GraphData; ingredients: Ingredient[] } {
     const lines = text.trim().split('\n').filter(line => line.trim());
     
     const nodes: Node[] = [];
-    const links: Link[] = [];[] = [];
+    const links: Link[] = [];
+    const ingredients: Ingredient[] = [];
     const nodeMap = new Map<string, Node>(); // Track nodes by their content
     const linkSet = new Set<string>(); // Prevent duplicate links
     let nodeId = 0;
@@ -426,7 +433,20 @@ Out"
         
         subprocessLines.forEach((subLine: string, idx: number) => {
           if (subLine.startsWith('Add ')) {
-            const ingredient = subLine.substring(4).trim();
+            let ingredient = subLine.substring(4).trim();
+            let amount = '';
+            
+            // Extract amount in curly braces if present (format: Add ingredient {amount})
+            const amountMatch = ingredient.match(/^(.+?)\s*\{([^}]+)\}$/);
+            if (amountMatch) {
+              ingredient = amountMatch[1].trim();
+              amount = amountMatch[2].trim();
+            }
+            
+            // Add to ingredients list if not from a subprocess
+            if (!ingredient.includes(' from ')) {
+              ingredients.push({ name: ingredient, amount });
+            }
             
             // Check if it's from another subprocess
             const fromMatch = ingredient.match(/^(.+?)\s+from\s+(\w+)$/);
@@ -503,7 +523,20 @@ Out"
         subprocesses.set(subprocessName, subOutputs);
         
       } else if (line.startsWith('Add ')) {
-        const ingredient = line.substring(4).trim();
+        let ingredient = line.substring(4).trim();
+        let amount = '';
+        
+        // Extract amount in curly braces if present (format: Add ingredient {amount})
+        const amountMatch = ingredient.match(/^(.+?)\s*\{([^}]+)\}$/);
+        if (amountMatch) {
+          ingredient = amountMatch[1].trim();
+          amount = amountMatch[2].trim();
+        }
+        
+        // Add to ingredients list if not from a subprocess
+        if (!ingredient.includes(' from ')) {
+          ingredients.push({ name: ingredient, amount });
+        }
         
         // Check if it's from a subprocess
         const fromMatch = ingredient.match(/^(.+?)\s+from\s+(\w+)$/);
@@ -570,7 +603,12 @@ Out"
           for (let j = i - 1; j >= 0; j--) {
             const prevLine = lines[j].trim();
             if (prevLine.startsWith('Add ') && !prevLine.includes(' from ')) {
-              const ingredient = prevLine.substring(4).trim();
+              let ingredient = prevLine.substring(4).trim();
+              // Remove amount if present
+              const amountMatch = ingredient.match(/^(.+?)\s*\{([^}]+)\}$/);
+              if (amountMatch) {
+                ingredient = amountMatch[1].trim();
+              }
               const ingredientNode = nodeMap.get(ingredient);
               if (ingredientNode) {
                 addLink(ingredientNode.id, id);
@@ -598,7 +636,12 @@ Out"
           for (let j = i - 1; j >= 0; j--) {
             const prevLine = lines[j].trim();
             if (prevLine.startsWith('Add ') && !prevLine.includes(' from ')) {
-              const ingredient = prevLine.substring(4).trim();
+              let ingredient = prevLine.substring(4).trim();
+              // Remove amount if present
+              const amountMatch = ingredient.match(/^(.+?)\s*\{([^}]+)\}$/);
+              if (amountMatch) {
+                ingredient = amountMatch[1].trim();
+              }
               const ingredientNode = nodeMap.get(ingredient);
               if (ingredientNode) {
                 addLink(ingredientNode.id, id);
@@ -624,49 +667,77 @@ Out"
       i++;
     }
     
-    return { nodes, links };
+    return { graphData: { nodes, links }, ingredients };
   }
 
   // Initialize with stoofvlees recipe
   const stoofvleesRecipe = `Subprocess Grill {
-    Add meat
+    Add meat {1 kg}
     Grill (in butter)
     Out meat
-    Add beer
+    Add Beer {2 bottles}
     Cook
-    Out .
+    Out sauce
 }
 
 Subprocess Bread {
-    Add Bread
-    Add Mustard
+    Add Bread {1 slice}
+    Add Mustard {2 Tb.}
     Smear
     Out .
 }
 
-Add 2 onion
+Add Onion {2}
 Chop
 Sauté (in butter)
 Add meat from Grill
-Add . from Grill
+Add sauce from Grill
 Add Laurel
 Add Thyme
-Add Cloves
-Add Sirup
+Add Cloves {1}
+Add Sirup {1 Tb.}
 Add . from Bread
 Simmer (on low heat)
 Add Vinegar
 Out`;
 
   initSVG();
-  renderFlowchart(parseRecipe(stoofvleesRecipe));
+  const parsedRecipe = parseRecipe(stoofvleesRecipe);
+  renderFlowchart(parsedRecipe.graphData);
+  displayIngredients(parsedRecipe.ingredients);
+
+  // Function to display ingredients list
+  function displayIngredients(ingredients: Ingredient[]) {
+    const listDiv = document.getElementById('ingredient-list')!;
+    
+    if (ingredients.length === 0) {
+      listDiv.innerHTML = '';
+      return;
+    }
+    
+    let html = '<div class="border border-gray-300 dark:border-gray-600 rounded-md p-4">';
+    html += '<h3 class="text-lg font-semibold mb-2">Ingredients</h3>';
+    html += '<ul class="list-disc list-inside space-y-1">';
+    
+    ingredients.forEach(ing => {
+      if (ing.amount) {
+        html += `<li><span class="font-medium">${ing.amount}</span> ${ing.name}</li>`;
+      } else {
+        html += `<li>${ing.name}</li>`;
+      }
+    });
+    
+    html += '</ul></div>';
+    listDiv.innerHTML = html;
+  }
 
   // Set up button handlers
   document.getElementById('generate-flowchart')!.addEventListener('click', () => {
     const input = (document.getElementById('recipe-input') as HTMLTextAreaElement).value;
     if (input.trim()) {
-      const parsedData = parseRecipe(input);
-      renderFlowchart(parsedData);
+      const parsedRecipe = parseRecipe(input);
+      renderFlowchart(parsedRecipe.graphData);
+      displayIngredients(parsedRecipe.ingredients);
     }
   });
 

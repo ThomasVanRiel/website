@@ -1,5 +1,5 @@
 Subprocess A {
-    Add egg
+    Add egg {1}
     Separate white and yolk
     Out White
     Out Yolk
@@ -12,17 +12,17 @@ Subprocess B {
 }
 
 Subprocess C {
-    Add Butter
+    Add Butter {50 g}
     Melt
     Out .
 }
 
 Add Yolk from A
-Add Yeast
-Add Milk
-Add Water
+Add Yeast {6 g}
+Add Milk {125 g}
+Add Water {125 g}
 Mix
-Add Flour
+Add Flour {150 g}
 Add . from C
 Mix
 Add . from B

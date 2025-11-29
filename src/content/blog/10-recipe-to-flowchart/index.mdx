@@ -24,32 +24,32 @@ The generator is still work in progress as e.g. quantities of ingredients are no
 These examples are based on the recipes from [the previous post on the topic](/blog/06-flowchart-recipes).
 
 ### Flemish beef stew
-```
+```javascript
 Subprocess Grill {
-    Add meat
+    Add meat {1 kg}
     Grill (in butter)
     Out meat
-    Add beer
+    Add Beer {2 bottles}
     Cook
-    Out .
+    Out sauce
 }
 
 Subprocess Bread {
-    Add Bread
-    Add Mustard
+    Add Bread {1 slice}
+    Add Mustard {2 Tb.}
     Smear
     Out .
 }
 
-Add 2 onion
+Add Onion {2}
 Chop
 Sauté (in butter)
 Add meat from Grill
-Add . from Grill
+Add sauce from Grill
 Add Laurel
 Add Thyme
-Add Cloves
-Add Sirup
+Add Cloves {1}
+Add Sirup {1 Tb.}
 Add . from Bread
 Simmer (on low heat)
 Add Vinegar
@@ -57,10 +57,10 @@ Out
 ```
 
 ### Brussels Wafels
-```
+```javascript
 Subprocess A {
-    Add egg
-    Separate
+    Add egg {1}
+    Separate white and yolk
     Out White
     Out Yolk
 }
@@ -72,22 +72,21 @@ Subprocess B {
 }
 
 Subprocess C {
-    Add Butter
+    Add Butter {50 g}
     Melt
     Out .
 }
 
 Add Yolk from A
-Add Yeast
-Add Milk
-Add Water
+Add Yeast {6 g}
+Add Milk {125 g}
+Add Water {125 g}
 Mix
-Add Flour
+Add Flour {150 g}
 Add . from C
 Mix
 Add . from B
-Mix (Carefully)
-Rest (0.5 to 1 hour)
+Mix Carefully
 Bake
 Out
 ```
