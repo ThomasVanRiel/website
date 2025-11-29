@@ -2,8 +2,7 @@
 // AI Notice: Mainly vibecoded
 // TODO: Refactor to separate JS logic into its own file for better maintainability
 // TODO: Add voronoi background based on node positions to indicate the cooking utensil zones
-// TODO: Relax the flowchart layout to reduce edge crossings and improve readability\
-// TODO: Add save options for PNG and PDF formats
+// TODO: Relax the flowchart layout to reduce edge crossings and improve readability
 ---
 
 
@@ -35,6 +34,13 @@ Out"
       >
         Save as SVG
       </button>
+      <button
+        id="save-png"
+        class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors"
+      >
+        Save as PNG
+      </button>
+      
     </div>
   </div>
   <div id="recipe-flowchart"></div>
@@ -110,6 +116,7 @@ Out"
 
   let currentData: GraphData = defaultRecipeData;
   let svg: any, simulation: any, link: any, node: any, linkGroup: any, nodeGroup: any;
+  let voronoiGroup: any;
   let rc: any; // Rough.js renderer
 
   const width = 700;
@@ -272,6 +279,9 @@ Out"
       .attr("stroke", arrowColor);
 
     // Create groups for links and nodes (bottom-right quadrant for flowchart)
+    // Voronoi background group (rendered first so it's behind links/nodes)
+    voronoiGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight})`).attr('class', 'voronoi-bg');
+
     linkGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight})`);
     nodeGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight})`);
   }
@@ -318,6 +328,18 @@ Out"
         .on("start", dragstarted)
         .on("drag", dragged)
         .on("end", dragended));
+
+    // Create/update Voronoi cells for process nodes
+    const processNodes = data.nodes.filter((d: Node) => d.group === 'process');
+
+    voronoiGroup.selectAll('path').remove();
+    voronoiGroup.selectAll('path')
+      .data(processNodes, (d: any) => d.id)
+      .join('path')
+      .attr('class', 'voronoi-cell')
+      .attr('fill', (_d: any, i: number) => `hsla(${(i * 47) % 360},60%,60%,0.10)`)
+      .attr('stroke', 'none')
+      .style('pointer-events', 'none');
 
     // Add rounded rectangles to nodes (only for non-ingredient nodes)
     node.filter((d: Node) => d.group !== "ingredient")
@@ -434,6 +456,25 @@ Out"
         d.x = Math.max(margin, Math.min(rightColumnWidth - margin, d.x ?? 0));
         d.y = Math.max(margin, Math.min(quadrantHeight - margin, d.y ?? 0));
       });
+
+      // Update Voronoi polygons based on current process node positions
+      try {
+        const points = processNodes.map((n: any) => [n.x ?? 0, n.y ?? 0]);
+        if (points.length > 0) {
+          const delaunay = d3.Delaunay.from(points);
+          const voronoi = delaunay.voronoi([0, 0, rightColumnWidth, quadrantHeight]);
+
+          voronoiGroup.selectAll('path')
+            .data(processNodes, (d: any) => d.id)
+            .attr('d', (_d: any, i: number) => {
+              const cell = voronoi.cellPolygon(i);
+              if (!cell) return '';
+              return 'M' + cell.map((p: any) => `${p[0]},${p[1]}`).join('L') + 'Z';
+            });
+        }
+      } catch (e) {
+        // Voronoi calculation can fail briefly while nodes are NaN during simulation start; ignore
+      }
       
       link.each(function(this: SVGLineElement, d: any) {
         const dx = d.target.x - d.source.x;
@@ -985,6 +1026,93 @@ Out`;
     document.body.removeChild(link);
     URL.revokeObjectURL(url);
   });
+  
+  // Helper: rasterize an SVG element into a canvas (returns Promise<HTMLCanvasElement>)
+  function exportSVGToCanvas(svgElement: SVGSVGElement, scale = (window.devicePixelRatio || 1)) {
+    return new Promise<HTMLCanvasElement>((resolve, reject) => {
+      // Clone to avoid mutating original
+      const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
+
+      // Determine intrinsic size from viewBox if available
+      const vb = svgElement.viewBox && svgElement.viewBox.baseVal;
+      const intrinsicWidth = (vb && vb.width) ? vb.width : (svgElement.clientWidth || width);
+      const intrinsicHeight = (vb && vb.height) ? vb.height : (svgElement.clientHeight || height);
+
+      svgClone.setAttribute('width', String(intrinsicWidth));
+      svgClone.setAttribute('height', String(intrinsicHeight));
+
+      const serialized = new XMLSerializer().serializeToString(svgClone);
+      const blob = new Blob([serialized], { type: 'image/svg+xml;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const img = new Image();
+
+      img.onload = () => {
+        try {
+          const canvas = document.createElement('canvas');
+          canvas.width = Math.round(intrinsicWidth * scale);
+          canvas.height = Math.round(intrinsicHeight * scale);
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Could not get canvas context');
+          // Scale so image renders crisply on high-DPI screens
+          ctx.setTransform(scale, 0, 0, scale, 0, 0);
+          ctx.drawImage(img, 0, 0);
+          URL.revokeObjectURL(url);
+          resolve(canvas);
+        } catch (err) {
+          URL.revokeObjectURL(url);
+          reject(err);
+        }
+      };
+
+      img.onerror = (e) => {
+        URL.revokeObjectURL(url);
+        reject(e);
+      };
+
+      // Use a data URL for CORS-safe rendering when possible
+      img.src = url;
+    });
+  }
+
+  // Download as PNG
+  async function downloadPNG(svgElement: SVGSVGElement) {
+    try {
+      const canvas = await exportSVGToCanvas(svgElement);
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'recipe-flowchart.png';
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        URL.revokeObjectURL(url);
+      }, 'image/png');
+    } catch (err) {
+      // Fallback: download SVG if rasterization fails
+      console.error('PNG export failed, falling back to SVG:', err);
+      const blob = new Blob([new XMLSerializer().serializeToString(svgElement)], { type: 'image/svg+xml' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'recipe-flowchart.svg';
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    }
+  }
+
+  
+
+  // Wire up new buttons
+  document.getElementById('save-png')!.addEventListener('click', async () => {
+    const svgElement = document.querySelector('#recipe-flowchart svg') as SVGSVGElement;
+    if (!svgElement) return;
+    await downloadPNG(svgElement);
+  });
+  
 </script>
 
 <style>
