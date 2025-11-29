@@ -1,0 +1,1025 @@
+---
+// AI Notice: Mainly vibecoded
+// TODO: Refactor to separate JS logic into its own file for better maintainability
+// TODO: Add voronoi background based on node positions to indicate the cooking utensil zones
+---
+
+
+<div class="my-8">
+  <div class="mb-4">
+    <label for="recipe-input" class="block text-sm font-medium mb-2">
+      Enter a recipe (one step per line):
+    </label>
+    <textarea
+      id="recipe-input"
+      rows="8"
+      class="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-md dark:bg-gray-800 dark:text-gray-100 font-mono text-sm"
+      placeholder="Add PO-TA-TOES
+Boil 'em
+Mash 'em
+Stick 'em in a stew
+Out"
+    ></textarea>
+    <div class="flex gap-2 mt-2">
+      <button
+        id="generate-flowchart"
+        class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+      >
+        Generate Flowchart
+      </button>
+      <button
+        id="save-svg"
+        class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors"
+      >
+        Save as SVG
+      </button>
+    </div>
+  </div>
+  <div id="recipe-flowchart"></div>
+</div>
+
+<script>
+  import * as d3 from 'd3';
+  import rough from 'roughjs';
+
+  // Type definitions
+  type NodeGroup = 'ingredient' | 'process' | 'output';
+  
+  interface Node {
+    id: string;
+    label: string;
+    group: NodeGroup;
+    x?: number;
+    y?: number;
+    fx?: number | null;
+    fy?: number | null;
+  }
+  
+  interface Link {
+    source: string | Node;
+    target: string | Node;
+  }
+  
+  interface GraphData {
+    nodes: Node[];
+    links: Link[];
+  }
+
+  interface Ingredient {
+    name: string;
+    amount: string;
+  }
+
+  // Default recipe data
+  const defaultRecipeData: GraphData = {
+    nodes: [
+      // Ingredients
+      { id: "eggs", label: "2 Eggs", group: "ingredient" },
+      { id: "butter", label: "Butter", group: "ingredient" },
+      { id: "salt", label: "Salt", group: "ingredient" },
+      { id: "pepper", label: "Pepper", group: "ingredient" },
+      
+      // Processes
+      { id: "crack", label: "Crack eggs", group: "process" },
+      { id: "whisk", label: "Whisk", group: "process" },
+      { id: "heat", label: "Heat pan", group: "process" },
+      { id: "melt", label: "Melt butter", group: "process" },
+      { id: "pour", label: "Pour eggs", group: "process" },
+      { id: "scramble", label: "Scramble (2 min)", group: "process" },
+      { id: "season", label: "Season", group: "process" },
+      
+      // Output
+      { id: "serve", label: "Serve", group: "output" }
+    ],
+    links: [
+      { source: "eggs", target: "crack" },
+      { source: "crack", target: "whisk" },
+      { source: "whisk", target: "pour" },
+      { source: "butter", target: "heat" },
+      { source: "heat", target: "melt" },
+      { source: "melt", target: "pour" },
+      { source: "pour", target: "scramble" },
+      { source: "scramble", target: "season" },
+      { source: "salt", target: "season" },
+      { source: "pepper", target: "season" },
+      { source: "season", target: "serve" }
+    ]
+  };
+
+  let currentData: GraphData = defaultRecipeData;
+  let svg: any, simulation: any, link: any, node: any, linkGroup: any, nodeGroup: any;
+  let rc: any; // Rough.js renderer
+
+  const width = 700;
+  const height = 800;
+  const nodeRadius = 40;
+  const rectWidthMultiplier = 2.4;
+  const rectHeightMultiplier = 1.2;
+  const rectPadding = 5; // Gap between rectangle edge and links
+  const arrowSize = 5;
+  const linkDistance = 140;
+  const nodeRepulsion = -500;
+  
+  // Font sizes
+  const titleFontSize = 24;
+  const nodeFontSize = 16;
+  const nodeSubtextFontSize = 14;
+  const ingredientListFontSize = 16;
+  
+  // Quadrant dimensions
+  const topRowHeight = 40;
+  const leftColumnWidth = width / 4; // 1 part
+  const rightColumnWidth = (width * 3) / 4; // 3 parts
+  const quadrantHeight = height - topRowHeight;
+  const quadrantPadding = 4; // Padding for quadrant rectangles
+  
+  // Rough.js sketch style parameters
+  const sketchStrokeWidth = 1;
+  const sketchRoughness = 1.5;
+  const sketchBowing = 1.5;
+  const sketchFillStyle = 'zigzag'; // Fill style for output nodes: 'hachure', 'solid', 'zigzag', 'cross-hatch', 'dots', 'dashed', 'zigzag-line'
+  
+  // Toggle options
+  const showFlowchartBorder = false; // Set to true to show border around flowchart quadrant
+
+  // Color scale for different node types
+  const colorScale = d3.scaleOrdinal()
+    .domain(["ingredient", "process", "output"])
+    .range(["#93c5fd", "#fcd34d", "#86efac"]);
+
+  function initSVG() {
+    d3.select("#recipe-flowchart").selectAll("*").remove();
+    
+    // Create SVG
+    svg = d3.select("#recipe-flowchart")
+      .append("svg")
+      .attr("width", "100%")
+      .attr("height", height)
+      .attr("viewBox", [0, 0, width, height])
+      .attr("style", "max-width: 100%; height: auto;");
+
+    // Initialize Rough.js
+    rc = rough.svg(svg.node());
+
+    // Add title blocks
+    // Top-left: Ingredients
+    svg.append("text")
+      .attr("x", leftColumnWidth / 2)
+      .attr("y", 28)
+      .attr("text-anchor", "middle")
+      .attr("font-size", `${titleFontSize}px`)
+      .attr("font-family", "xkcd Script, cursive")
+      .attr("font-weight", "bold")
+      .attr("fill", "var(--text-color)")
+      .text("Ingredients");
+    
+    // Top-right: Instructions
+    svg.append("text")
+      .attr("x", leftColumnWidth + rightColumnWidth / 2)
+      .attr("y", 28)
+      .attr("text-anchor", "middle")
+      .attr("font-size", `${titleFontSize}px`)
+      .attr("font-family", "xkcd Script, cursive")
+      .attr("font-weight", "bold")
+      .attr("fill", "var(--text-color)")
+      .text("Instructions");
+
+    // Get computed border color and node stroke color
+    const borderColor = 'currentColor';
+    const nodeStrokeColor = 'currentColor';
+
+    // Draw sketch-style rectangles using Rough.js with dynamic CSS colors
+    // Top-left quadrant (Ingredients title)
+    const topLeftRect = rc.rectangle(
+      quadrantPadding,
+      quadrantPadding,
+      leftColumnWidth - 2 * quadrantPadding,
+      topRowHeight - 2 * quadrantPadding,
+      {
+        stroke: borderColor,
+        strokeWidth: sketchStrokeWidth,
+        roughness: sketchRoughness,
+        bowing: sketchBowing
+      }
+    );
+    svg.node().appendChild(topLeftRect);
+
+    // Top-right quadrant (Instructions title)
+    const topRightRect = rc.rectangle(
+      leftColumnWidth + quadrantPadding,
+      quadrantPadding,
+      rightColumnWidth - 2 * quadrantPadding,
+      topRowHeight - 2 * quadrantPadding,
+      {
+        stroke: borderColor,
+        strokeWidth: sketchStrokeWidth,
+        roughness: sketchRoughness,
+        bowing: sketchBowing
+      }
+    );
+    svg.node().appendChild(topRightRect);
+
+    // Bottom-left quadrant (Ingredients list) - will be updated by displayIngredients
+    const bottomLeftRect = rc.rectangle(
+      quadrantPadding,
+      topRowHeight + quadrantPadding,
+      leftColumnWidth - 2 * quadrantPadding,
+      quadrantHeight - 2 * quadrantPadding,
+      {
+        stroke: borderColor,
+        strokeWidth: sketchStrokeWidth,
+        roughness: sketchRoughness,
+        bowing: sketchBowing
+      }
+    );
+    bottomLeftRect.classList.add('ingredients-border');
+    svg.node().appendChild(bottomLeftRect);
+
+    // Bottom-right quadrant (Flowchart)
+    if (showFlowchartBorder) {
+      const bottomRightRect = rc.rectangle(
+        leftColumnWidth + quadrantPadding,
+        topRowHeight + quadrantPadding,
+        rightColumnWidth - 2 * quadrantPadding,
+        quadrantHeight - 2 * quadrantPadding,
+        {
+          stroke: borderColor,
+          strokeWidth: sketchStrokeWidth,
+          roughness: sketchRoughness,
+          bowing: sketchBowing
+        }
+      );
+      svg.node().appendChild(bottomRightRect);
+    }
+
+    // Create arrow marker for directed edges with explicit color
+    const arrowColor = 'currentColor';
+    svg.append("defs").selectAll("marker")
+      .data(["arrowhead"])
+      .join("marker")
+      .attr("id", (d: string) => d)
+      .attr("viewBox", "0 0 10 10")
+      .attr("refX", 9)
+      .attr("refY", 5)
+      .attr("markerWidth", arrowSize)
+      .attr("markerHeight", arrowSize)
+      .attr("orient", "auto-start-reverse")
+      .append("path")
+      .attr("d", "M 0 0 L 10 5 L 0 10 z")
+      .attr("fill", arrowColor)
+      .attr("stroke", arrowColor);
+
+    // Create groups for links and nodes (bottom-right quadrant for flowchart)
+    linkGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight})`);
+    nodeGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight})`);
+  }
+
+  function renderFlowchart(data: GraphData) {
+        // Get node stroke color from CSS variable for current theme
+        const nodeStrokeColor = 'currentColor';
+    currentData = data;
+    
+    // Create force simulation (within bottom-right quadrant)
+    if (simulation) {
+      simulation.stop();
+    }
+    
+    simulation = d3.forceSimulation(data.nodes)
+      .force("link", d3.forceLink(data.links)
+        .id((d: any) => d.id)
+        .distance(linkDistance))
+      .force("charge", d3.forceManyBody().strength(nodeRepulsion))
+      .force("center", d3.forceCenter(rightColumnWidth / 2, quadrantHeight / 2))
+      .force("collision", d3.forceCollide().radius((d: any) => d.group === "ingredient" ? 25 : nodeRadius * Math.max(rectWidthMultiplier, rectHeightMultiplier) / 2))
+      .force("x", d3.forceX(rightColumnWidth / 2).strength(0.1))
+      .force("y", d3.forceY((d: any) => d.group === "output" ? quadrantHeight - 80 : quadrantHeight / 2).strength((d: any) => d.group === "output" ? 0.5 : 0.1));
+
+    // Create links
+    linkGroup.selectAll("*").remove();
+    const linkColor = 'currentColor';
+    link = linkGroup
+      .selectAll("line")
+      .data(data.links)
+      .join("line")
+      .attr("stroke", linkColor)
+      .attr("stroke-width", 2)
+      .attr("color", linkColor)
+      .attr("marker-end", "url(#arrowhead)");
+
+    // Create nodes
+    nodeGroup.selectAll("*").remove();
+    node = nodeGroup
+      .selectAll("g")
+      .data(data.nodes)
+      .join("g")
+      .call(d3.drag()
+        .on("start", dragstarted)
+        .on("drag", dragged)
+        .on("end", dragended));
+
+    // Add rounded rectangles to nodes (only for non-ingredient nodes)
+    node.filter((d: Node) => d.group !== "ingredient")
+      .each(function(this: SVGGElement, d: Node) {
+        const g = d3.select(this);
+        const rectWidth = nodeRadius * rectWidthMultiplier;
+        const rectHeight = nodeRadius * rectHeightMultiplier;
+        const x = -rectWidth / 2;
+        const y = -rectHeight / 2;
+
+        // Get stroke and fill color based on node type and current theme
+        const strokeColor = nodeStrokeColor;
+        const fillColor = d.group === "output" ? 'rgba(0, 91, 249, 0.2)' : 'none';
+
+        // Create rough rectangle
+        const roughRect = rc.rectangle(x, y, rectWidth, rectHeight, {
+          stroke: strokeColor,
+          strokeWidth: sketchStrokeWidth,
+          fill: fillColor,
+          fillStyle: d.group === "output" ? sketchFillStyle : 'solid',
+          roughness: sketchRoughness,
+          bowing: sketchBowing
+        });
+
+        this.appendChild(roughRect);
+        roughRect.style.cursor = 'grab';
+      });
+
+    // Add invisible overlay for process nodes to make them draggable
+    node.filter((d: Node) => d.group === "process")
+      .append("rect")
+      .attr("x", -nodeRadius * rectWidthMultiplier / 2)
+      .attr("y", -nodeRadius * rectHeightMultiplier / 2)
+      .attr("width", nodeRadius * rectWidthMultiplier)
+      .attr("height", nodeRadius * rectHeightMultiplier)
+      .attr("fill", "transparent")
+      .attr("stroke", "none")
+      .style("cursor", "grab");
+
+      // Add invisible overlay for output nodes to keep them draggable (for filled/sketch style nodes)
+      node.filter((d: Node) => d.group === "output")
+        .append("rect")
+        .attr("x", -nodeRadius * rectWidthMultiplier / 2)
+        .attr("y", -nodeRadius * rectHeightMultiplier / 2)
+        .attr("width", nodeRadius * rectWidthMultiplier)
+        .attr("height", nodeRadius * rectHeightMultiplier)
+        .attr("fill", "transparent")
+        .attr("stroke", "none")
+        .style("cursor", "grab");
+
+    // Add invisible larger circle for ingredient nodes to make them draggable
+    node.filter((d: Node) => d.group === "ingredient")
+      .append("circle")
+      .attr("r", 20)
+      .attr("fill", "transparent")
+      .attr("stroke", "none")
+      .style("cursor", "grab");
+
+    // Add labels to nodes
+    node.append("text")
+      .attr("text-anchor", "middle")
+      .attr("dy", "0.3em")
+      .attr("font-size", `${nodeFontSize}px`)
+      .attr("font-family", "xkcd Script, cursive")
+      .attr("fill", "var(--text-color)")
+      .style("pointer-events", "none")
+      .style("user-select", "none")
+      .each(function(this: SVGTextElement, d: Node) {
+        const text = d3.select(this);
+        
+        // Check for clarification in brackets
+        const bracketMatch = d.label.match(/^(.+?)\s*\(([^)]+)\)$/);
+        
+        if (bracketMatch) {
+          // Has clarification
+          const mainText = bracketMatch[1].trim();
+          const clarification = bracketMatch[2].trim();
+          
+          text.append("tspan")
+            .attr("x", 0)
+            .attr("dy", "-0.3em")
+            .text(mainText);
+          text.append("tspan")
+            .attr("x", 0)
+            .attr("dy", "1.2em")
+            .attr("font-size", `${nodeSubtextFontSize}px`)
+            .attr("fill", "var(--text-muted)")
+            .text(`(${clarification})`);
+        } else {
+          // No clarification, use original word wrapping
+          const words = d.label.split(" ");
+          
+          if (words.length === 1) {
+            text.text(d.label);
+          } else {
+            // Split into multiple lines for better readability
+            text.append("tspan")
+              .attr("x", 0)
+              .attr("dy", "-0.3em")
+              .text(words.slice(0, -1).join(" "));
+            text.append("tspan")
+              .attr("x", 0)
+              .attr("dy", "1.2em")
+              .text(words[words.length - 1]);
+          }
+        }
+      });
+
+    // Update positions on simulation tick
+    simulation.on("tick", () => {
+      // Constrain node positions within quadrant bounds
+      data.nodes.forEach((d: Node) => {
+        const margin = d.group === "ingredient" ? 30 : nodeRadius * Math.max(rectWidthMultiplier, rectHeightMultiplier) / 2 * 1.2;
+        d.x = Math.max(margin, Math.min(rightColumnWidth - margin, d.x ?? 0));
+        d.y = Math.max(margin, Math.min(quadrantHeight - margin, d.y ?? 0));
+      });
+      
+      link.each(function(this: SVGLineElement, d: any) {
+        const dx = d.target.x - d.source.x;
+        const dy = d.target.y - d.source.y;
+        const dr = Math.sqrt(dx * dx + dy * dy);
+        
+        // Function to calculate intersection with rectangle edge
+        const getRectEdgePoint = (centerX: number, centerY: number, toX: number, toY: number, isIngredient: boolean) => {
+          if (isIngredient) {
+            // For ingredients, use simple offset
+            const offset = 20;
+            return {
+              x: centerX + ((toX - centerX) * offset) / dr,
+              y: centerY + ((toY - centerY) * offset) / dr
+            };
+          }
+          
+          // For rectangles
+          const rectWidth = nodeRadius * rectWidthMultiplier;
+          const rectHeight = nodeRadius * rectHeightMultiplier;
+          const angle = Math.atan2(toY - centerY, toX - centerX);
+          
+          // Check which edge the line intersects
+          const absAngle = Math.abs(angle);
+          const cornerAngle = Math.atan2(rectHeight, rectWidth);
+          
+          let edgeX, edgeY;
+          if (absAngle < cornerAngle) {
+            // Right edge
+            edgeX = centerX + (rectWidth / 2 + rectPadding);
+            edgeY = centerY + (edgeX - centerX) * Math.tan(angle);
+          } else if (absAngle > Math.PI - cornerAngle) {
+            // Left edge
+            edgeX = centerX - (rectWidth / 2 + rectPadding);
+            edgeY = centerY + (edgeX - centerX) * Math.tan(angle);
+          } else if (angle > 0) {
+            // Bottom edge
+            edgeY = centerY + (rectHeight / 2 + rectPadding);
+            edgeX = centerX + (edgeY - centerY) / Math.tan(angle);
+          } else {
+            // Top edge
+            edgeY = centerY - (rectHeight / 2 + rectPadding);
+            edgeX = centerX + (edgeY - centerY) / Math.tan(angle);
+          }
+          
+          return { x: edgeX, y: edgeY };
+        };
+        
+        const sourcePoint = getRectEdgePoint(d.source.x, d.source.y, d.target.x, d.target.y, d.source.group === "ingredient");
+        const targetPoint = getRectEdgePoint(d.target.x, d.target.y, d.source.x, d.source.y, d.target.group === "ingredient");
+        
+        d3.select(this)
+          .attr("x1", sourcePoint.x)
+          .attr("y1", sourcePoint.y)
+          .attr("x2", targetPoint.x)
+          .attr("y2", targetPoint.y);
+      });
+
+      node.attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
+    });
+  }
+
+  // Drag functions
+  function dragstarted(event: any) {
+    if (!event.active) simulation.alphaTarget(0.3).restart();
+    event.subject.fx = event.subject.x;
+    event.subject.fy = event.subject.y;
+  }
+
+  function dragged(event: any) {
+    event.subject.fx = event.x;
+    event.subject.fy = event.y;
+  }
+
+  function dragended(event: any) {
+    if (!event.active) simulation.alphaTarget(0);
+    event.subject.fx = null;
+    event.subject.fy = null;
+  }
+
+  // Parse recipe text input
+  function parseRecipe(text: string): { graphData: GraphData; ingredients: Ingredient[] } {
+    const lines = text.trim().split('\n').filter(line => line.trim());
+    
+    const nodes: Node[] = [];
+    const links: Link[] = [];
+    const ingredients: Ingredient[] = [];
+    const nodeMap = new Map<string, Node>(); // Track nodes by their content
+    const linkSet = new Set<string>(); // Prevent duplicate links
+    let nodeId = 0;
+    let lastProcessNode: Node | null = null;
+    const subprocesses = new Map<string, any[]>(); // Track subprocess outputs
+    
+    const addLink = (source: string, target: string) => {
+      const key = `${source}->${target}`;
+      if (!linkSet.has(key)) {
+        links.push({ source, target });
+        linkSet.add(key);
+      }
+    };
+    
+    let i = 0;
+    while (i < lines.length) {
+      const line = lines[i].trim();
+      
+      // Handle subprocess definition
+      if (line.startsWith('Subprocess ')) {
+        const match = line.match(/Subprocess\s+(\w+)/);
+        if (!match) {
+          i++;
+          continue;
+        }
+        const subprocessName = match[1];
+        const subprocessLines = [];
+        i++; // Skip opening brace line
+        
+        // Collect subprocess lines
+        while (i < lines.length && !lines[i].trim().startsWith('}')) {
+          const subLine = lines[i].trim();
+          if (subLine) subprocessLines.push(subLine);
+          i++;
+        }
+        
+        // Process subprocess
+        let subLastNode: Node | null = null;
+        let subOutputs: any[] = [];
+        let pendingSubIngredients: Node[] = [];
+        
+        subprocessLines.forEach((subLine: string, idx: number) => {
+          if (subLine.startsWith('Add ')) {
+            let ingredient = subLine.substring(4).trim();
+            let amount = '';
+            
+            // Extract amount in curly braces if present (format: Add ingredient {amount})
+            const amountMatch = ingredient.match(/^(.+?)\s*\{([^}]+)\}$/);
+            if (amountMatch) {
+              ingredient = amountMatch[1].trim();
+              amount = amountMatch[2].trim();
+            }
+            
+            // Add to ingredients list if not from a subprocess
+            if (!ingredient.includes(' from ')) {
+              ingredients.push({ name: ingredient, amount });
+            }
+            
+            // Check if it's from another subprocess
+            const fromMatch = ingredient.match(/^(.+?)\s+from\s+(\w+)$/);
+            if (fromMatch) {
+              const [, outputName, fromSubprocessName] = fromMatch;
+              const fromSubOutputs = subprocesses.get(fromSubprocessName) || [];
+              
+              // Find the matching output from the other subprocess
+              let fromSubOutput;
+              if (outputName === '.') {
+                fromSubOutput = fromSubOutputs[fromSubOutputs.length - 1];
+              } else {
+                fromSubOutput = fromSubOutputs.find((o: any) => o.name === outputName);
+              }
+              
+              // Add this output node to pending ingredients
+              if (fromSubOutput && fromSubOutput.node) {
+                pendingSubIngredients.push(fromSubOutput.node);
+              }
+            } else {
+              // Regular ingredient
+              if (!nodeMap.has(ingredient)) {
+                const id = `node${nodeId++}`;
+                const node: Node = { id, label: ingredient, group: "ingredient" };
+                nodes.push(node);
+                nodeMap.set(ingredient, node);
+              }
+              const ingredientNode = nodeMap.get(ingredient);
+              if (ingredientNode) {
+                pendingSubIngredients.push(ingredientNode);
+              }
+            }
+          } else if (subLine.startsWith('Out ')) {
+            const outputName = subLine.substring(4).trim();
+            if (subLastNode) {
+              // Create an intermediary ingredient node for named outputs
+              if (outputName !== '.') {
+                const outputId = `node${nodeId++}`;
+                const outputNode: Node = { id: outputId, label: outputName, group: "ingredient" };
+                nodes.push(outputNode);
+                nodeMap.set(`${subprocessName}_${outputName}`, outputNode);
+                
+                // Link the last subprocess step to the output node
+                addLink(subLastNode.id, outputId);
+                
+                subOutputs.push({ node: outputNode, name: outputName });
+              } else {
+                // For '.', use the last process node directly
+                subOutputs.push({ node: subLastNode, name: '.' });
+              }
+            }
+          } else {
+            // Process step
+            const id = `node${nodeId++}`;
+            const node: Node = { id, label: subLine, group: "process" };
+            nodes.push(node);
+            
+            // Link pending ingredients to this step
+            pendingSubIngredients.forEach((ingNode: Node) => {
+              addLink(ingNode.id, id);
+            });
+            pendingSubIngredients = [];
+            
+            // Link to previous subprocess step
+            if (subLastNode) {
+              addLink(subLastNode.id, id);
+            }
+            
+            subLastNode = node;
+          }
+        });
+        
+        // Store subprocess outputs
+        subprocesses.set(subprocessName, subOutputs);
+        
+      } else if (line.startsWith('Add ')) {
+        let ingredient = line.substring(4).trim();
+        let amount = '';
+        
+        // Extract amount in curly braces if present (format: Add ingredient {amount})
+        const amountMatch = ingredient.match(/^(.+?)\s*\{([^}]+)\}$/);
+        if (amountMatch) {
+          ingredient = amountMatch[1].trim();
+          amount = amountMatch[2].trim();
+        }
+        
+        // Add to ingredients list if not from a subprocess
+        if (!ingredient.includes(' from ')) {
+          ingredients.push({ name: ingredient, amount });
+        }
+        
+        // Check if it's from a subprocess
+        const fromMatch = ingredient.match(/^(.+?)\s+from\s+(\w+)$/);
+        if (fromMatch) {
+          const [, outputName, subprocessName] = fromMatch;
+          const subOutputs = subprocesses.get(subprocessName) || [];
+          
+          // Find the matching output
+          let subOutput;
+          if (outputName === '.') {
+            // '.' refers to the last output of the subprocess
+            subOutput = subOutputs[subOutputs.length - 1];
+          } else {
+            subOutput = subOutputs.find((o: any) => o.name === outputName);
+          }
+          
+          // Find the next process step and link to it
+          for (let j = i + 1; j < lines.length; j++) {
+            const nextLine = lines[j].trim();
+            if (!nextLine.startsWith('Add ') && !nextLine.startsWith('Subprocess ') && !nextLine.startsWith('}')) {
+              // This is the next process step, link subprocess output to it
+              const nextId = `next_${j}`;
+              // We'll link this after we create the node
+              if (subOutput) {
+                // Store for later linking
+                if (!subOutput.pendingLinks) subOutput.pendingLinks = [];
+                subOutput.pendingLinks.push(j);
+              }
+              break;
+            }
+          }
+        } else {
+          // Regular ingredient
+          if (!nodeMap.has(ingredient)) {
+            const id = `node${nodeId++}`;
+            const node: Node = { id, label: ingredient, group: "ingredient" };
+            nodes.push(node);
+            nodeMap.set(ingredient, node);
+          }
+        }
+        
+      } else if (line && !line.startsWith('}')) {
+        // Check if this is an Out statement at the end (final output)
+        if (line.startsWith('Out')) {
+          const id = `node${nodeId++}`;
+          const node: Node = { id, label: 'Serve', group: "output" };
+          nodes.push(node);
+          
+          // Link from last process step
+          if (lastProcessNode) {
+            addLink(lastProcessNode.id, id);
+          }
+          
+          // Link subprocess outputs if this is their target
+          for (const [subName, outputs] of subprocesses) {
+            outputs.forEach((output: any) => {
+              if (output.pendingLinks && output.pendingLinks.includes(i)) {
+                addLink(output.node.id, id);
+              }
+            });
+          }
+          
+          // Link any immediately preceding ingredients to this final node
+          for (let j = i - 1; j >= 0; j--) {
+            const prevLine = lines[j].trim();
+            if (prevLine.startsWith('Add ') && !prevLine.includes(' from ')) {
+              let ingredient = prevLine.substring(4).trim();
+              // Remove amount if present
+              const amountMatch = ingredient.match(/^(.+?)\s*\{([^}]+)\}$/);
+              if (amountMatch) {
+                ingredient = amountMatch[1].trim();
+              }
+              const ingredientNode = nodeMap.get(ingredient);
+              if (ingredientNode) {
+                addLink(ingredientNode.id, id);
+              }
+            } else if (!prevLine.startsWith('Add ')) {
+              break;
+            }
+          }
+          
+          lastProcessNode = node;
+        } else {
+          // Process step
+          const id = `node${nodeId++}`;
+          // Check if there's an Out after this line
+          const hasOutAfter = lines.slice(i + 1).some((l: string) => l.trim().startsWith('Out'));
+          const node: Node = { id, label: line, group: hasOutAfter ? "process" : "output" };
+          nodes.push(node);
+          
+          // Link to previous process step
+          if (lastProcessNode) {
+            addLink(lastProcessNode.id, id);
+          }
+          
+          // Link any immediately preceding ingredients to this step (not from subprocess)
+          for (let j = i - 1; j >= 0; j--) {
+            const prevLine = lines[j].trim();
+            if (prevLine.startsWith('Add ') && !prevLine.includes(' from ')) {
+              let ingredient = prevLine.substring(4).trim();
+              // Remove amount if present
+              const amountMatch = ingredient.match(/^(.+?)\s*\{([^}]+)\}$/);
+              if (amountMatch) {
+                ingredient = amountMatch[1].trim();
+              }
+              const ingredientNode = nodeMap.get(ingredient);
+              if (ingredientNode) {
+                addLink(ingredientNode.id, id);
+              }
+            } else if (!prevLine.startsWith('Add ')) {
+              break;
+            }
+          }
+          
+          // Link subprocess outputs if this is their target
+          for (const [subName, outputs] of subprocesses) {
+            outputs.forEach((output: any) => {
+              if (output.pendingLinks && output.pendingLinks.includes(i)) {
+                addLink(output.node.id, id);
+              }
+            });
+          }
+          
+          lastProcessNode = node;
+        }
+      }
+      
+      i++;
+    }
+    
+    return { graphData: { nodes, links }, ingredients };
+  }
+
+  // Initialize with stoofvlees recipe
+  const stoofvleesRecipe = `Subprocess Grill {
+    Add meat {1 kg}
+    Grill (in butter)
+    Out meat
+    Add Beer {2 bottles}
+    Cook
+    Out sauce
+}
+
+Subprocess Bread {
+    Add Bread {1 slice}
+    Add Mustard {2 Tb.}
+    Smear
+    Out .
+}
+
+Add Onion {2}
+Chop
+Sauté (in butter)
+Add meat from Grill
+Add sauce from Grill
+Add Laurel
+Add Thyme
+Add Cloves {1}
+Add Sirup {1 Tb.}
+Add . from Bread
+Simmer (on low heat)
+Add Vinegar
+Out`;
+
+  initSVG();
+  const parsedRecipe = parseRecipe(stoofvleesRecipe);
+  renderFlowchart(parsedRecipe.graphData);
+  displayIngredients(parsedRecipe.ingredients);
+  displayInstructions();
+
+  // Function to display ingredients list
+  function displayIngredients(ingredients: Ingredient[]) {
+    // Remove previous ingredient text and border
+    svg.selectAll(".ingredient-text").remove();
+    svg.selectAll(".ingredients-border").remove();
+    
+    const borderColor = 'currentColor';
+    
+    if (ingredients.length === 0) {
+      // Create minimal border when no ingredients
+      const minBorder = rc.rectangle(
+        quadrantPadding,
+        topRowHeight + quadrantPadding,
+        leftColumnWidth - 2 * quadrantPadding,
+        60,
+        { 
+          stroke: borderColor,
+          strokeWidth: sketchStrokeWidth,
+          roughness: sketchRoughness,
+          bowing: sketchBowing
+        }
+      );
+      minBorder.classList.add('ingredients-border');
+      svg.node().appendChild(minBorder);
+      return;
+    }
+    
+    // Sort ingredients alphabetically
+    const sortedIngredients = [...ingredients].sort((a, b) => 
+      a.name.localeCompare(b.name)
+    );
+    
+    // Display in bottom-left quadrant
+    const startY = topRowHeight + 40;
+    const lineHeight = 24;
+    const nameX = 20;
+    const amountX = leftColumnWidth - 20; // Right-aligned position
+    
+    sortedIngredients.forEach((ing, index) => {
+      const yPos = startY + index * lineHeight;
+      
+      // Ingredient name (left-aligned)
+      svg.append("text")
+        .attr("class", "ingredient-text")
+        .attr("x", nameX)
+        .attr("y", yPos)
+        .attr("font-size", `${ingredientListFontSize}px`)
+        .attr("font-family", "xkcd Script, cursive")
+        .attr("fill", "var(--text-color)")
+        .text(ing.name);
+      
+      // Amount (right-aligned)
+      if (ing.amount) {
+        svg.append("text")
+          .attr("class", "ingredient-text")
+          .attr("x", amountX)
+          .attr("y", yPos)
+          .attr("text-anchor", "end")
+          .attr("font-size", `${ingredientListFontSize}px`)
+          .attr("font-family", "xkcd Script, cursive")
+          .attr("fill", "var(--text-muted)")
+          .text(`(${ing.amount})`);
+      }
+    });
+    
+    // Update border height to fit the ingredient list using Rough.js
+    const listHeight = sortedIngredients.length * lineHeight + 60;
+    const finalHeight = Math.min(listHeight, quadrantHeight - 2 * quadrantPadding);
+    
+    const newBorder = rc.rectangle(
+      quadrantPadding,
+      topRowHeight + quadrantPadding,
+      leftColumnWidth - 2 * quadrantPadding,
+      finalHeight,
+      { 
+        stroke: borderColor,
+        strokeWidth: sketchStrokeWidth,
+        roughness: sketchRoughness,
+        bowing: sketchBowing
+      }
+    );
+    newBorder.classList.add('ingredients-border');
+    svg.node().appendChild(newBorder);
+  }
+  
+  // Function to display instructions in top-right quadrant
+  function displayInstructions() {
+    // No instructions to display, only title
+  }
+
+  // Function to update generate button state
+  function updateGenerateButtonState() {
+    const input = (document.getElementById('recipe-input') as HTMLTextAreaElement).value;
+    const button = document.getElementById('generate-flowchart') as HTMLButtonElement;
+    const hasContent = input.trim().length > 0;
+    
+    button.disabled = !hasContent;
+    if (!hasContent) {
+      button.classList.add('opacity-50', 'cursor-not-allowed');
+      button.classList.remove('hover:bg-blue-600');
+    } else {
+      button.classList.remove('opacity-50', 'cursor-not-allowed');
+      button.classList.add('hover:bg-blue-600');
+    }
+  }
+
+  // Set up button handlers
+  const recipeInput = document.getElementById('recipe-input') as HTMLTextAreaElement;
+  
+  // Update button state on input
+  recipeInput.addEventListener('input', updateGenerateButtonState);
+  
+  // Initial button state check
+  updateGenerateButtonState();
+  
+  document.getElementById('generate-flowchart')!.addEventListener('click', () => {
+    const input = recipeInput.value;
+    if (input.trim()) {
+      initSVG();
+      const parsedRecipe = parseRecipe(input);
+      renderFlowchart(parsedRecipe.graphData);
+      displayIngredients(parsedRecipe.ingredients);
+      displayInstructions();
+    }
+  });
+
+  document.getElementById('save-svg')!.addEventListener('click', () => {
+    const svgElement = document.querySelector('#recipe-flowchart svg') as SVGSVGElement;
+    if (!svgElement) return;
+    
+    // Clone the SVG to avoid modifying the original
+    const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
+    
+    // Get the SVG markup
+    const svgData = new XMLSerializer().serializeToString(svgClone);
+    
+    // Create a blob and download
+    const blob = new Blob([svgData], { type: 'image/svg+xml' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = 'recipe-flowchart.svg';
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  });
+</script>
+
+<style>
+  @font-face {
+    font-family: "xkcd Script";
+    src: url("/fonts/xkcd-script.woff") format("woff");
+    font-weight: normal;
+    font-style: normal;
+    font-display: swap;
+  }
+
+  #recipe-flowchart {
+    border: 0px solid #e5e7eb;
+    border-radius: 0.5rem;
+    background: transparent;
+    overflow: hidden;
+    
+    --arrow-color: #666;
+    --link-color: #666;
+    --text-color: #1f2937;
+    --text-muted: #6b7280;
+    --output-fill: rgba(13, 102, 255, 0.5);
+  }
+  
+  #recipe-flowchart text {
+    font-family: "xkcd Script", cursive;
+  }
+  
+  :global(.dark) #recipe-flowchart {
+    background: transparent;
+    
+    --arrow-color: #9ca3af;
+    --link-color: #9ca3af;
+    --node-stroke: #e5e7eb;
+    --text-color: #f3f4f6;
+    --text-muted: #9ca3af;
+    --output-fill: rgba(156, 163, 175, 0.15);
+    --border-color: #e5e7eb;
+  }
+</style>
