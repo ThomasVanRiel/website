@@ -1,0 +1,92 @@
+---
+title: "Recipe to flowchart"
+summary: "Converting traditional recipes into visual flowcharts"
+date: "11/28/2025"
+draft: false
+tags:
+- Cooking
+- Digital
+- Interactive
+---
+
+import RecipeFlowchart from "./RecipeFlowchart.astro";
+
+Building on the idea that [recipes should be flowcharts](/blog/06-flowchart-recipes), this post explores how to convert traditional text-based recipes into clear, visual flowcharts.
+Using D3.js, a node network is generated from a recipe. The process steps and ingredients are dragable for flexibility and clarity.
+Fill in your recipe in the text box (see example syntax below) and click <kbd>Generate Flowchart</kbd>.
+
+<RecipeFlowchart />
+
+## Recipe syntax[^1]
+
+These examples are based on the recipes from [the previous post on the topic](/blog/06-flowchart-recipes).
+
+### Flemish beef stew
+```python
+Subprocess Grill {
+    Add meat {1 kg}
+    Grill (in butter)
+    Out meat
+    Add Beer {2 bottles}
+    Cook
+    Out sauce
+}
+
+Subprocess Bread {
+    Add Bread {1 slice}
+    Add Mustard {2 Tb.}
+    Smear
+    Out .
+}
+
+Add Onion {2}
+Chop
+Sauté (in butter)
+Add meat from Grill
+Add sauce from Grill
+Add Laurel
+Add Thyme
+Add Cloves {1}
+Add Sirup {1 Tb.}
+Add . from Bread
+Simmer (on low heat)
+Add Vinegar
+Out
+```
+
+### Brussels Wafels
+```python
+Subprocess A {
+    Add egg {1}
+    Separate
+    Out White
+    Out Yolk
+}
+
+Subprocess B {
+    Add White from A
+    Beat
+    Out .
+}
+
+Subprocess C {
+    Add Butter {50 g}
+    Melt
+    Out .
+}
+
+Add Yolk from A
+Add Yeast {6 g}
+Add Milk {125 g}
+Add Water {125 g}
+Mix
+Add Flour {150 g}
+Add . from C
+Mix
+Add . from B
+Mix (Carefully)
+Bake
+Out
+```
+
+[^1]: Yes, this is a custom programming language.
