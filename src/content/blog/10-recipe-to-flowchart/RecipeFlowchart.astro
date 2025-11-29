@@ -38,6 +38,7 @@ Out"
 
 <script>
   import * as d3 from 'd3';
+  import rough from 'roughjs';
 
   // Type definitions
   type NodeGroup = 'ingredient' | 'process' | 'output';
@@ -105,6 +106,7 @@ Out"
 
   let currentData: GraphData = defaultRecipeData;
   let svg: any, simulation: any, link: any, node: any, linkGroup: any, nodeGroup: any;
+  let rc: any; // Rough.js renderer
 
   const width = 700;
   const height = 800;
@@ -129,6 +131,12 @@ Out"
   const quadrantHeight = height - topRowHeight;
   const quadrantPadding = 4; // Padding for quadrant rectangles
   
+  // Rough.js sketch style parameters
+  const sketchStrokeWidth = 1;
+  const sketchRoughness = 1.5;
+  const sketchBowing = 1.5;
+  const sketchFillStyle = 'zigzag'; // Fill style for output nodes: 'hachure', 'solid', 'zigzag', 'cross-hatch', 'dots', 'dashed', 'zigzag-line'
+  
   // Toggle options
   const showFlowchartBorder = false; // Set to true to show border around flowchart quadrant
 
@@ -147,6 +155,9 @@ Out"
       .attr("height", height)
       .attr("viewBox", [0, 0, width, height])
       .attr("style", "max-width: 100%; height: auto;");
+
+    // Initialize Rough.js
+    rc = rough.svg(svg.node());
 
     // Add title blocks
     // Top-left: Ingredients
@@ -171,75 +182,72 @@ Out"
       .attr("fill", "var(--text-color)")
       .text("Instructions");
 
-    // Add sketch filter for comic style
-    const defs = svg.select("defs").empty() ? svg.append("defs") : svg.select("defs");
-    
-    defs.append("filter")
-      .attr("id", "sketch")
-      .append("feTurbulence")
-      .attr("type", "fractalNoise")
-      .attr("baseFrequency", "0.01")
-      .attr("numOctaves", "1")
-      .attr("result", "noise");
-    
-    defs.select("#sketch")
-      .append("feDisplacementMap")
-      .attr("in", "SourceGraphic")
-      .attr("in2", "noise")
-      .attr("scale", "10")
-      .attr("xChannelSelector", "R")
-      .attr("yChannelSelector", "G");
+    // Get computed border color and node stroke color
+    const borderColor = 'currentColor';
+    const nodeStrokeColor = 'currentColor';
 
-    // Draw sketch-style rectangles in each quadrant
+    // Draw sketch-style rectangles using Rough.js with dynamic CSS colors
     // Top-left quadrant (Ingredients title)
-    svg.append("rect")
-      .attr("x", quadrantPadding)
-      .attr("y", quadrantPadding)
-      .attr("width", leftColumnWidth - 2 * quadrantPadding)
-      .attr("height", topRowHeight - 2 * quadrantPadding)
-      .attr("rx", 5)
-      .attr("fill", "none")
-      .attr("stroke", "var(--border-color)")
-      .attr("stroke-width", 2)
-      .style("filter", "url(#sketch)");
-    
+    const topLeftRect = rc.rectangle(
+      quadrantPadding,
+      quadrantPadding,
+      leftColumnWidth - 2 * quadrantPadding,
+      topRowHeight - 2 * quadrantPadding,
+      {
+        stroke: borderColor,
+        strokeWidth: sketchStrokeWidth,
+        roughness: sketchRoughness,
+        bowing: sketchBowing
+      }
+    );
+    svg.node().appendChild(topLeftRect);
+
     // Top-right quadrant (Instructions title)
-    svg.append("rect")
-      .attr("x", leftColumnWidth + quadrantPadding)
-      .attr("y", quadrantPadding)
-      .attr("width", rightColumnWidth - 2 * quadrantPadding)
-      .attr("height", topRowHeight - 2 * quadrantPadding)
-      .attr("rx", 5)
-      .attr("fill", "none")
-      .attr("stroke", "var(--border-color)")
-      .attr("stroke-width", 2)
-      .style("filter", "url(#sketch)");
-    
+    const topRightRect = rc.rectangle(
+      leftColumnWidth + quadrantPadding,
+      quadrantPadding,
+      rightColumnWidth - 2 * quadrantPadding,
+      topRowHeight - 2 * quadrantPadding,
+      {
+        stroke: borderColor,
+        strokeWidth: sketchStrokeWidth,
+        roughness: sketchRoughness,
+        bowing: sketchBowing
+      }
+    );
+    svg.node().appendChild(topRightRect);
+
     // Bottom-left quadrant (Ingredients list) - will be updated by displayIngredients
-    svg.append("rect")
-      .attr("class", "ingredients-border")
-      .attr("x", quadrantPadding)
-      .attr("y", topRowHeight + quadrantPadding)
-      .attr("width", leftColumnWidth - 2 * quadrantPadding)
-      .attr("height", quadrantHeight - 2 * quadrantPadding)
-      .attr("rx", 5)
-      .attr("fill", "none")
-      .attr("stroke", "var(--border-color)")
-      .attr("stroke-width", 2)
-      .style("filter", "url(#sketch)");
-    
+    const bottomLeftRect = rc.rectangle(
+      quadrantPadding,
+      topRowHeight + quadrantPadding,
+      leftColumnWidth - 2 * quadrantPadding,
+      quadrantHeight - 2 * quadrantPadding,
+      {
+        stroke: borderColor,
+        strokeWidth: sketchStrokeWidth,
+        roughness: sketchRoughness,
+        bowing: sketchBowing
+      }
+    );
+    bottomLeftRect.classList.add('ingredients-border');
+    svg.node().appendChild(bottomLeftRect);
+
     // Bottom-right quadrant (Flowchart)
     if (showFlowchartBorder) {
-      svg.append("rect")
-        .attr("x", leftColumnWidth + quadrantPadding)
-        .attr("y", topRowHeight + quadrantPadding)
-        .attr("width", rightColumnWidth - 2 * quadrantPadding)
-        .attr("height", quadrantHeight - 2 * quadrantPadding)
-        .attr("rx", 5)
-        .attr("fill", "none")
-        .attr("stroke", "var(--border-color)")
-        .attr("stroke-width", 2)
-        .style("filter", "url(#sketch)");
+      const bottomRightRect = rc.rectangle(
+        leftColumnWidth + quadrantPadding,
+        topRowHeight + quadrantPadding,
+        rightColumnWidth - 2 * quadrantPadding,
+        quadrantHeight - 2 * quadrantPadding,
+        {
+          stroke: borderColor,
+          strokeWidth: sketchStrokeWidth,
+          roughness: sketchRoughness,
+          bowing: sketchBowing
+        }
+      );
+      svg.node().appendChild(bottomRightRect);
     }
 
     // Create arrow marker for directed edges
@@ -256,7 +264,7 @@ Out"
       .append("path")
       .attr("d", "M 0 0 L 10 5 L 0 10 z")
       .attr("fill", "currentColor")
-      .style("color", "var(--arrow-color)");
+      .style("color", "currentColor");
 
     // Create groups for links and nodes (bottom-right quadrant for flowchart)
     linkGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight})`);
@@ -264,6 +272,8 @@ Out"
   }
 
   function renderFlowchart(data: GraphData) {
+        // Get node stroke color from CSS variable for current theme
+        const nodeStrokeColor = 'currentColor';
     currentData = data;
     
     // Create force simulation (within bottom-right quadrant)
@@ -304,18 +314,30 @@ Out"
 
     // Add rounded rectangles to nodes (only for non-ingredient nodes)
     node.filter((d: Node) => d.group !== "ingredient")
-      .append("rect")
-      .attr("x", -nodeRadius * rectWidthMultiplier / 2)
-      .attr("y", -nodeRadius * rectHeightMultiplier / 2)
-      .attr("width", nodeRadius * rectWidthMultiplier)
-      .attr("height", nodeRadius * rectHeightMultiplier)
-      .attr("rx", 8)
-      .attr("ry", 8)
-      .attr("fill", (d: Node) => d.group === "output" ? "var(--output-fill)" : "none")
-      .attr("stroke", "var(--node-stroke)")
-      .attr("stroke-width", 2)
-      .style("filter", "url(#sketch)")
-      .style("cursor", "grab");
+      .each(function(this: SVGGElement, d: Node) {
+        const g = d3.select(this);
+        const rectWidth = nodeRadius * rectWidthMultiplier;
+        const rectHeight = nodeRadius * rectHeightMultiplier;
+        const x = -rectWidth / 2;
+        const y = -rectHeight / 2;
+
+        // Get stroke and fill color based on node type and current theme
+        const strokeColor = nodeStrokeColor;
+        const fillColor = d.group === "output" ? 'rgba(0, 91, 249, 0.2)' : 'none';
+
+        // Create rough rectangle
+        const roughRect = rc.rectangle(x, y, rectWidth, rectHeight, {
+          stroke: strokeColor,
+          strokeWidth: sketchStrokeWidth,
+          fill: fillColor,
+          fillStyle: d.group === "output" ? sketchFillStyle : 'solid',
+          roughness: sketchRoughness,
+          bowing: sketchBowing
+        });
+
+        this.appendChild(roughRect);
+        roughRect.style.cursor = 'grab';
+      });
 
     // Add invisible overlay for process nodes to make them draggable
     node.filter((d: Node) => d.group === "process")
@@ -327,6 +349,17 @@ Out"
       .attr("fill", "transparent")
       .attr("stroke", "none")
       .style("cursor", "grab");
+
+      // Add invisible overlay for output nodes to keep them draggable (for filled/sketch style nodes)
+      node.filter((d: Node) => d.group === "output")
+        .append("rect")
+        .attr("x", -nodeRadius * rectWidthMultiplier / 2)
+        .attr("y", -nodeRadius * rectHeightMultiplier / 2)
+        .attr("width", nodeRadius * rectWidthMultiplier)
+        .attr("height", nodeRadius * rectHeightMultiplier)
+        .attr("fill", "transparent")
+        .attr("stroke", "none")
+        .style("cursor", "grab");
 
     // Add invisible larger circle for ingredient nodes to make them draggable
     node.filter((d: Node) => d.group === "ingredient")
@@ -800,13 +833,28 @@ Out`;
 
   // Function to display ingredients list
   function displayIngredients(ingredients: Ingredient[]) {
-    // Remove previous ingredient text
+    // Remove previous ingredient text and border
     svg.selectAll(".ingredient-text").remove();
+    svg.selectAll(".ingredients-border").remove();
+    
+    const borderColor = 'currentColor';
     
     if (ingredients.length === 0) {
-      // Update border to minimal height when no ingredients
-      svg.select(".ingredients-border")
-        .attr("height", 60);
+      // Create minimal border when no ingredients
+      const minBorder = rc.rectangle(
+        quadrantPadding,
+        topRowHeight + quadrantPadding,
+        leftColumnWidth - 2 * quadrantPadding,
+        60,
+        { 
+          stroke: borderColor,
+          strokeWidth: sketchStrokeWidth,
+          roughness: sketchRoughness,
+          bowing: sketchBowing
+        }
+      );
+      minBorder.classList.add('ingredients-border');
+      svg.node().appendChild(minBorder);
       return;
     }
     
@@ -848,10 +896,24 @@ Out`;
       }
     });
     
-    // Update border height to fit the ingredient list
-    const listHeight = sortedIngredients.length * lineHeight + 60; // 60 = startY offset + bottom padding
-    svg.select(".ingredients-border")
-      .attr("height", Math.min(listHeight, quadrantHeight - 2 * quadrantPadding));
+    // Update border height to fit the ingredient list using Rough.js
+    const listHeight = sortedIngredients.length * lineHeight + 60;
+    const finalHeight = Math.min(listHeight, quadrantHeight - 2 * quadrantPadding);
+    
+    const newBorder = rc.rectangle(
+      quadrantPadding,
+      topRowHeight + quadrantPadding,
+      leftColumnWidth - 2 * quadrantPadding,
+      finalHeight,
+      { 
+        stroke: borderColor,
+        strokeWidth: sketchStrokeWidth,
+        roughness: sketchRoughness,
+        bowing: sketchBowing
+      }
+    );
+    newBorder.classList.add('ingredients-border');
+    svg.node().appendChild(newBorder);
   }
   
   // Function to display instructions in top-right quadrant
@@ -935,11 +997,9 @@ Out`;
     
     --arrow-color: #666;
     --link-color: #666;
-    --node-stroke: #333;
     --text-color: #1f2937;
     --text-muted: #6b7280;
-    --output-fill: rgba(156, 163, 175, 0.2);
-    --border-color: #333;
+    --output-fill: rgba(13, 102, 255, 0.5);
   }
   
   #recipe-flowchart text {
@@ -948,7 +1008,6 @@ Out`;
   
   :global(.dark) #recipe-flowchart {
     background: transparent;
-    border-color: #374151;
     
     --arrow-color: #9ca3af;
     --link-color: #9ca3af;
