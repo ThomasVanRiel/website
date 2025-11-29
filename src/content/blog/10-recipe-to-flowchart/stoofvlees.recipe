@@ -1,10 +1,10 @@
 Subprocess Grill {
-    Add meat {1 kg}
+    Add Meat {1 kg}
     Grill (in butter) in Braising pan
-    Out meat
+    Out Meat
     Add Beer {2 bottles}
     Cook in Braising pan
-    Out sauce
+    Out Sauce
 }
 
 Subprocess Bread {
@@ -17,8 +17,8 @@ Subprocess Bread {
 Add Onion {2}
 Chop
 Sauté (in butter) in Casserole
-Add meat from Grill
-Add sauce from Grill
+Add Meat from Grill
+Add Sauce from Grill
 Add Laurel
 Add Thyme
 Add Cloves {1}

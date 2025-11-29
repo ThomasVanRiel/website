@@ -130,6 +130,10 @@ Out"
   const arrowSize = 5;
   const linkDistance = 140;
   const nodeRepulsion = -500;
+  // Grid attractor settings (keeps process nodes aligned to a regular grid)
+  const gridX = 100; // horizontal grid spacing (px)
+  const gridY = 150; // vertical grid spacing (px)
+  const gridAttractorStrength = 0.8; // how strongly nodes are pulled toward the grid (0-1)
   
   // Font sizes
   const titleFontSize = 24;
@@ -316,7 +320,9 @@ Out"
       .force("center", d3.forceCenter(rightColumnWidth / 2, quadrantHeight / 2))
       .force("collision", d3.forceCollide().radius((d: any) => d.group === "ingredient" ? 25 : nodeRadius * Math.max(rectWidthMultiplier, rectHeightMultiplier) / 2))
       .force("x", d3.forceX(rightColumnWidth / 2).strength(0.1))
-      .force("y", d3.forceY((d: any) => d.group === "output" ? quadrantHeight - 80 : quadrantHeight / 2).strength((d: any) => d.group === "output" ? 0.5 : 0.1));
+      .force("y", d3.forceY((d: any) => d.group === "output" ? quadrantHeight - 80 : quadrantHeight / 2).strength((d: any) => d.group === "output" ? 0.5 : 0.1))
+      // Grid attractor keeps process nodes visually aligned in columns/rows
+      .force("grid", forceGrid(gridX, gridY, gridAttractorStrength));
 
     // Create links
     linkGroup.selectAll("*").remove();
@@ -410,6 +416,29 @@ Out"
       d += ' Z';
       return d;
     };
+
+    // Grid attractor force: nudges process nodes toward the nearest grid cell.
+    // Implemented as a custom d3 force so it participates naturally with other forces.
+    function forceGrid(gridX = 140, gridY = 100, strength = 0.2) {
+      let nodes: any[] | undefined;
+      function force(alpha: number) {
+        if (!nodes) return;
+        for (const d of nodes) {
+          // Only apply to process nodes (keep ingredients and outputs free)
+          if (!d || d.group !== 'process') continue;
+          if (typeof d.x !== 'number' || typeof d.y !== 'number') continue;
+
+          const gx = Math.round(d.x / gridX) * gridX;
+          const gy = Math.round(d.y / gridY) * gridY;
+
+          // Apply a small velocity change toward the grid point. Scale with alpha.
+          d.vx = (d.vx || 0) + (gx - d.x) * strength * alpha;
+          d.vy = (d.vy || 0) + (gy - d.y) * strength * alpha;
+        }
+      }
+      force.initialize = function(_nodes: any[]) { nodes = _nodes; };
+      return force;
+    }
 
     // Add rounded rectangles to nodes (only for non-ingredient nodes)
     node.filter((d: Node) => d.group !== "ingredient")
