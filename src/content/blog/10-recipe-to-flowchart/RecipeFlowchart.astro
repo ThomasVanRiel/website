@@ -39,6 +39,10 @@ Out"
       >
         Save as PNG
       </button>
+      <label class="ml-2 flex items-center gap-2 text-sm">
+        <input type="checkbox" id="toggle-pots" checked />
+        <span>Show cookware</span>
+      </label>
       
     </div>
   </div>
@@ -129,11 +133,11 @@ Out"
   const rectPadding = 5; // Gap between rectangle edge and links
   const arrowSize = 5;
   const linkDistance = 140;
-  const nodeRepulsion = -500;
+  const nodeRepulsion = -800;
   // Grid attractor settings (keeps process nodes aligned to a regular grid)
   const gridX = 100; // horizontal grid spacing (px)
   const gridY = 150; // vertical grid spacing (px)
-  const gridAttractorStrength = 0.8; // how strongly nodes are pulled toward the grid (0-1)
+  const gridAttractorStrength = 0.75; // how strongly nodes are pulled toward the grid (0-1)
   
   // Font sizes
   const titleFontSize = 24;
@@ -166,6 +170,10 @@ Out"
   
   // Toggle options
   const showFlowchartBorder = false; // Set to true to show border around flowchart quadrant
+  let showPots = true; // Toggle to render pot Voronoi regions and legend
+
+  // Keep last ingredients so toggle can re-render legend without reparsing
+  let lastIngredients: Ingredient[] = [];
 
   // Color scale for different node types
   const colorScale = d3.scaleOrdinal()
@@ -322,7 +330,9 @@ Out"
       .force("x", d3.forceX(rightColumnWidth / 2).strength(0.1))
       .force("y", d3.forceY((d: any) => d.group === "output" ? quadrantHeight - 80 : quadrantHeight / 2).strength((d: any) => d.group === "output" ? 0.5 : 0.1))
       // Grid attractor keeps process nodes visually aligned in columns/rows
-      .force("grid", forceGrid(gridX, gridY, gridAttractorStrength));
+      .force("grid", forceGrid(gridX, gridY, gridAttractorStrength))
+      // Ingredient grid keeps ingredient nodes aligned in a compact left column
+      .force("ingredientGrid", forceIngredientGrid(gridX, gridY, gridAttractorStrength, 0));
 
     // Create links
     linkGroup.selectAll("*").remove();
@@ -432,6 +442,30 @@ Out"
           const gy = Math.round(d.y / gridY) * gridY;
 
           // Apply a small velocity change toward the grid point. Scale with alpha.
+          d.vx = (d.vx || 0) + (gx - d.x) * strength * alpha;
+          d.vy = (d.vy || 0) + (gy - d.y) * strength * alpha;
+        }
+      }
+      force.initialize = function(_nodes: any[]) { nodes = _nodes; };
+      return force;
+    }
+
+    // Ingredient grid force: gently aligns ingredient nodes to a narrow
+    // column grid near the left side of the flowchart area so they are
+    // visually ordered and avoid overlapping links.
+    function forceIngredientGrid(gridX = 80, gridY = 80, strength = 0.6, offsetX = 40) {
+      let nodes: any[] | undefined;
+      function force(alpha: number) {
+        if (!nodes) return;
+        for (const d of nodes) {
+          if (!d || d.group !== 'ingredient') continue;
+          if (typeof d.x !== 'number' || typeof d.y !== 'number') continue;
+
+          // Compute nearest grid cell within the ingredient column region
+          const gx = Math.round((d.x - offsetX) / gridX) * gridX + offsetX;
+          const gy = Math.round(d.y / gridY) * gridY;
+
+          // Apply a mild velocity toward the grid cell scaled by alpha
           d.vx = (d.vx || 0) + (gx - d.x) * strength * alpha;
           d.vy = (d.vy || 0) + (gy - d.y) * strength * alpha;
         }
@@ -558,6 +592,7 @@ Out"
       });
 
       // Update Voronoi polygons based on current process node positions
+      if (showPots) {
       try {
         // Ensure the points array is typed as an array of number tuples so
         // TypeScript accepts it for d3.Delaunay.from
@@ -812,6 +847,10 @@ Out"
         }
       } catch (e) {
         // Voronoi calculation can fail briefly while nodes are NaN during simulation start; ignore
+      }
+      } else {
+        // If pots are disabled, ensure voronoi background is cleared
+        try { voronoiGroup.selectAll('.voronoi-rough').remove(); } catch (e) { }
       }
       
       link.each(function(this: SVGLineElement, d: any) {
@@ -1219,10 +1258,15 @@ Out`;
 
   // Function to display ingredients list
   function displayIngredients(ingredients: Ingredient[]) {
-    // Remove previous ingredient text and border
+    // Remove previous ingredient text, borders and legend
     svg.selectAll(".ingredient-text").remove();
     svg.selectAll(".ingredients-border").remove();
     svg.selectAll(".pot-legend").remove();
+    svg.selectAll('.pot-legend-box').remove();
+    svg.selectAll('.pot-legend-swatch').remove();
+
+    // remember last ingredients so the pots toggle can re-render the legend
+    lastIngredients = ingredients;
     
     const borderColor = 'currentColor';
     
@@ -1304,7 +1348,7 @@ Out`;
 
     // Render legend for pots below the ingredient list inside a Rough.js box
     const legendEntries = Array.from(potColorMapGlobal.entries());
-    if (legendEntries.length > 0) {
+    if (showPots && legendEntries.length > 0) {
       const itemHeight = 18;
       const boxPadding = 10;
       const boxX = quadrantPadding;
@@ -1521,6 +1565,29 @@ Out`;
     await downloadPNG(svgElement);
   });
   
+  // Pots toggle: hide/show voronoi background and legend
+  const togglePotsEl = document.getElementById('toggle-pots') as HTMLInputElement | null;
+  if (togglePotsEl) {
+    togglePotsEl.addEventListener('change', (e) => {
+      showPots = !!(togglePotsEl && togglePotsEl.checked);
+      if (!showPots) {
+        try {
+          // remove any voronoi shapes and legend items
+          voronoiGroup.selectAll('.voronoi-rough').remove();
+        } catch (err) { }
+        svg.selectAll('.pot-legend').remove();
+        svg.selectAll('.pot-legend-box').remove();
+        svg.selectAll('.pot-legend-swatch').remove();
+      } else {
+        // Re-render the flowchart (cheap) so Voronoi and legend are recomputed
+        try {
+          renderFlowchart(currentData);
+          displayIngredients(lastIngredients || []);
+        } catch (err) { /* non-fatal */ }
+      }
+    });
+  }
+
 </script>
 
 <style>
