@@ -1,7 +1,6 @@
 ---
 // AI Notice: Mainly vibecoded
 // TODO: Refactor to separate JS logic into its own file for better maintainability
-// TODO: Add voronoi background based on node positions to indicate the cooking utensil zones
 // TODO: Relax the flowchart layout to reduce edge crossings and improve readability
 ---
 
@@ -49,6 +48,8 @@ Out"
 <script>
   import * as d3 from 'd3';
   import rough from 'roughjs';
+  import * as ClipperLib from 'clipper-lib';
+
 
   // Type definitions
   type NodeGroup = 'ingredient' | 'process' | 'output';
@@ -143,15 +144,21 @@ Out"
   const quadrantHeight = height - topRowHeight;
   const quadrantPadding = 4; // Padding for quadrant rectangles
   const voronoiPadding = 10; // Inset Voronoi cells from flowchart edges
-  const voronoiRounding = 10; // Corner rounding radius for Voronoi cells (px)
-  const voronoiOpacity = 0.12; // Fill opacity for Voronoi cells
+  const voronoiRounding = 50; // Corner rounding radius for Voronoi cells (px)
+  const voronoiInsetPad = 10; // Pixels to inset merged Voronoi cells after union (positive -> shrink)
+  const voronoiMergePadStart = 0; // Starting padding (px) when attempting unions
+  const voronoiMergeAttempts = 5; // Number of times to retry union (doubling padding each attempt)
   
   // Rough.js sketch style parameters
   const sketchStrokeWidth = 1;
   const sketchRoughness = 1.5;
   const sketchBowing = 1.5;
   const sketchFillStyle = 'zigzag'; // Fill style for output nodes: 'hachure', 'solid', 'zigzag', 'cross-hatch', 'dots', 'dashed', 'zigzag-line'
-  const voronoiFillStyle = 'solid'; // Fill style for Voronoi cells
+  // Voronoi rough fill: prefer hachure (parallel hatch lines). Adjust gap/weight for thicker lines.
+  const voronoiFillStyle = 'zigzag'; // 'hachure' draws parallel lines (good for thick-line fill)
+  const voronoiFillGap = 16; // Distance between hatch lines (px). Lower = denser lines.
+  const voronoiFillWeight = 4; // Line weight for hatch strokes (px)
+  const voronoiFillOpacity = 0.2; // Opacity for Voronoi fill strokes
   
   // Toggle options
   const showFlowchartBorder = false; // Set to true to show border around flowchart quadrant
@@ -351,7 +358,11 @@ Out"
     const escapeRegExp = (s: string) => s.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     // Build a palette mapped to pot names so colors are stable
     const palette = ['#f97316','#f59e0b','#ef4444','#10b981','#3b82f6','#8b5cf6','#ec4899','#06b6d4','#f43f5e','#a3e635'];
-    const potNames = Array.from(new Set(processNodes.map((n: any) => extractPot(n.label)).filter(Boolean)));
+    // Collect pot names, ensure uniqueness, then sort alphabetically so color
+    // assignment is deterministic and the legend is ordered.
+    const potNames = Array.from(
+      new Set(processNodes.map((n: any) => extractPot(n.label)).filter(Boolean))
+    ).map(String).sort((a, b) => a.localeCompare(b));
     const potColorMap = new Map<string,string>();
     potNames.forEach((p: any, i: number) => potColorMap.set(p, palette[i % palette.length]));
     // Expose the pot -> color mapping for the legend
@@ -549,19 +560,225 @@ Out"
           cellsByPot.forEach((polys, pot) => {
             const hex = potColorMap.get(pot) || palette[0];
             const fillCol = d3.color(hex);
-            if (fillCol) fillCol.opacity = voronoiOpacity;
+            if (fillCol) fillCol.opacity = voronoiFillOpacity;
 
             const rounding = voronoiRounding;
-            const combinedPath = polys.map(p => roundedPathFromPolygon(p, rounding)).join(' ');
 
-            // Draw plain SVG path (no Rough.js) and use configurable opacity
-            voronoiGroup.append('path')
-              .attr('class', 'voronoi-rough')
-              .attr('d', combinedPath)
-              .attr('fill', hex)
-              .attr('fill-opacity', String(voronoiOpacity))
-              .attr('stroke', 'none')
-              .style('pointer-events', 'none');
+            // Attempt to union neighbouring polygons for this pot so we can
+            // stroke/round the outer boundary once. Fall back to simple
+            // concatenation if union fails.
+            let combinedPath = '';
+            try {
+              // Expand each polygon slightly so neighbouring cells overlap
+              // and `polygon-clipping.union` has a better chance to merge them.
+              // Use Clipper to produce a robust outward offset of each polygon
+              // before unioning. Clipper works with integer coordinates, so scale
+              // geometry by `clipperScale` then scale back.
+              const clipperScale = 100; // scale factor for integer Clipper coordinates
+
+              const offsetPolygonWithClipper = (ring: [number, number][], pad: number) => {
+                if (!ring || ring.length === 0) return ring;
+                try {
+                  const co = new (ClipperLib as any).ClipperOffset();
+                  const path = ring.map(([x, y]) => ({ X: Math.round(x * clipperScale), Y: Math.round(y * clipperScale) }));
+                  // Close path if necessary
+                  if (path.length > 0) {
+                    const first = path[0];
+                    const last = path[path.length - 1];
+                    if (first.X !== last.X || first.Y !== last.Y) path.push({ X: first.X, Y: first.Y });
+                  }
+                  co.AddPath(path, (ClipperLib as any).JoinType.jtRound, (ClipperLib as any).EndType.etClosedPolygon);
+                  const solution = new (ClipperLib as any).Paths();
+                  co.Execute(solution, pad * clipperScale);
+                  if (solution && solution.length > 0) {
+                    // Return the first resulting path as array of [x,y]
+                    const out = solution[0].map((pt: any) => [pt.X / clipperScale, pt.Y / clipperScale] as [number, number]);
+                    return out;
+                  }
+                } catch (e) {
+                  // fall through to return original ring
+                }
+                return ring;
+              };
+
+              const closeRing = (ring: [number, number][]) => {
+                if (!ring || ring.length === 0) return ring;
+                const first = ring[0];
+                const last = ring[ring.length - 1];
+                if (first[0] !== last[0] || first[1] !== last[1]) {
+                  return [...ring, [first[0], first[1]]];
+                }
+                return ring;
+              };
+
+              // Try union with increasing padding if initial attempt yields no merged polygons.
+              const tryUnionWithPadding = (polysArr: [number, number][][], startPad: number, maxAttempts = voronoiMergeAttempts) => {
+                let pad = startPad;
+                for (let attempt = 0; attempt < maxAttempts; attempt++) {
+                  try {
+                    const expanded = polysArr.map(p => closeRing(offsetPolygonWithClipper(p, pad)));
+                    const args = expanded.map(p => [p]);
+                    // First try Clipper union (robust integer boolean ops)
+                    let result: any = null;
+                    try {
+                      const c = new (ClipperLib as any).Clipper();
+                      const subj = (expanded as any).map((ring: any) =>
+                        (ring as any).map((p: any) => ({ X: Math.round(p[0] * clipperScale), Y: Math.round(p[1] * clipperScale) }))
+                      );
+                      c.AddPaths(subj, (ClipperLib as any).PolyType.ptSubject, true);
+                      const sol = new (ClipperLib as any).Paths();
+                      const succeeded = c.Execute((ClipperLib as any).ClipType.ctUnion, sol, (ClipperLib as any).PolyFillType.pftNonZero, (ClipperLib as any).PolyFillType.pftNonZero);
+                      if (succeeded && sol && sol.length > 0) {
+                        // Convert Paths -> polygon-clipping like structure: array of polygons, each polygon is array of rings
+                        result = sol.map((path: any) => [path.map((pt: any) => [pt.X / clipperScale, pt.Y / clipperScale])]);
+                      }
+                    } catch (e) {
+                      // ignore and try polygon-clipping as fallback
+                    }
+
+                    // No polygon-clipping fallback: rely on Clipper's union result.
+                    // If Clipper couldn't produce a union, leave `result` as null
+                    // and fall back to the convex-hull/concatenation logic below.
+
+                    if (result && result.length > 0) return result;
+                  } catch (e) {
+                    // ignore and increase padding
+                  }
+                  pad *= 2;
+                }
+                return null;
+              };
+
+              const unionResult = tryUnionWithPadding(polys, voronoiMergePadStart, voronoiMergeAttempts);
+              if (!unionResult) {
+                // union failed; skip inset step
+              }
+              if (unionResult && unionResult.length > 0) {
+                // unionResult is an array of polygons; each polygon is an array of rings
+                // Optionally inset (shrink) the merged polygons by `voronoiInsetPad`.
+                let finalPolys: any = unionResult;
+                if (typeof voronoiInsetPad === 'number' && voronoiInsetPad > 0) {
+                  try {
+                    const insetAttempt = unionResult.map((poly: any) => {
+                      return poly.map((ring: [number, number][]) => {
+                        const inset = offsetPolygonWithClipper(ring, -voronoiInsetPad);
+                        // If inset produced a valid polygon (>=3 points), use it; otherwise keep original ring
+                        if (inset && inset.length >= 3) return inset;
+                        return ring;
+                      });
+                    }).filter((p: any) => p && p.length > 0);
+
+                    if (insetAttempt && insetAttempt.length > 0) {
+                      finalPolys = insetAttempt;
+                    }
+                  } catch (e) {
+                    // If inset fails for any reason, fall back to the original union result
+                    finalPolys = unionResult;
+                  }
+                }
+
+                combinedPath = finalPolys.map((poly: any) => {
+                  // For each ring in the polygon (outer ring + holes) create a rounded path
+                  return poly.map((ring: [number, number][]) => roundedPathFromPolygon(ring, rounding)).join(' ');
+                }).join(' ');
+              } else {
+                // Fallback: if union failed, build a convex hull of all vertices
+                const allPoints: [number, number][] = [];
+                polys.forEach(p => p.forEach(pt => allPoints.push([pt[0], pt[1]] as [number, number])));
+
+                const convexHull = (pts: [number, number][]) => {
+                  if (!pts || pts.length === 0) return [] as [number, number][];
+                  // Unique points
+                  const map = new Map<string, [number, number]>();
+                  for (const p of pts) map.set(p[0] + ',' + p[1], p);
+                  const uniq = Array.from(map.values());
+                  if (uniq.length <= 2) return uniq;
+                  uniq.sort((a, b) => a[0] === b[0] ? a[1] - b[1] : a[0] - b[0]);
+                  const cross = (o: [number, number], a: [number, number], b: [number, number]) => (a[0]-o[0])*(b[1]-o[1]) - (a[1]-o[1])*(b[0]-o[0]);
+                  const lower: [number, number][] = [];
+                  for (const p of uniq) {
+                    while (lower.length >= 2 && cross(lower[lower.length-2], lower[lower.length-1], p) <= 0) lower.pop();
+                    lower.push(p);
+                  }
+                  const upper: [number, number][] = [];
+                  for (let i = uniq.length - 1; i >= 0; i--) {
+                    const p = uniq[i];
+                    while (upper.length >= 2 && cross(upper[upper.length-2], upper[upper.length-1], p) <= 0) upper.pop();
+                    upper.push(p);
+                  }
+                  upper.pop(); lower.pop();
+                  const hull = lower.concat(upper);
+                  return hull.length ? hull : uniq;
+                };
+
+                const hull = convexHull(allPoints);
+                if (hull && hull.length > 0) {
+                  // Try insetting the convex hull as well
+                  try {
+                    const insetHull = offsetPolygonWithClipper(hull, -voronoiInsetPad);
+                    if (insetHull && insetHull.length >= 3) {
+                      combinedPath = roundedPathFromPolygon(insetHull, rounding);
+                    } else {
+                      combinedPath = roundedPathFromPolygon(hull, rounding);
+                    }
+                  } catch (e) {
+                    combinedPath = roundedPathFromPolygon(hull, rounding);
+                  }
+                } else {
+                  combinedPath = polys.map(p => roundedPathFromPolygon(p, rounding)).join(' ');
+                }
+              }
+            } catch (err) {
+              // If polygon union fails for any reason, fall back to concatenating
+              // the individual rounded polygons so we still render something.
+              combinedPath = polys.map(p => roundedPathFromPolygon(p, rounding)).join(' ');
+            }
+
+            // Draw Voronoi region with Rough.js for sketchy look. If Rough fails,
+            // fall back to plain SVG path so rendering still occurs.
+            try {
+              // Build an RGBA color string that includes the voronoiFillOpacity
+              const d3col = d3.color(hex);
+              const fillWithAlpha = d3col
+                ? `rgba(${Math.round((d3col as any).r)},${Math.round((d3col as any).g)},${Math.round((d3col as any).b)},${voronoiFillOpacity})`
+                : hex;
+
+              // Render with Rough.js using hachure fill and no outline stroke so
+              // regions are represented by thick parallel hatch lines.
+              const roughPath = (rc as any).path(combinedPath, {
+                // Remove outline by disabling stroke
+                stroke: 'none',
+                strokeWidth: 0,
+                // Fill using the voronoiFillStyle (hachure) and color (includes alpha)
+                fill: fillWithAlpha,
+                fillStyle: voronoiFillStyle,
+                // Control density/weight of hatch lines for a thicker appearance
+                hachureGap: voronoiFillGap,
+                fillWeight: voronoiFillWeight,
+                roughness: sketchRoughness,
+                bowing: sketchBowing
+              }) as SVGElement;
+              roughPath.classList.add('voronoi-rough');
+              roughPath.setAttribute('fill-rule', 'evenodd');
+              roughPath.style.pointerEvents = 'none';
+              // Append the Rough.js-generated node into the voronoi group
+              voronoiGroup.node().appendChild(roughPath);
+            } catch (e) {
+              // Fallback to plain SVG path without outline (fill-only)
+              const d3col = d3.color(hex);
+              const fillWithAlpha = d3col
+                ? `rgba(${Math.round((d3col as any).r)},${Math.round((d3col as any).g)},${Math.round((d3col as any).b)},${voronoiFillOpacity})`
+                : hex;
+
+              voronoiGroup.append('path')
+                .attr('class', 'voronoi-rough')
+                .attr('d', combinedPath)
+                .attr('fill', fillWithAlpha)
+                .attr('fill-rule', 'evenodd')
+                .attr('stroke', 'none')
+                .attr('stroke-width', 0)
+                .style('pointer-events', 'none');
+            }
           });
         }
       } catch (e) {
@@ -1103,15 +1320,25 @@ Out`;
           .attr('fill', 'var(--text-color)')
           .text(pot);
 
-        // Color swatch at right (same column as ingredient amounts)
-        svg.append('rect')
-          .attr('class', 'pot-legend')
-          .attr('x', amountX - boxSize)
-          .attr('y', y - boxSize + 4)
-          .attr('width', boxSize)
-          .attr('height', boxSize)
-          .attr('fill', color)
-          .attr('stroke', 'none');
+        // Color swatch at right (render with Rough.js for sketchy style)
+        const swX = amountX - boxSize;
+        const swY = y - boxSize + 4;
+        // Scale down hatch gap and weight for small legend swatches so the
+        // sketch fill remains visually balanced.
+        const legendGap = Math.max(1, Math.round(voronoiFillGap / 5));
+        const legendWeight = Math.max(0.5, voronoiFillWeight / 5);
+        const sw = rc.rectangle(swX, swY, boxSize, boxSize, {
+          stroke: 'none',
+          strokeWidth: 0,
+          fill: color,
+          fillStyle: voronoiFillStyle,
+          hachureGap: legendGap,
+          fillWeight: legendWeight,
+          roughness: sketchRoughness,
+          bowing: sketchBowing
+        });
+        sw.classList.add('pot-legend-swatch');
+        svg.node().appendChild(sw);
       });
     }
   }

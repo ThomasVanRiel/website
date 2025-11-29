@@ -7,7 +7,7 @@ Subprocess A {
 
 Subprocess B {
     Add White from A
-    Beat
+    Beat in Mixing bowl 2
     Out .
 }
 
@@ -21,11 +21,11 @@ Add Yolk from A
 Add Yeast {6 g}
 Add Milk {125 g}
 Add Water {125 g}
-Mix
+Mix in Mixing bowl 1
 Add Flour {150 g}
 Add . from C
-Mix
+Mix in Mixing bowl 1
 Add . from B
-Mix Carefully
+Mix (Carefully) in Mixing bowl 1
 Bake
 Out
