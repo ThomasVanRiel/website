@@ -1220,12 +1220,12 @@ Out"
 
   // Initialize with stoofvlees recipe
   const stoofvleesRecipe = `Subprocess Grill {
-    Add meat {1 kg}
+    Add Meat {1 kg}
     Grill (in butter) in Braising pan
-    Out meat
+    Out Meat
     Add Beer {2 bottles}
     Cook in Braising pan
-    Out sauce
+    Out Sauce
 }
 
 Subprocess Bread {
@@ -1238,8 +1238,8 @@ Subprocess Bread {
 Add Onion {2}
 Chop
 Sauté (in butter) in Casserole
-Add meat from Grill
-Add sauce from Grill
+Add Meat from Grill
+Add Sauce from Grill
 Add Laurel
 Add Thyme
 Add Cloves {1}
@@ -1247,7 +1247,7 @@ Add Sirup {1 Tb.}
 Add . from Bread
 Simmer (on low heat) in Casserole
 Add Vinegar
-Out`;
+Out `;
 
   initSVG();
   const parsedRecipe = parseRecipe(stoofvleesRecipe);
@@ -1459,13 +1459,18 @@ Out`;
   document.getElementById('save-svg')!.addEventListener('click', () => {
     const svgElement = document.querySelector('#recipe-flowchart svg') as SVGSVGElement;
     if (!svgElement) return;
-    
+
     // Clone the SVG to avoid modifying the original
     const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
-    
+
+    // Inject xkcd font-face CSS into SVG
+    const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    style.textContent = `@font-face { font-family: "xkcd Script"; src: url('/fonts/xkcd-script.woff') format('woff'); font-weight: normal; font-style: normal; } text { font-family: 'xkcd Script', cursive; }`;
+    svgClone.insertBefore(style, svgClone.firstChild);
+
     // Get the SVG markup
     const svgData = new XMLSerializer().serializeToString(svgClone);
-    
+
     // Create a blob and download
     const blob = new Blob([svgData], { type: 'image/svg+xml' });
     const url = URL.createObjectURL(blob);
@@ -1483,6 +1488,11 @@ Out`;
     return new Promise<HTMLCanvasElement>((resolve, reject) => {
       // Clone to avoid mutating original
       const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
+
+      // Inject xkcd font-face CSS into SVG
+      const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+      style.textContent = `@font-face { font-family: "xkcd Script"; src: url('/fonts/xkcd-script.woff') format('woff'); font-weight: normal; font-style: normal; } text { font-family: 'xkcd Script', cursive; }`;
+      svgClone.insertBefore(style, svgClone.firstChild);
 
       // Determine intrinsic size from viewBox if available
       const vb = svgElement.viewBox && svgElement.viewBox.baseVal;
