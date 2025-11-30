@@ -1272,6 +1272,68 @@ Out"
     return { graphData: { nodes, links }, ingredients };
   }
 
+    // Compare graph structure (ignoring labels) to decide whether we can
+    // preserve node identities (ids/positions) when updating only descriptions.
+    function nodeSignature(node, links) {
+      // signature based on group and connectivity counts
+      const inDeg = links.filter(l => (typeof l.target === 'string' ? l.target : l.target.id) === node.id).length;
+      const outDeg = links.filter(l => (typeof l.source === 'string' ? l.source : l.source.id) === node.id).length;
+      return `${node.group}|in:${inDeg}|out:${outDeg}`;
+    }
+
+    function graphStructureEqual(oldG, newG) {
+      if (!oldG || !newG) return false;
+      if (oldG.nodes.length !== newG.nodes.length) return false;
+      if (oldG.links.length !== newG.links.length) return false;
+
+      const oldSigs = oldG.nodes.map(n => nodeSignature(n, oldG.links)).sort();
+      const newSigs = newG.nodes.map(n => nodeSignature(n, newG.links)).sort();
+      // If the multisets of node signatures match, treat structure as same
+      for (let i = 0; i < oldSigs.length; i++) if (oldSigs[i] !== newSigs[i]) return false;
+      return true;
+    }
+
+    // Merge labels from newGraph into oldGraph while preserving ids and positions.
+    // This matches nodes by signature and assigns the new label to the matched old id.
+    function mergeGraphsPreserveIds(oldG, newG) {
+      // Build buckets of old nodes by signature
+      const sigToOld = new Map();
+      for (const n of oldG.nodes) {
+        const sig = nodeSignature(n, oldG.links);
+        if (!sigToOld.has(sig)) sigToOld.set(sig, []);
+        sigToOld.get(sig).push(n);
+      }
+
+      // For each new node, pick an unused old node with same signature
+      const used = new Set();
+      const mergedNodes = newG.nodes.map(n => {
+        const sig = nodeSignature(n, newG.links);
+        const candidates = sigToOld.get(sig) || [];
+        let match = null;
+        for (const c of candidates) if (!used.has(c.id)) { match = c; break; }
+        if (match) {
+          used.add(match.id);
+          return { ...match, label: n.label };
+        }
+        // fallback: keep new node as-is
+        return { ...n };
+      });
+
+      // Rebuild links but remap any string source/target labels to preserved ids where possible
+      const oldLabelToId = new Map();
+      for (const n of mergedNodes) oldLabelToId.set(n.label, n.id);
+
+      const remap = (ref) => {
+        if (typeof ref === 'string') {
+          // try to find a node with matching label; otherwise keep raw string
+          return oldLabelToId.get(ref) || ref;
+        }
+        return ref.id || ref;
+      };
+
+      const mergedLinks = newG.links.map(l => ({ source: remap(l.source), target: remap(l.target) }));
+      return { nodes: mergedNodes, links: mergedLinks };
+    }
   // Initialize with stoofvlees recipe
   const stoofvleesRecipe = `Subprocess Grill {
     Add Meat {1 kg}
@@ -1305,7 +1367,13 @@ Out `;
 
   const parsedRecipe = parseRecipe(stoofvleesRecipe);
   initSVG();
-  renderFlowchart(parsedRecipe.graphData);
+  // If the structure of the new graph matches the current graph, merge labels
+  // into the existing node ids so positions/ids are preserved.
+  let initialDataToRender = parsedRecipe.graphData;
+  if (graphStructureEqual(currentData, parsedRecipe.graphData)) {
+    initialDataToRender = mergeGraphsPreserveIds(currentData, parsedRecipe.graphData);
+  }
+  renderFlowchart(initialDataToRender);
   displayIngredients(parsedRecipe.ingredients);
   displayInstructions();
 
@@ -1500,10 +1568,14 @@ Out `;
   document.getElementById('generate-flowchart')!.addEventListener('click', () => {
     const input = recipeInput.value;
     if (input.trim()) {
-      const parsedRecipe = parseRecipe(input);
+      const parsed = parseRecipe(input);
       initSVG();
-      renderFlowchart(parsedRecipe.graphData);
-      displayIngredients(parsedRecipe.ingredients);
+      let dataToRender = parsed.graphData;
+      if (graphStructureEqual(currentData, parsed.graphData)) {
+        dataToRender = mergeGraphsPreserveIds(currentData, parsed.graphData);
+      }
+      renderFlowchart(dataToRender);
+      displayIngredients(parsed.ingredients);
       displayInstructions();
     }
   });
