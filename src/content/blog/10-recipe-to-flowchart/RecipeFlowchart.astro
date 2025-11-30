@@ -22,19 +22,19 @@ Out"
     <div class="flex gap-2 mt-2">
       <button
         id="generate-flowchart"
-        class="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded-md transition-colors"
+        class="button  px-1.5"
       >
         Generate Flowchart
       </button>
       <button
         id="save-svg"
-        class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors"
+        class="button  px-1.5"
       >
         Save as SVG
       </button>
       <button
         id="save-png"
-        class="px-4 py-2 bg-gray-500 hover:bg-gray-600 text-white rounded-md transition-colors"
+        class="button  px-1.5"
       >
         Save as PNG
       </button>
@@ -45,7 +45,7 @@ Out"
 
       <button
         id="toggle-theme"
-        class="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-black dark:text-white rounded-md transition-colors"
+        class="button px-1.5"
         type="button"
       >
         Switch to Light Mode
@@ -365,8 +365,11 @@ Out"
         .on("end", dragended));
 
     // Create/update Voronoi cells for process nodes — include the final Serve node so it affects cell layout
+    // Include all process nodes and any output nodes (final words like "Serve"
+    // should also influence Voronoi/pot layout). Previously only an output
+    // labelled "Serve" was included; accept any output label now.
     const processNodes = data.nodes.filter((d: Node) =>
-      d.group === 'process' || (d.group === 'output' && String(d.label).trim().toLowerCase() === 'serve')
+      d.group === 'process' || d.group === 'output'
     );
 
     // Helper: extract pot name from a process label (looks for last " in ")
@@ -1138,7 +1141,11 @@ Out"
         // Check if this is an Out statement at the end (final output)
         if (line.startsWith('Out')) {
           const id = `node${nodeId++}`;
-          const node: Node = { id, label: 'Serve', group: "output" };
+          // Use any text following 'Out' as the output label; default to 'Serve'
+          // when no label is provided (e.g. a bare 'Out' line).
+          let outLabel = line.replace(/^Out\s*/i, '').trim();
+          if (!outLabel) outLabel = 'Serve';
+          const node: Node = { id, label: outLabel, group: "output" };
           nodes.push(node);
           
           // Link from last process step
@@ -1178,9 +1185,12 @@ Out"
         } else {
           // Process step
           const id = `node${nodeId++}`;
-          // Check if there's an Out after this line
-          const hasOutAfter = lines.slice(i + 1).some((l: string) => l.trim().startsWith('Out'));
-          const node: Node = { id, label: line, group: hasOutAfter ? "process" : "output" };
+          // If this is the very last line in the top-level recipe, treat it
+          // as an output node when the explicit 'Out' keyword is omitted.
+          // Otherwise keep it as a process node so earlier steps are not
+          // incorrectly themed as outputs.
+          const isLastLine = i === lines.length - 1;
+          const node: Node = { id, label: line, group: isLastLine ? "output" : "process" };
           nodes.push(node);
           
           // Link to previous process step
@@ -1436,11 +1446,9 @@ Out `;
     
     button.disabled = !hasContent;
     if (!hasContent) {
-      button.classList.add('opacity-50', 'cursor-not-allowed');
-      button.classList.remove('hover:bg-blue-600');
+      button.classList.add('opacity-30', 'cursor-not-allowed');
     } else {
-      button.classList.remove('opacity-50', 'cursor-not-allowed');
-      button.classList.add('hover:bg-blue-600');
+      button.classList.remove('opacity-30', 'cursor-not-allowed');
     }
   }
 
@@ -1611,10 +1619,10 @@ Out `;
   function updateThemeButton() {
     const isDark = document.documentElement.classList.contains('dark');
     themeButton!.textContent = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
-    themeButton!.classList.toggle('bg-gray-800', isDark);
-    themeButton!.classList.toggle('bg-gray-400', !isDark);
-    themeButton!.classList.toggle('text-white', isDark);
-    themeButton!.classList.toggle('text-black', !isDark);
+    //themeButton!.classList.toggle('bg-gray-800', isDark);
+    //themeButton!.classList.toggle('bg-gray-400', !isDark);
+    //themeButton!.classList.toggle('text-white', isDark);
+    //themeButton!.classList.toggle('text-black', !isDark);
   }
   themeButton?.addEventListener('click', () => {
     document.documentElement.classList.toggle('dark');
