@@ -42,6 +42,14 @@ Out"
         <input type="checkbox" id="toggle-pots" checked />
         <span>Show cookware</span>
       </label>
+
+      <button
+        id="toggle-theme"
+        class="px-4 py-2 bg-gray-400 hover:bg-gray-500 text-black dark:text-white rounded-md transition-colors"
+        type="button"
+      >
+        Switch to Light Mode
+      </button>
       
     </div>
   </div>
@@ -1597,6 +1605,22 @@ Out `;
     });
   }
 
+
+  // Theme toggle logic
+  const themeButton = document.getElementById('toggle-theme');
+  function updateThemeButton() {
+    const isDark = document.documentElement.classList.contains('dark');
+    themeButton!.textContent = isDark ? 'Switch to Light Mode' : 'Switch to Dark Mode';
+    themeButton!.classList.toggle('bg-gray-800', isDark);
+    themeButton!.classList.toggle('bg-gray-400', !isDark);
+    themeButton!.classList.toggle('text-white', isDark);
+    themeButton!.classList.toggle('text-black', !isDark);
+  }
+  themeButton?.addEventListener('click', () => {
+    document.documentElement.classList.toggle('dark');
+    updateThemeButton();
+  });
+  updateThemeButton();
 </script>
 
 <style>
