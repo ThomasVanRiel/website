@@ -126,6 +126,10 @@ Out"
     ]
   };
 
+  // Optional titles (can be overridden by recipe front-matter fences)
+  let ingredientTitle = "Ingredients";
+  let instructionTitle = "Instructions";
+
   let currentData: GraphData = defaultRecipeData;
   let svg: any, simulation: any, link: any, node: any, linkGroup: any, nodeGroup: any;
   let voronoiGroup: any;
@@ -211,7 +215,7 @@ Out"
       .attr("font-family", "xkcd Script, cursive")
       .attr("font-weight", "bold")
       .attr("fill", "var(--text-color)")
-      .text("Ingredients");
+      .text(ingredientTitle);
     
     // Top-right: Instructions
     svg.append("text")
@@ -222,7 +226,7 @@ Out"
       .attr("font-family", "xkcd Script, cursive")
       .attr("font-weight", "bold")
       .attr("fill", "var(--text-color)")
-      .text("Instructions");
+      .text(instructionTitle);
 
     // Get computed border color and node stroke color
     const borderColor = 'currentColor';
@@ -944,7 +948,39 @@ Out"
 
   // Parse recipe text input
   function parseRecipe(text: string): { graphData: GraphData; ingredients: Ingredient[] } {
-    const lines = text.trim().split('\n').filter(line => line.trim());
+    // Support optional front-matter fences at the top of the recipe
+    // Example:
+    // ---
+    // Ingredients: Ingrediënten
+    // Instructions: Instructies
+    // ---
+    let raw = text;
+    try {
+      if (raw.trim().startsWith('---')) {
+        const parts = raw.split(/\r?\n/);
+        let endIndex = -1;
+        for (let k = 1; k < parts.length; k++) {
+          if (parts[k].trim() === '---') { endIndex = k; break; }
+        }
+        if (endIndex > 0) {
+          const fmLines = parts.slice(1, endIndex);
+          fmLines.forEach((l) => {
+            const m = l.match(/^\s*([^:]+)\s*:\s*(.+)\s*$/);
+            if (m) {
+              const key = m[1].trim().toLowerCase();
+              const val = m[2].trim();
+              if (key === 'ingredients') ingredientTitle = val;
+              if (key === 'instructions') instructionTitle = val;
+            }
+          });
+          raw = parts.slice(endIndex + 1).join('\n');
+        }
+      }
+    } catch (e) {
+      // ignore malformed front-matter and continue parsing normally
+    }
+
+    const lines = raw.trim().split('\n').filter(line => line.trim());
     
     const nodes: Node[] = [];
     const links: Link[] = [];
@@ -1267,8 +1303,8 @@ Simmer (on low heat) in Casserole
 Add Vinegar
 Out `;
 
-  initSVG();
   const parsedRecipe = parseRecipe(stoofvleesRecipe);
+  initSVG();
   renderFlowchart(parsedRecipe.graphData);
   displayIngredients(parsedRecipe.ingredients);
   displayInstructions();
@@ -1464,8 +1500,8 @@ Out `;
   document.getElementById('generate-flowchart')!.addEventListener('click', () => {
     const input = recipeInput.value;
     if (input.trim()) {
-      initSVG();
       const parsedRecipe = parseRecipe(input);
+      initSVG();
       renderFlowchart(parsedRecipe.graphData);
       displayIngredients(parsedRecipe.ingredients);
       displayInstructions();

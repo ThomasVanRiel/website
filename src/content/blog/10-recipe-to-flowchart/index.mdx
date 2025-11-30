@@ -101,5 +101,50 @@ Serve
 
 ![Example waffles flowchart](/images/waffles.png)
 
+### Internationalization
+
+It is possible to change the title blocks to reflect the recipe language by including a settings block to the top of the file.
+Below is an example for the dutch version of the *Brusselse wafels* recipe.
+```javascript
+---
+Ingredients: Ingrediënten
+Instructions: Instructies
+---
+
+Subprocess A {
+    Add Ei {1}
+    Scheid
+    Out Wit
+    Out Geel
+}
+
+Subprocess B {
+    Add Wit from A
+    Klop op in Mengkom 2
+    Out .
+}
+
+Subprocess C {
+    Add Boter {50 g}
+    Smelt
+    Out .
+}
+
+Add Geel from A
+Add Gist {6 g}
+Add Melk {125 g}
+Add Water {125 g}
+Meng in Mengkom 1
+Add Bloem {150 g}
+Add . from C
+Meng in Mengkom 1
+Add . from B
+Meng (voorzichtig) in Mengkom 1
+Bak
+Smakelijk
+```
+
+![Example Dutch waffles flowchart](/images/waffles_NL.png)
+
 
 [^1]: Yes, this is a custom programming language.

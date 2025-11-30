@@ -1,0 +1,36 @@
+---
+Ingredients: Ingrediënten
+Instructions: Instructies
+---
+
+Subprocess A {
+    Add Ei {1}
+    Scheid
+    Out Wit
+    Out Geel
+}
+
+Subprocess B {
+    Add Wit from A
+    Klop op in Mengkom 2
+    Out .
+}
+
+Subprocess C {
+    Add Boter {50 g}
+    Smelt
+    Out .
+}
+
+Add Geel from A
+Add Gist {6 g}
+Add Melk {125 g}
+Add Water {125 g}
+Meng in Mengkom 1
+Add Bloem {150 g}
+Add . from C
+Meng in Mengkom 1
+Add . from B
+Meng (voorzichtig) in Mengkom 1
+Bak
+Smakelijk
