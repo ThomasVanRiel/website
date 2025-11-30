@@ -1,8 +1,8 @@
 ---
+import initPositions from './init.json';
 // AI Notice: Mainly vibecoded
 // TODO: Refactor to separate JS logic into its own file for better maintainability
 ---
-
 
 <div class="my-8">
   <div class="mb-4">
@@ -53,7 +53,7 @@ Out"
       
     </div>
   </div>
-  <div id="recipe-flowchart"></div>
+  <div id="recipe-flowchart" data-init={JSON.stringify(initPositions)}></div>
 </div>
 
 <script>
@@ -1391,6 +1391,24 @@ Out"
     }
 
     const STORAGE_KEY = 'flowchart-node-positions';
+
+    // Read any build-time initial positions attached to the flowchart container
+    const INIT_POSITIONS = (() => {
+      try {
+        const el = document.getElementById('recipe-flowchart');
+        const raw = el ? el.getAttribute('data-init') : null;
+        return raw ? JSON.parse(raw) : {};
+      } catch (e) { return {}; }
+    })();
+
+    // If storage is empty, seed it with the example initial positions so
+    // first-time visitors get the same layout as the demo.
+    try {
+      const existing = localStorage.getItem(STORAGE_KEY);
+      if ((!existing || existing === '{}' || existing === 'null') && INIT_POSITIONS && Object.keys(INIT_POSITIONS).length) {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(INIT_POSITIONS));
+      }
+    } catch (e) { /* ignore storage errors */ }
 
     function loadPositionMap() {
       try {
