@@ -345,6 +345,10 @@ Out"
       // Ingredient grid keeps ingredient nodes aligned in a compact left column
       .force("ingredientGrid", forceIngredientGrid(gridX, gridY, gridAttractorStrength, 0));
 
+    // Apply any stored positions for this graph (by node hash) so matching nodes
+    // keep their previous locations when regenerating the chart.
+    try { applyStoredPositionsToGraph(data); } catch (e) { }
+
     // Create links
     linkGroup.selectAll("*").remove();
     const linkColor = 'currentColor';
@@ -926,6 +930,11 @@ Out"
 
       node.attr("transform", (d: Node) => `translate(${d.x},${d.y})`);
     });
+
+    // When the simulation finishes, persist node positions
+    simulation.on('end', () => {
+      try { saveAllPositionsForCurrentGraph(); } catch (e) { }
+    });
   }
 
   // Drag functions
@@ -942,8 +951,19 @@ Out"
 
   function dragended(event: any) {
     if (!event.active) simulation.alphaTarget(0);
+    // Release the node so it can participate normally in the simulation
     event.subject.fx = null;
     event.subject.fy = null;
+
+    // Persist the new position for this node using its hash
+    try {
+      if (event && event.subject && typeof event.subject.x === 'number' && typeof event.subject.y === 'number') {
+        const map = loadPositionMap();
+        const h = nodeHashForGraph(event.subject, currentData.nodes, currentData.links);
+        map[h] = { x: event.subject.x, y: event.subject.y };
+        savePositionMap(map);
+      }
+    } catch (e) { /* non-fatal */ }
   }
 
   // Parse recipe text input
@@ -1274,20 +1294,20 @@ Out"
 
     // Compare graph structure (ignoring labels) to decide whether we can
     // preserve node identities (ids/positions) when updating only descriptions.
-    function nodeSignature(node, links) {
+    function nodeSignature(node: Node, links: Link[]) {
       // signature based on group and connectivity counts
-      const inDeg = links.filter(l => (typeof l.target === 'string' ? l.target : l.target.id) === node.id).length;
-      const outDeg = links.filter(l => (typeof l.source === 'string' ? l.source : l.source.id) === node.id).length;
+      const inDeg = links.filter((l: Link) => (typeof l.target === 'string' ? l.target : l.target.id) === node.id).length;
+      const outDeg = links.filter((l: Link) => (typeof l.source === 'string' ? l.source : l.source.id) === node.id).length;
       return `${node.group}|in:${inDeg}|out:${outDeg}`;
     }
 
-    function graphStructureEqual(oldG, newG) {
+    function graphStructureEqual(oldG: GraphData | null | undefined, newG: GraphData | null | undefined) {
       if (!oldG || !newG) return false;
       if (oldG.nodes.length !== newG.nodes.length) return false;
       if (oldG.links.length !== newG.links.length) return false;
 
-      const oldSigs = oldG.nodes.map(n => nodeSignature(n, oldG.links)).sort();
-      const newSigs = newG.nodes.map(n => nodeSignature(n, newG.links)).sort();
+      const oldSigs = oldG.nodes.map((n: Node) => nodeSignature(n, oldG.links)).sort();
+      const newSigs = newG.nodes.map((n: Node) => nodeSignature(n, newG.links)).sort();
       // If the multisets of node signatures match, treat structure as same
       for (let i = 0; i < oldSigs.length; i++) if (oldSigs[i] !== newSigs[i]) return false;
       return true;
@@ -1295,21 +1315,21 @@ Out"
 
     // Merge labels from newGraph into oldGraph while preserving ids and positions.
     // This matches nodes by signature and assigns the new label to the matched old id.
-    function mergeGraphsPreserveIds(oldG, newG) {
+    function mergeGraphsPreserveIds(oldG: GraphData, newG: GraphData): GraphData {
       // Build buckets of old nodes by signature
-      const sigToOld = new Map();
+      const sigToOld = new Map<string, Node[]>();
       for (const n of oldG.nodes) {
         const sig = nodeSignature(n, oldG.links);
         if (!sigToOld.has(sig)) sigToOld.set(sig, []);
-        sigToOld.get(sig).push(n);
+        sigToOld.get(sig)!.push(n);
       }
 
       // For each new node, pick an unused old node with same signature
-      const used = new Set();
-      const mergedNodes = newG.nodes.map(n => {
+      const used = new Set<string>();
+      const mergedNodes: Node[] = newG.nodes.map((n: Node) => {
         const sig = nodeSignature(n, newG.links);
         const candidates = sigToOld.get(sig) || [];
-        let match = null;
+        let match: Node | null = null;
         for (const c of candidates) if (!used.has(c.id)) { match = c; break; }
         if (match) {
           used.add(match.id);
@@ -1320,10 +1340,10 @@ Out"
       });
 
       // Rebuild links but remap any string source/target labels to preserved ids where possible
-      const oldLabelToId = new Map();
+      const oldLabelToId = new Map<string, string>();
       for (const n of mergedNodes) oldLabelToId.set(n.label, n.id);
 
-      const remap = (ref) => {
+      const remap = (ref: string | Node) => {
         if (typeof ref === 'string') {
           // try to find a node with matching label; otherwise keep raw string
           return oldLabelToId.get(ref) || ref;
@@ -1331,8 +1351,98 @@ Out"
         return ref.id || ref;
       };
 
-      const mergedLinks = newG.links.map(l => ({ source: remap(l.source), target: remap(l.target) }));
+      const mergedLinks: Link[] = newG.links.map((l: Link) => ({ source: remap(l.source) as any, target: remap(l.target) as any }));
       return { nodes: mergedNodes, links: mergedLinks };
+    }
+  
+    // --- Node position persistence using a node hash ---
+    // Simple non-cryptographic string hash (deterministic across sessions)
+    function simpleHash(s: string) {
+      let h = 2166136261 >>> 0;
+      for (let i = 0; i < s.length; i++) {
+        h ^= s.charCodeAt(i);
+        h = Math.imul(h, 16777619) >>> 0;
+      }
+      return h.toString(36);
+    }
+
+    // Compute a stable hash for a node using its label, group and neighbor labels
+    function nodeHashForGraph(node: any, nodes: any[], links: any[]) {
+      const id = node.id || '';
+      const label = (node.label || '').trim();
+      const group = node.group || '';
+
+      // Collect neighbor labels for a slightly richer fingerprint
+      const incoming = links.filter(l => (typeof l.target === 'string' ? l.target : l.target.id) === id)
+        .map(l => {
+          const sid = (typeof l.source === 'string' ? l.source : l.source.id);
+          const n = nodes.find((x: any) => x.id === sid);
+          return n ? (n.label || n.id) : sid;
+        }).sort().join('|');
+      const outgoing = links.filter(l => (typeof l.source === 'string' ? l.source : l.source.id) === id)
+        .map(l => {
+          const tid = (typeof l.target === 'string' ? l.target : l.target.id);
+          const n = nodes.find((x: any) => x.id === tid);
+          return n ? (n.label || n.id) : tid;
+        }).sort().join('|');
+
+      const base = `${label}::${group}::in:${incoming}::out:${outgoing}`;
+      return simpleHash(base);
+    }
+
+    const STORAGE_KEY = 'flowchart-node-positions';
+
+    function loadPositionMap() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (!raw) return {};
+        return JSON.parse(raw || '{}');
+      } catch (e) {
+        return {};
+      }
+    }
+
+    function savePositionMap(map: any) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(map));
+      } catch (e) {
+        // ignore storage errors
+      }
+    }
+
+    // Save all current node positions into localStorage using node hashes
+    function saveAllPositionsForCurrentGraph() {
+      try {
+        const map = loadPositionMap();
+        if (!currentData || !currentData.nodes) return;
+        for (const n of currentData.nodes) {
+          if (typeof n.x === 'number' && typeof n.y === 'number') {
+            const h = nodeHashForGraph(n, currentData.nodes, currentData.links);
+            map[h] = { x: n.x, y: n.y };
+          }
+        }
+        savePositionMap(map);
+      } catch (e) { /* non-fatal */ }
+    }
+
+    // Attempt to apply stored positions to nodes in a new graph (by hash)
+    function applyStoredPositionsToGraph(graph: GraphData) {
+      try {
+        const map = loadPositionMap();
+        if (!graph || !graph.nodes) return;
+        for (const n of graph.nodes) {
+          const h = nodeHashForGraph(n, graph.nodes, graph.links);
+          const p = map[h];
+          if (p && typeof p.x === 'number' && typeof p.y === 'number') {
+            // Apply stored coordinates but do NOT fix the node in place.
+            // Leaving `fx`/`fy` set prevents the node from reacting to
+            // forces or to user-driven movements of nearby nodes. Allowing
+            // the simulation to move the node keeps the layout responsive.
+            n.x = p.x;
+            n.y = p.y;
+          }
+        }
+      } catch (e) { /* non-fatal */ }
     }
   // Initialize with stoofvlees recipe
   const stoofvleesRecipe = `Subprocess Grill {
@@ -1568,6 +1678,10 @@ Out `;
   document.getElementById('generate-flowchart')!.addEventListener('click', () => {
     const input = recipeInput.value;
     if (input.trim()) {
+      // Persist positions of the currently rendered graph so hashes are
+      // available to match nodes when we regenerate the flowchart.
+      try { saveAllPositionsForCurrentGraph(); } catch (e) { }
+
       const parsed = parseRecipe(input);
       initSVG();
       let dataToRender = parsed.graphData;
