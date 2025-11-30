@@ -14,9 +14,10 @@ import RecipeFlowchart from "./RecipeFlowchart.astro";
 Building on the idea that [recipes should be flowcharts](/blog/06-flowchart-recipes), this post explores how to convert traditional text-based recipes into clear, visual flowcharts.
 Using D3.js, a node network is generated from a recipe. The process steps and ingredients are dragable for flexibility and clarity.
 
-Fill in your recipe in the text box and click <kbd>Generate Flowchart</kbd>. Two example recipes are added below to showcase the recipe syntax. Feel free to copy them in the recipe text box to see what happens.
+Fill in your recipe in the text box and click <kbd>Generate Flowchart</kbd>. Two example recipes are added below to showcase the recipe syntax and a possible final image after (re)organizing the flowchart. Feel free to copy them in the recipe text box to see what happens.
 
 After generating the initial recipe flowchart. You can drag around the nodes to obtain a logical order and to avoid overlaps of links between nodes. This process requires some artistic input from the user (for now ...).
+*The flowchart adapts to light/dark mode, but looks better in light mode in my opinion.* 
 
 <RecipeFlowchart />
 
@@ -57,6 +58,8 @@ Add Vinegar
 Out
 ```
 
+![Example stoofvlees flowchart](./stoofvlees.png)
+
 ### Brussels Wafels
 ```python
 Subprocess A {
@@ -91,5 +94,8 @@ Mix (Carefully) in Mixing bowl 1
 Bake
 Out
 ```
+
+![Example waffles flowchart](./waffles.png)
+
 
 [^1]: Yes, this is a custom programming language.
