@@ -38,6 +38,13 @@ Out"
       >
         Save as PNG
       </button>
+      <button
+        id="share-recipe"
+        class="button  px-1.5"
+        title="Copy shareable link"
+      >
+        Share Recipe
+      </button>
       <label class="ml-2 flex items-center gap-2 text-sm">
         <input type="checkbox" id="toggle-pots" checked />
         <span>Show cookware</span>
@@ -1766,8 +1773,31 @@ Out `;
     }
   }
 
+  // URL encoding/decoding functions
+  function encodeRecipeToURL(recipe: string): void {
+    const url = new URL(window.location.href);
+    url.searchParams.set('recipe', encodeURIComponent(recipe));
+    window.history.pushState({}, '', url);
+  }
+
+  function loadRecipeFromURL(): string | null {
+    const params = new URLSearchParams(window.location.search);
+    const recipe = params.get('recipe');
+    return recipe ? decodeURIComponent(recipe) : null;
+  }
+
   // Set up button handlers
   const recipeInput = document.getElementById('recipe-input') as HTMLTextAreaElement;
+  
+  // Load recipe from URL on page load
+  const urlRecipe = loadRecipeFromURL();
+  if (urlRecipe) {
+    recipeInput.value = urlRecipe;
+    // Auto-generate flowchart if recipe is in URL
+    setTimeout(() => {
+      document.getElementById('generate-flowchart')?.click();
+    }, 100);
+  }
   
   // Update button state on input
   recipeInput.addEventListener('input', updateGenerateButtonState);
@@ -1794,6 +1824,9 @@ Out `;
       renderFlowchart(dataToRender);
       displayIngredients(parsed.ingredients);
       displayInstructions();
+      
+      // Update URL with recipe
+      encodeRecipeToURL(input);
     }
   });
 
@@ -1927,6 +1960,31 @@ Out `;
     const svgElement = document.querySelector('#recipe-flowchart svg') as SVGSVGElement;
     if (!svgElement) return;
     await downloadPNG(svgElement);
+  });
+
+  // Share button: copy URL with recipe to clipboard
+  document.getElementById('share-recipe')!.addEventListener('click', async () => {
+    const input = recipeInput.value;
+    if (!input.trim()) {
+      alert('Please enter a recipe first!');
+      return;
+    }
+    
+    const url = new URL(window.location.href);
+    url.searchParams.set('recipe', encodeURIComponent(input));
+    
+    try {
+      await navigator.clipboard.writeText(url.toString());
+      const btn = document.getElementById('share-recipe')!;
+      const originalText = btn.textContent;
+      btn.textContent = 'Link copied!';
+      setTimeout(() => {
+        btn.textContent = originalText;
+      }, 2000);
+    } catch (err) {
+      // Fallback for browsers without clipboard API
+      prompt('Copy this link to share your recipe:', url.toString());
+    }
   });
   
   // Pots toggle: hide/show voronoi background and legend
