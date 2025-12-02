@@ -33,7 +33,14 @@ An LLM-initiated <abbr title="Prompt: Write a short manual.md of the .recipe lan
 
 ### Examples
 #### Flemish beef stew
-```python
+```
+---
+Title: Flemish Stew
+Author: Thomas
+Date: 2025
+Comment: Based on Jeroen Meus
+---
+
 Subprocess Grill {
     Add meat {1 kg}
     Grill (in butter) in Braising pan
@@ -68,7 +75,14 @@ Serve
 ![Example stoofvlees flowchart](/images/stoofvlees.png)
 
 #### Brussels Wafels
-```python
+```
+---
+Title: Brussels wafels
+Author: Thomas
+Date: 2025
+Comment: Based on Jeroen Meus
+---
+
 Subprocess A {
     Add egg {1}
     Separate
@@ -109,8 +123,12 @@ Serve
 
 It is possible to change the title blocks to reflect the recipe language by including a settings block to the top of the file.
 Below is an example for the dutch version of the *Brusselse wafels* recipe.
-```javascript
+```
 ---
+Title: Brusselse wafels
+Author: Thomas
+Date: 2025
+Comment: Gebaseerd op Jeroen Meus
 Ingredients: Ingrediënten
 Instructions: Instructies
 ---
@@ -262,10 +280,14 @@ The `.` refers to the last (or only) unnamed output of a subprocess.
 
 #### Front Matter (Optional)
 
-Customize section titles using YAML-style front matter:
+Add information or customize section titles using YAML-style front matter:
 
 ```
 ---
+Title: <title>
+Author: <author>
+Date: <date>
+Comment: <comment>
 Ingredients: <custom title>
 Instructions: <custom title>
 ...
@@ -275,14 +297,33 @@ Instructions: <custom title>
 **Example:**
 ```
 ---
+Title: Brusselse wafels
+Author: Thomas Van Riel
+Date: 2025
+Comment: Based on Jeroen Meus
 Ingredients: Ingrediënten
 Instructions: Instructies
-Thomas Van Riel, 2025
 ---
 ```
 
 This is useful for localization or custom branding.
 The front matter can also be used to include other information (e.g. the date, author)
+
+#### Comments
+
+Add comments to your recipes using `//`:
+
+```
+Add Eggs {2}  // Use room temperature eggs
+Whisk  // Beat until frothy
+// This entire line is a comment
+Heat pan
+```
+
+- **Inline comments**: Text after `//` on any line is ignored
+- **Full-line comments**: Lines starting with `//` are completely ignored
+- **Use for**: Notes, clarifications, or temporary disabling of recipe steps
+
 
 #### Complete Examples
 
@@ -369,9 +410,11 @@ When rendered as a flowchart:
 4. **Clarity**: Use clarifications `(in parentheses)` for timing, temperature, or technique details
 5. **Amounts**: Always specify amounts in curly braces for ingredient tracking
 
+
 #### Parser Behavior
 
 - Blank lines are ignored
+- Comments (text after `//`) are stripped before parsing
 - Ingredients added from subprocesses are not duplicated in the ingredient list
 - The last process step in the main recipe is treated as the output if no `Out` statement is present
 - Subprocess outputs marked with `.` use the last process node in that subprocess

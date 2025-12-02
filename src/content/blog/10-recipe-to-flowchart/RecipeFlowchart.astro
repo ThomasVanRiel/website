@@ -129,6 +129,10 @@ Out"
   // Optional titles (can be overridden by recipe front-matter fences)
   let ingredientTitle = "Ingredients";
   let instructionTitle = "Instructions";
+  let author = "";
+  let date = "";
+  let title = "";
+  let comment = "";
 
   let currentData: GraphData = defaultRecipeData;
   let svg: any, simulation: any, link: any, node: any, linkGroup: any, nodeGroup: any;
@@ -137,7 +141,8 @@ Out"
   let rc: any; // Rough.js renderer
 
   const width = 700;
-  const height = 800;
+  const baseHeight = 800;
+  let height = baseHeight; // Will be adjusted based on titleOffset
   const nodeRadius = 40;
   const rectWidthMultiplier = 2.4;
   const rectHeightMultiplier = 1.2;
@@ -158,6 +163,7 @@ Out"
   
   // Quadrant dimensions
   const topRowHeight = 40;
+  let titleOffset = 0; // Additional offset when title is present (calculated dynamically)
   const leftColumnWidth = width / 4; // 1 part
   const rightColumnWidth = (width * 3) / 4; // 3 parts
   const quadrantHeight = height - topRowHeight;
@@ -209,7 +215,7 @@ Out"
     // Top-left: Ingredients
     svg.append("text")
       .attr("x", leftColumnWidth / 2)
-      .attr("y", 28)
+      .attr("y", 28 + titleOffset)
       .attr("text-anchor", "middle")
       .attr("font-size", `${titleFontSize}px`)
       .attr("font-family", "xkcd Script, cursive")
@@ -220,7 +226,7 @@ Out"
     // Top-right: Instructions
     svg.append("text")
       .attr("x", leftColumnWidth + rightColumnWidth / 2)
-      .attr("y", 28)
+      .attr("y", 28 + titleOffset)
       .attr("text-anchor", "middle")
       .attr("font-size", `${titleFontSize}px`)
       .attr("font-family", "xkcd Script, cursive")
@@ -236,7 +242,7 @@ Out"
     // Top-left quadrant (Ingredients title)
     const topLeftRect = rc.rectangle(
       quadrantPadding,
-      quadrantPadding,
+      quadrantPadding + titleOffset,
       leftColumnWidth - 2 * quadrantPadding,
       topRowHeight - 2 * quadrantPadding,
       {
@@ -251,7 +257,7 @@ Out"
     // Top-right quadrant (Instructions title)
     const topRightRect = rc.rectangle(
       leftColumnWidth + quadrantPadding,
-      quadrantPadding,
+      quadrantPadding + titleOffset,
       rightColumnWidth - 2 * quadrantPadding,
       topRowHeight - 2 * quadrantPadding,
       {
@@ -266,7 +272,7 @@ Out"
     // Bottom-left quadrant (Ingredients list) - will be updated by displayIngredients
     const bottomLeftRect = rc.rectangle(
       quadrantPadding,
-      topRowHeight + quadrantPadding,
+      topRowHeight + quadrantPadding + titleOffset,
       leftColumnWidth - 2 * quadrantPadding,
       quadrantHeight - 2 * quadrantPadding,
       {
@@ -283,7 +289,7 @@ Out"
     if (showFlowchartBorder) {
       const bottomRightRect = rc.rectangle(
         leftColumnWidth + quadrantPadding,
-        topRowHeight + quadrantPadding,
+        topRowHeight + quadrantPadding + titleOffset,
         rightColumnWidth - 2 * quadrantPadding,
         quadrantHeight - 2 * quadrantPadding,
         {
@@ -315,10 +321,10 @@ Out"
 
     // Create groups for links and nodes (bottom-right quadrant for flowchart)
     // Voronoi background group (rendered first so it's behind links/nodes)
-    voronoiGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight})`).attr('class', 'voronoi-bg');
+    voronoiGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight + titleOffset})`).attr('class', 'voronoi-bg');
 
-    linkGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight})`);
-    nodeGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight})`);
+    linkGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight + titleOffset})`);
+    nodeGroup = svg.append("g").attr("transform", `translate(${leftColumnWidth}, ${topRowHeight + titleOffset})`);
   }
 
   function renderFlowchart(data: GraphData) {
@@ -968,6 +974,14 @@ Out"
 
   // Parse recipe text input
   function parseRecipe(text: string): { graphData: GraphData; ingredients: Ingredient[] } {
+    // Reset frontmatter variables to defaults
+    ingredientTitle = "Ingredients";
+    instructionTitle = "Instructions";
+    author = "";
+    date = "";
+    title = "";
+    comment = "";
+    
     // Support optional front-matter fences at the top of the recipe
     // Example:
     // ---
@@ -991,6 +1005,10 @@ Out"
               const val = m[2].trim();
               if (key === 'ingredients') ingredientTitle = val;
               if (key === 'instructions') instructionTitle = val;
+              if (key === 'author') author = val;
+              if (key === 'date') date = val;
+              if (key === 'title') title = val;
+              if (key === 'comment') comment = val;
             }
           });
           raw = parts.slice(endIndex + 1).join('\n');
@@ -1000,7 +1018,16 @@ Out"
       // ignore malformed front-matter and continue parsing normally
     }
 
-    const lines = raw.trim().split('\n').filter(line => line.trim());
+    const lines = raw.trim().split('\n')
+      .map(line => {
+        // Remove inline comments (// text)
+        const commentIndex = line.indexOf('//');
+        if (commentIndex !== -1) {
+          return line.substring(0, commentIndex);
+        }
+        return line;
+      })
+      .filter(line => line.trim());
     
     const nodes: Node[] = [];
     const links: Link[] = [];
@@ -1463,7 +1490,14 @@ Out"
       } catch (e) { /* non-fatal */ }
     }
   // Initialize with stoofvlees recipe
-  const stoofvleesRecipe = `Subprocess Grill {
+  const stoofvleesRecipe = `---
+Title: Flemish Stew
+Author: Thomas
+Date: 2025
+Comment: Based on Jeroen Meus
+---
+
+Subprocess Grill {
     Add Meat {1 kg}
     Grill (in butter) in Braising pan
     Out Meat
@@ -1494,6 +1528,9 @@ Add Vinegar
 Out `;
 
   const parsedRecipe = parseRecipe(stoofvleesRecipe);
+  // Set titleOffset based on whether title exists (before initSVG)
+  titleOffset = title ? 35 : 0;
+  height = baseHeight + titleOffset;
   initSVG();
   // If the structure of the new graph matches the current graph, merge labels
   // into the existing node ids so positions/ids are preserved.
@@ -1513,6 +1550,22 @@ Out `;
     svg.selectAll(".pot-legend").remove();
     svg.selectAll('.pot-legend-box').remove();
     svg.selectAll('.pot-legend-swatch').remove();
+    svg.selectAll('.metadata-text').remove();
+    svg.selectAll('.recipe-title').remove();
+    
+    // Add main title if present
+    if (title) {
+      svg.append("text")
+        .attr("x", width / 2)
+        .attr("y", 22)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "28px")
+        .attr("font-family", "xkcd Script, cursive")
+        .attr("font-weight", "bold")
+        .attr("fill", "var(--text-color)")
+        .attr("class", "recipe-title")
+        .text(title);
+    }
 
     // remember last ingredients so the pots toggle can re-render the legend
     lastIngredients = ingredients;
@@ -1523,7 +1576,7 @@ Out `;
       // Create minimal border when no ingredients
       const minBorder = rc.rectangle(
         quadrantPadding,
-        topRowHeight + quadrantPadding,
+        topRowHeight + quadrantPadding + titleOffset,
         leftColumnWidth - 2 * quadrantPadding,
         60,
         { 
@@ -1544,7 +1597,7 @@ Out `;
     );
     
     // Display in bottom-left quadrant
-    const startY = topRowHeight + 40;
+    const startY = topRowHeight + 40 + titleOffset;
     const lineHeight = 24;
     const nameX = 20;
     const amountX = leftColumnWidth - 20; // Right-aligned position
@@ -1582,7 +1635,7 @@ Out `;
     
     const newBorder = rc.rectangle(
       quadrantPadding,
-      topRowHeight + quadrantPadding,
+      topRowHeight + quadrantPadding + titleOffset,
       leftColumnWidth - 2 * quadrantPadding,
       finalHeight,
       { 
@@ -1602,7 +1655,7 @@ Out `;
       const boxPadding = 10;
       const boxX = quadrantPadding;
       const boxWidth = leftColumnWidth - 2 * quadrantPadding;
-      const legendStartY = topRowHeight + finalHeight + 12; // top of legend box
+      const legendStartY = topRowHeight + finalHeight + 12 + titleOffset; // top of legend box
 
       // Calculate legend box height and clamp to remaining quadrant space
       const legendContentHeight = legendEntries.length * itemHeight + boxPadding * 2;
@@ -1663,6 +1716,35 @@ Out `;
         svg.node().appendChild(sw);
       });
     }
+
+    // Add author and date at the bottom left if they exist
+    if (author || date) {
+      const metadataY = height - 20; // Position near bottom of SVG
+      const metadataText = [author, date].filter(Boolean).join(', ');
+      
+      svg.append('text')
+        .attr('class', 'metadata-text')
+        .attr('x', nameX)
+        .attr('y', metadataY)
+        .attr('font-size', '12px')
+        .attr('font-family', 'xkcd Script, cursive')
+        .attr('fill', 'var(--text-muted)')
+        .text(metadataText);
+    }
+    
+    // Add comment below author/date if it exists
+    if (comment) {
+      const commentY = (author || date) ? height - 5 : height - 20;
+      
+      svg.append('text')
+        .attr('class', 'metadata-text')
+        .attr('x', nameX)
+        .attr('y', commentY)
+        .attr('font-size', '11px')
+        .attr('font-family', 'xkcd Script, cursive')
+        .attr('fill', 'var(--text-muted)')
+        .text(comment);
+    }
   }
   
   // Function to display instructions in top-right quadrant
@@ -1701,6 +1783,9 @@ Out `;
       try { saveAllPositionsForCurrentGraph(); } catch (e) { }
 
       const parsed = parseRecipe(input);
+      // Set titleOffset based on whether title exists (before initSVG)
+      titleOffset = title ? 35 : 0;
+      height = baseHeight + titleOffset;
       initSVG();
       let dataToRender = parsed.graphData;
       if (graphStructureEqual(currentData, parsed.graphData)) {

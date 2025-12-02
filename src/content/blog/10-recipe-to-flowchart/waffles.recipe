@@ -1,3 +1,10 @@
+---
+Title: Brussels wafels
+Author: Thomas
+Date: 2025
+Comment: Based on Jeroen Meus
+---
+
 Subprocess A {
     Add egg {1}
     Separate
