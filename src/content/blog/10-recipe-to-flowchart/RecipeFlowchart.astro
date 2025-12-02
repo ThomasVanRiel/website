@@ -1773,47 +1773,39 @@ Out `;
     }
   }
 
-  // URL encoding/decoding functions
+  // URL encoding/decoding functions using hash fragment for shorter URLs
   function encodeRecipeToURL(recipe: string, positions?: {[hash: string]: {x: number, y: number}}): string {
     const url = new URL(window.location.href);
-    url.searchParams.set('recipe', encodeURIComponent(recipe));
     
-    // Encode positions compactly if provided
-    if (positions && Object.keys(positions).length > 0) {
-      // Format: hash1:x,y|hash2:x,y - round to integers to keep compact
-      const posStr = Object.entries(positions)
-        .map(([hash, pos]) => `${hash}:${Math.round(pos.x)},${Math.round(pos.y)}`)
-        .join('|');
-      url.searchParams.set('pos', posStr);
-    }
+    // Only encode the recipe text - skip positions to keep URLs short
+    const encoded = btoa(unescape(encodeURIComponent(recipe)));
+    
+    // Use hash fragment instead of query params for cleaner URLs
+    url.hash = encoded;
+    url.search = ''; // Clear any query params
     
     return url.toString();
   }
 
   function loadRecipeFromURL(): {recipe: string | null, positions: {[hash: string]: {x: number, y: number}} | null} {
-    const params = new URLSearchParams(window.location.search);
-    const recipe = params.get('recipe');
-    const posStr = params.get('pos');
+    const hash = window.location.hash.slice(1); // Remove #
     
-    let positions: {[hash: string]: {x: number, y: number}} | null = null;
-    if (posStr) {
-      positions = {};
-      // Parse: hash1:x,y|hash2:x,y
-      posStr.split('|').forEach(item => {
-        const [hash, coords] = item.split(':');
-        if (hash && coords) {
-          const [x, y] = coords.split(',').map(Number);
-          if (!isNaN(x) && !isNaN(y)) {
-            positions![hash] = { x, y };
-          }
-        }
-      });
+    if (!hash) {
+      return { recipe: null, positions: null };
     }
     
-    return {
-      recipe: recipe ? decodeURIComponent(recipe) : null,
-      positions
-    };
+    try {
+      // Decode base64
+      const recipe = decodeURIComponent(escape(atob(hash)));
+      
+      return {
+        recipe: recipe || null,
+        positions: null // Don't load positions from URL to keep URLs short
+      };
+    } catch (e) {
+      console.error('Failed to decode URL:', e);
+      return { recipe: null, positions: null };
+    }
   }
 
   // Set up button handlers
@@ -1824,18 +1816,11 @@ Out `;
   if (urlData.recipe) {
     recipeInput.value = urlData.recipe;
     
-    // Apply positions from URL if available
-    if (urlData.positions) {
-      const map = loadPositionMap();
-      Object.assign(map, urlData.positions);
-      savePositionMap(map);
-    }
-    
     // Auto-generate flowchart if recipe is in URL
     setTimeout(() => {
       document.getElementById('generate-flowchart')?.click();
     }, 100);
-    // Clear URL parameters to keep URL clean
+    // Clear URL hash to keep URL clean
     window.history.replaceState({}, '', window.location.pathname);
   }
   
@@ -2007,21 +1992,7 @@ Out `;
       return;
     }
     
-    // Save current positions first
-    try {
-      saveAllPositionsForCurrentGraph();
-    } catch (e) {
-      console.error('Error saving positions:', e);
-    }
-    
-    // Collect current node positions from localStorage (more reliable than currentData)
-    const positions = loadPositionMap();
-    
-    console.log('Sharing with positions:', Object.keys(positions).length, 'nodes');
-    
-    const shareUrl = encodeRecipeToURL(input, positions);
-    
-    console.log('Share URL:', shareUrl);
+    const shareUrl = encodeRecipeToURL(input);
     
     try {
       await navigator.clipboard.writeText(shareUrl);
