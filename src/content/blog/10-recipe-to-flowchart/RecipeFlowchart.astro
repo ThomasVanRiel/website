@@ -199,6 +199,9 @@ Out"
   // Keep last ingredients so toggle can re-render legend without reparsing
   let lastIngredients: Ingredient[] = [];
 
+  // Cache for the embedded font data URL
+  let cachedFontDataUrl: string | null = null;
+
   // Color scale for different node types
   const colorScale = d3.scaleOrdinal()
     .domain(["ingredient", "process", "output"])
@@ -1534,6 +1537,11 @@ Simmer (on low heat) in Casserole
 Add Vinegar
 Out `;
 
+  // Preload font asynchronously on page load
+  getEmbeddedFontDataUrl().catch(() => {
+    // Silently fail - will retry on export if needed
+  });
+
   const parsedRecipe = parseRecipe(stoofvleesRecipe);
   // Set titleOffset based on whether title exists (before initSVG)
   titleOffset = title ? 35 : 0;
@@ -1852,16 +1860,39 @@ Out `;
     }
   });
 
-  document.getElementById('save-svg')!.addEventListener('click', () => {
+  // Helper function to get or fetch the embedded font data URL
+  async function getEmbeddedFontDataUrl(): Promise<string> {
+    if (cachedFontDataUrl) return cachedFontDataUrl;
+    
+    try {
+      const fontResponse = await fetch('/fonts/xkcd-script.woff');
+      const fontBlob = await fontResponse.blob();
+      const fontBase64 = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => resolve(reader.result as string);
+        reader.readAsDataURL(fontBlob);
+      });
+      cachedFontDataUrl = fontBase64;
+      return fontBase64;
+    } catch (e) {
+      console.warn('Failed to embed font, using URL reference:', e);
+      return 'url(/fonts/xkcd-script.woff)';
+    }
+  }
+
+  document.getElementById('save-svg')!.addEventListener('click', async () => {
     const svgElement = document.querySelector('#recipe-flowchart svg') as SVGSVGElement;
     if (!svgElement) return;
 
     // Clone the SVG to avoid modifying the original
     const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
 
-    // Inject xkcd font-face CSS into SVG
+    // Get the embedded font data URL (cached after first call)
+    const fontDataUrl = await getEmbeddedFontDataUrl();
+
+    // Inject xkcd font-face CSS into SVG with embedded font data
     const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-    style.textContent = `@font-face { font-family: "xkcd Script"; src: url('/fonts/xkcd-script.woff') format('woff'); font-weight: normal; font-style: normal; } text { font-family: 'xkcd Script', cursive; }`;
+    style.textContent = `@font-face { font-family: "xkcd Script"; src: url('${fontDataUrl}') format('woff'); font-weight: normal; font-style: normal; } text { font-family: 'xkcd Script', cursive; }`;
     svgClone.insertBefore(style, svgClone.firstChild);
 
     // Add metadata
@@ -1887,31 +1918,34 @@ Out `;
   });
   
   // Helper: rasterize an SVG element into a canvas (returns Promise<HTMLCanvasElement>)
-  function exportSVGToCanvas(svgElement: SVGSVGElement, scale = (window.devicePixelRatio || 1)) {
+  async function exportSVGToCanvas(svgElement: SVGSVGElement, scale = (window.devicePixelRatio || 1)) {
+    // Clone to avoid mutating original
+    const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
+
+    // Get the embedded font data URL (cached after first call)
+    const fontDataUrl = await getEmbeddedFontDataUrl();
+
+    // Inject xkcd font-face CSS into SVG with embedded font data
+    const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+    style.textContent = `@font-face { font-family: "xkcd Script"; src: url('${fontDataUrl}') format('woff'); font-weight: normal; font-style: normal; } text { font-family: 'xkcd Script', cursive; }`;
+    svgClone.insertBefore(style, svgClone.firstChild);
+
+    // Add metadata
+    const metadata = document.createElementNS('http://www.w3.org/2000/svg', 'metadata');
+    const desc = document.createElementNS('http://www.w3.org/2000/svg', 'desc');
+    desc.textContent = 'Created with Recipe to Flowchart - https://thomasvanriel.com/blog/10-recipe-to-flowchart/';
+    metadata.appendChild(desc);
+    svgClone.insertBefore(metadata, svgClone.firstChild);
+
+    // Determine intrinsic size from viewBox if available
+    const vb = svgElement.viewBox && svgElement.viewBox.baseVal;
+    const intrinsicWidth = (vb && vb.width) ? vb.width : (svgElement.clientWidth || width);
+    const intrinsicHeight = (vb && vb.height) ? vb.height : (svgElement.clientHeight || height);
+
+    svgClone.setAttribute('width', String(intrinsicWidth));
+    svgClone.setAttribute('height', String(intrinsicHeight));
+
     return new Promise<HTMLCanvasElement>((resolve, reject) => {
-      // Clone to avoid mutating original
-      const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
-
-      // Inject xkcd font-face CSS into SVG
-      const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
-      style.textContent = `@font-face { font-family: "xkcd Script"; src: url('/fonts/xkcd-script.woff') format('woff'); font-weight: normal; font-style: normal; } text { font-family: 'xkcd Script', cursive; }`;
-      svgClone.insertBefore(style, svgClone.firstChild);
-
-      // Add metadata
-      const metadata = document.createElementNS('http://www.w3.org/2000/svg', 'metadata');
-      const desc = document.createElementNS('http://www.w3.org/2000/svg', 'desc');
-      desc.textContent = 'Created with Recipe to Flowchart - https://thomasvanriel.com/blog/10-recipe-to-flowchart/';
-      metadata.appendChild(desc);
-      svgClone.insertBefore(metadata, svgClone.firstChild);
-
-      // Determine intrinsic size from viewBox if available
-      const vb = svgElement.viewBox && svgElement.viewBox.baseVal;
-      const intrinsicWidth = (vb && vb.width) ? vb.width : (svgElement.clientWidth || width);
-      const intrinsicHeight = (vb && vb.height) ? vb.height : (svgElement.clientHeight || height);
-
-      svgClone.setAttribute('width', String(intrinsicWidth));
-      svgClone.setAttribute('height', String(intrinsicHeight));
-
       const serialized = new XMLSerializer().serializeToString(svgClone);
       const blob = new Blob([serialized], { type: 'image/svg+xml;charset=utf-8' });
       const url = URL.createObjectURL(blob);
