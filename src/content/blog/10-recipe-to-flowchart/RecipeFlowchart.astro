@@ -1724,6 +1724,13 @@ Out `;
     style.textContent = `@font-face { font-family: "xkcd Script"; src: url('/fonts/xkcd-script.woff') format('woff'); font-weight: normal; font-style: normal; } text { font-family: 'xkcd Script', cursive; }`;
     svgClone.insertBefore(style, svgClone.firstChild);
 
+    // Add metadata
+    const metadata = document.createElementNS('http://www.w3.org/2000/svg', 'metadata');
+    const desc = document.createElementNS('http://www.w3.org/2000/svg', 'desc');
+    desc.textContent = 'Created with Recipe to Flowchart - https://thomasvanriel.com/blog/10-recipe-to-flowchart/';
+    metadata.appendChild(desc);
+    svgClone.insertBefore(metadata, svgClone.firstChild);
+
     // Get the SVG markup
     const svgData = new XMLSerializer().serializeToString(svgClone);
 
@@ -1749,6 +1756,13 @@ Out `;
       const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
       style.textContent = `@font-face { font-family: "xkcd Script"; src: url('/fonts/xkcd-script.woff') format('woff'); font-weight: normal; font-style: normal; } text { font-family: 'xkcd Script', cursive; }`;
       svgClone.insertBefore(style, svgClone.firstChild);
+
+      // Add metadata
+      const metadata = document.createElementNS('http://www.w3.org/2000/svg', 'metadata');
+      const desc = document.createElementNS('http://www.w3.org/2000/svg', 'desc');
+      desc.textContent = 'Created with Recipe to Flowchart - https://thomasvanriel.com/blog/10-recipe-to-flowchart/';
+      metadata.appendChild(desc);
+      svgClone.insertBefore(metadata, svgClone.firstChild);
 
       // Determine intrinsic size from viewBox if available
       const vb = svgElement.viewBox && svgElement.viewBox.baseVal;
