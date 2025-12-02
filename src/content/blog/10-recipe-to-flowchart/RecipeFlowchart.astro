@@ -1774,25 +1774,63 @@ Out `;
   }
 
   // URL encoding/decoding functions
-  function encodeRecipeToURL(recipe: string): void {
+  function encodeRecipeToURL(recipe: string, positions?: {[hash: string]: {x: number, y: number}}): string {
     const url = new URL(window.location.href);
     url.searchParams.set('recipe', encodeURIComponent(recipe));
-    window.history.pushState({}, '', url);
+    
+    // Encode positions compactly if provided
+    if (positions && Object.keys(positions).length > 0) {
+      // Format: hash1:x,y|hash2:x,y - round to integers to keep compact
+      const posStr = Object.entries(positions)
+        .map(([hash, pos]) => `${hash}:${Math.round(pos.x)},${Math.round(pos.y)}`)
+        .join('|');
+      url.searchParams.set('pos', posStr);
+    }
+    
+    return url.toString();
   }
 
-  function loadRecipeFromURL(): string | null {
+  function loadRecipeFromURL(): {recipe: string | null, positions: {[hash: string]: {x: number, y: number}} | null} {
     const params = new URLSearchParams(window.location.search);
     const recipe = params.get('recipe');
-    return recipe ? decodeURIComponent(recipe) : null;
+    const posStr = params.get('pos');
+    
+    let positions: {[hash: string]: {x: number, y: number}} | null = null;
+    if (posStr) {
+      positions = {};
+      // Parse: hash1:x,y|hash2:x,y
+      posStr.split('|').forEach(item => {
+        const [hash, coords] = item.split(':');
+        if (hash && coords) {
+          const [x, y] = coords.split(',').map(Number);
+          if (!isNaN(x) && !isNaN(y)) {
+            positions![hash] = { x, y };
+          }
+        }
+      });
+    }
+    
+    return {
+      recipe: recipe ? decodeURIComponent(recipe) : null,
+      positions
+    };
   }
 
   // Set up button handlers
   const recipeInput = document.getElementById('recipe-input') as HTMLTextAreaElement;
   
   // Load recipe from URL on page load
-  const urlRecipe = loadRecipeFromURL();
-  if (urlRecipe) {
-    recipeInput.value = urlRecipe;
+  const urlData = loadRecipeFromURL();
+  if (urlData.recipe) {
+    recipeInput.value = urlData.recipe;
+    
+    // Apply positions from URL if available
+    if (urlData.positions) {
+      const map = loadPositionMap();
+      Object.assign(map, urlData.positions);
+      savePositionMap(map);
+    }
+    
     // Auto-generate flowchart if recipe is in URL
     setTimeout(() => {
       document.getElementById('generate-flowchart')?.click();
@@ -1969,11 +2007,24 @@ Out `;
       return;
     }
     
-    const url = new URL(window.location.href);
-    url.searchParams.set('recipe', encodeURIComponent(input));
+    // Save current positions first
+    try {
+      saveAllPositionsForCurrentGraph();
+    } catch (e) {
+      console.error('Error saving positions:', e);
+    }
+    
+    // Collect current node positions from localStorage (more reliable than currentData)
+    const positions = loadPositionMap();
+    
+    console.log('Sharing with positions:', Object.keys(positions).length, 'nodes');
+    
+    const shareUrl = encodeRecipeToURL(input, positions);
+    
+    console.log('Share URL:', shareUrl);
     
     try {
-      await navigator.clipboard.writeText(url.toString());
+      await navigator.clipboard.writeText(shareUrl);
       const btn = document.getElementById('share-recipe')!;
       const originalText = btn.textContent;
       btn.textContent = 'Link copied!';
@@ -1982,7 +2033,7 @@ Out `;
       }, 2000);
     } catch (err) {
       // Fallback for browsers without clipboard API
-      prompt('Copy this link to share your recipe:', url.toString());
+      prompt('Copy this link to share your recipe:', shareUrl);
     }
   });
   
