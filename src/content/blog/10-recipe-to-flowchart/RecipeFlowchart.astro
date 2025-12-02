@@ -1797,6 +1797,8 @@ Out `;
     setTimeout(() => {
       document.getElementById('generate-flowchart')?.click();
     }, 100);
+    // Clear URL parameters to keep URL clean
+    window.history.replaceState({}, '', window.location.pathname);
   }
   
   // Update button state on input
@@ -1824,9 +1826,6 @@ Out `;
       renderFlowchart(dataToRender);
       displayIngredients(parsed.ingredients);
       displayInstructions();
-      
-      // Update URL with recipe
-      encodeRecipeToURL(input);
     }
   });
 
