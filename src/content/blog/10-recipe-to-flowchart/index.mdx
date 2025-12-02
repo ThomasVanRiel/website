@@ -25,11 +25,14 @@ After generating the initial recipe flowchart. You can drag around the nodes to 
 
 ## Recipe syntax[^1]
 
-These examples are based on the recipes from [the previous post on the topic](/blog/06-flowchart-recipes). 
+Let's start with some examples based on the recipes from [the previous post on the topic](/blog/06-flowchart-recipes). They showcase the current capabilities of the flowchart generator. 
+
+An LLM-initiated <abbr title="Prompt: Write a short manual.md of the .recipe language based on the examples and the parser.">(Claude Sonnet 4.5)</abbr> specification is added below the examples to facilitate writing new recipes.
 
 *The generated images are not optimized for dark mode as the exporter (currently) only supports light mode exporting for printing purposes.*
 
-### Flemish beef stew
+### Examples
+#### Flemish beef stew
 ```python
 Subprocess Grill {
     Add meat {1 kg}
@@ -64,7 +67,7 @@ Serve
 
 ![Example stoofvlees flowchart](/images/stoofvlees.png)
 
-### Brussels Wafels
+#### Brussels Wafels
 ```python
 Subprocess A {
     Add egg {1}
@@ -102,7 +105,7 @@ Serve
 
 ![Example waffles flowchart](/images/waffles.png)
 
-### Internationalization
+#### Internationalization
 
 It is possible to change the title blocks to reflect the recipe language by including a settings block to the top of the file.
 Below is an example for the dutch version of the *Brusselse wafels* recipe.
@@ -147,6 +150,232 @@ Smakelijk
 ```
 
 ![Example Dutch waffles flowchart](/images/waffles_NL.png)
+
+### Language Specifiaction
+
+#### Basic Syntax
+
+##### Ingredients
+
+Add ingredients using the `Add` keyword:
+
+```
+Add <ingredient name> (<clarification>) {<amount>}
+```
+
+- **ingredient name**: The name of the ingredient (required)
+- **clarification**: Optional details in parentheses (e.g., how to add)
+- **amount**: Optional quantity in curly braces
+
+**Examples:**
+```
+Add Egg {1}
+Add Butter {50 g}
+Add Salt {a pinch}
+Add Milk {125 g}
+```
+
+##### Process Steps
+
+Any line that doesn't start with `Add`, `Subprocess`, or `Out` is treated as a process step:
+
+```
+<action> (<clarification>) in <cookware>
+```
+
+- **action**: The cooking action (e.g., Mix, Beat, Melt, Chop)
+- **clarification**: Optional details in parentheses (e.g., time, temperature, technique)
+- **cookware**: Optional cookware specification using `in <name>`
+
+**Examples:**
+```
+Mix
+Whisk
+Beat in Mixing bowl 2
+Simmer (on low heat) in Casserole
+Grill (in butter) in Braising pan
+```
+
+##### Output
+
+Mark the final output using the `Out` keyword:
+
+```
+Out
+Out <label>
+```
+
+- Without a label, defaults to "Serve"
+- With a label, uses the specified text as the output node
+- If the `Out` keyword is not specified, the last line is taken as the output
+
+**Examples:**
+```
+Out
+Out Serve
+Serve
+```
+
+#### Advanced Features
+
+##### Subprocesses
+
+Define reusable subprocesses that can run in parallel:
+
+```
+Subprocess <Name> {
+    <steps>
+    Out <output name>
+}
+```
+
+- **Name**: Unique identifier for the subprocess
+- **output name**: Name to reference this output (use `.` for default output)
+- Multiple outputs can be defined with different names
+
+**Example:**
+```
+Subprocess A {
+    Add Egg {1}
+    Separate
+    Out White
+    Out Yolk
+}
+```
+
+##### Referencing Subprocess Outputs
+
+Use subprocess outputs in the main recipe or other subprocesses:
+
+```
+Add <output name> from <Subprocess Name>
+```
+
+**Examples:**
+```
+Add White from A
+Add Yolk from A
+Add . from C
+```
+
+The `.` refers to the last (or only) unnamed output of a subprocess.
+
+#### Front Matter (Optional)
+
+Customize section titles using YAML-style front matter:
+
+```
+---
+Ingredients: <custom title>
+Instructions: <custom title>
+...
+---
+```
+
+**Example:**
+```
+---
+Ingredients: Ingrediënten
+Instructions: Instructies
+Thomas Van Riel, 2025
+---
+```
+
+This is useful for localization or custom branding.
+The front matter can also be used to include other information (e.g. the date, author)
+
+#### Complete Examples
+
+##### Simple Recipe (No Subprocesses)
+
+```
+Add Eggs {2}
+Add Butter
+Add Salt
+Add Pepper
+Crack eggs
+Whisk
+Heat pan
+Melt butter
+Pour eggs
+Scramble (2 min)
+Season
+Out
+```
+
+##### Recipe with Subprocesses
+
+```
+Subprocess A {
+    Add Egg {1}
+    Separate
+    Out White
+    Out Yolk
+}
+
+Subprocess B {
+    Add White from A
+    Beat in Mixing bowl 2
+    Out .
+}
+
+Add Yolk from A
+Add Yeast {6 g}
+Add Milk {125 g}
+Mix in Mixing bowl 1
+Add . from B
+Mix (Carefully) in Mixing bowl 1
+Bake
+Out Serve
+```
+
+##### With Localization
+
+```
+---
+Ingredients: Ingrediënten
+Instructions: Instructies
+---
+
+Subprocess A {
+    Add Ei {1}
+    Scheid
+    Out Wit
+    Out Geel
+}
+
+Add Geel from A
+Add Gist {6 g}
+Meng in Mengkom 1
+Bak
+Smakelijk
+```
+
+#### Visualization Features
+
+When rendered as a flowchart:
+
+- **Ingredients** appear as small nodes
+- **Process steps** appear as rectangular nodes
+- **Cookware** (specified with `in <name>`) creates colored background regions (10 different colors are defined)
+- **Output** appears as a filled node at the bottom
+- **Arrows** show the flow between steps
+
+#### Tips
+
+1. **Order matters**: Steps are executed in the order they appear
+2. **Parallel processing**: Use subprocesses for steps that can happen simultaneously
+3. **Cookware tracking**: Include `in <cookware>` to visually group related steps
+4. **Clarity**: Use clarifications `(in parentheses)` for timing, temperature, or technique details
+5. **Amounts**: Always specify amounts in curly braces for ingredient tracking
+
+#### Parser Behavior
+
+- Blank lines are ignored
+- Ingredients added from subprocesses are not duplicated in the ingredient list
+- The last process step in the main recipe is treated as the output if no `Out` statement is present
+- Subprocess outputs marked with `.` use the last process node in that subprocess
+- All ingredients from `Add` statements (not from subprocesses) are alphabetically sorted in the ingredient list
 
 
 [^1]: Yes, this is a custom programming language.
