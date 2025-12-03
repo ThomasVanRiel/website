@@ -1622,6 +1622,9 @@ Out `;
     sortedIngredients.forEach((ing, index) => {
       const yPos = startY + index * lineHeight;
       
+      // Remove parenthetical clarifications from ingredient name
+      const cleanName = ing.name.replace(/\s*\([^)]*\)/g, '').trim();
+      
       // Ingredient name (left-aligned)
       svg.append("text")
         .attr("class", "ingredient-text")
@@ -1630,7 +1633,7 @@ Out `;
         .attr("font-size", `${ingredientListFontSize}px`)
         .attr("font-family", "xkcd Script, cursive")
         .attr("fill", "var(--text-color)")
-        .text(ing.name);
+        .text(cleanName);
       
       // Amount (right-aligned)
       if (ing.amount) {
