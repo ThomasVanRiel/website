@@ -11,6 +11,8 @@ tags:
 
 import RecipeFlowchart from "./RecipeFlowchart.astro";
 
+## Introduction
+
 Building on the idea that [recipes should be flowcharts](/blog/06-flowchart-recipes), this post explores how to convert traditional text-based recipes into clear, visual flowcharts.
 Using D3.js, a node network is generated from a recipe. The process steps and ingredients are draggable for flexibility and clarity.
 
@@ -21,6 +23,17 @@ Feel free to copy the recipes in the recipe text box to see what happens.
 After generating the initial recipe flowchart. You can drag around the nodes to obtain a logical order and to avoid overlaps of links between nodes. This process requires some artistic input from the user (for now ...).
 *The flowchart adapts to light/dark mode, but was designed for light mode first. A button to switch between light and dark is added for convenience.* 
 
+### Quick tips for getting started:
+The recipe syntax is designed to be close to natural language, with some caveats:
+- Keep ingredients and processes separate. All ingredients are added using `Add <ingredient>`. This ensures ingredients are visible at a glance in the flowchart and maintains consistency.
+- If ingredients and amounts overlap, feel free to adjust the width of the ingredient box. Keep in mind that the consistency between your recipes will be lost.
+- Don't forget to add cookware to the processes using `<process> in <cookware>`, as doing so benefits the visual flow of the recipe.
+- Ingredient and process nodes can be further clarified using `(<clarification>)`, e.g.:
+  - `Add Salt (quiet) {5 g}`,
+  - `Stir (reckless) in Casserole`.
+
+## Recipe generator
+
 <RecipeFlowchart />
 
 ## Recipe syntax[^1]
@@ -30,6 +43,8 @@ Let's start with some examples based on the recipes from [the previous post on t
 An LLM-initiated <abbr title="Prompt: Write a short manual.md of the .recipe language based on the examples and the parser.">(Claude Sonnet 4.5)</abbr> specification is added below the examples to facilitate writing new recipes.
 
 *The generated images are not optimized for dark mode as the exporter (currently) only supports light mode exporting for printing purposes.*
+
+ 
 
 ### Examples
 #### Flemish beef stew
