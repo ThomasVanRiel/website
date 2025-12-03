@@ -31,6 +31,18 @@ Out"
           <input type="checkbox" id="toggle-pots" checked />
           <span>Show cookware</span>
         </label>
+        <label class="flex items-center gap-2 text-sm">
+          <span>Ingredient width:</span>
+          <input 
+            type="range" 
+            id="ingredient-width-slider" 
+            min="15" 
+            max="35" 
+            value="25" 
+            step="1"
+            class="w-24"
+          />
+        </label>
         <button
           id="toggle-theme"
           class="button px-1.5"
@@ -177,8 +189,8 @@ Out"
   // Quadrant dimensions
   const topRowHeight = 40;
   let titleOffset = 0; // Additional offset when title is present (calculated dynamically)
-  const leftColumnWidth = width / 4; // 1 part
-  const rightColumnWidth = (width * 3) / 4; // 3 parts
+  let leftColumnWidth = width / 4; // 1 part - now mutable
+  let rightColumnWidth = (width * 3) / 4; // 3 parts - now mutable
   const quadrantHeight = height - topRowHeight;
   const quadrantPadding = 4; // Padding for quadrant rectangles
   const voronoiPadding = 10; // Inset Voronoi cells from flowchart edges
@@ -2111,6 +2123,25 @@ Out `;
           displayIngredients(lastIngredients || []);
         } catch (err) { /* non-fatal */ }
       }
+    });
+  }
+
+  // Ingredient width slider: adjust the left column width
+  const ingredientWidthSlider = document.getElementById('ingredient-width-slider') as HTMLInputElement | null;
+  if (ingredientWidthSlider) {
+    ingredientWidthSlider.addEventListener('input', (e) => {
+      const percentage = parseInt(ingredientWidthSlider.value);
+      leftColumnWidth = (width * percentage) / 100;
+      rightColumnWidth = width - leftColumnWidth;
+      
+      // Re-initialize and re-render the flowchart with new dimensions
+      try {
+        saveAllPositionsForCurrentGraph();
+      } catch (err) { /* non-fatal */ }
+      
+      initSVG();
+      renderFlowchart(currentData);
+      displayIngredients(lastIngredients || []);
     });
   }
 
