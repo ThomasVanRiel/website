@@ -1885,6 +1885,14 @@ Out `;
     }
   }
 
+  // Helper function to generate filename from title
+  function getFlowchartFilename(extension: string): string {
+    const baseFilename = title && title.trim() 
+      ? title.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') 
+      : 'recipe';
+    return `${baseFilename}_flowchart.${extension}`;
+  }
+
   document.getElementById('save-svg')!.addEventListener('click', async () => {
     const svgElement = document.querySelector('#recipe-flowchart svg') as SVGSVGElement;
     if (!svgElement) return;
@@ -1915,7 +1923,7 @@ Out `;
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = 'recipe-flowchart.svg';
+    link.download = getFlowchartFilename('svg');
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -1993,7 +2001,7 @@ Out `;
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
         a.href = url;
-        a.download = 'recipe-flowchart.png';
+        a.download = getFlowchartFilename('png');
         document.body.appendChild(a);
         a.click();
         a.remove();
@@ -2006,7 +2014,7 @@ Out `;
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = 'recipe-flowchart.svg';
+      a.download = getFlowchartFilename('svg');
       document.body.appendChild(a);
       a.click();
       a.remove();
