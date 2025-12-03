@@ -1612,8 +1612,24 @@ Out `;
       return;
     }
     
+    // Remove duplicates by ingredient name and merge amounts
+    const uniqueIngredientsMap = new Map<string, Ingredient>();
+    ingredients.forEach(ing => {
+      const existing = uniqueIngredientsMap.get(ing.name);
+      if (existing) {
+        // If duplicate found, combine amounts if different
+        if (ing.amount && existing.amount !== ing.amount) {
+          existing.amount = existing.amount ? `${existing.amount}, ${ing.amount}` : ing.amount;
+        } else if (ing.amount && !existing.amount) {
+          existing.amount = ing.amount;
+        }
+      } else {
+        uniqueIngredientsMap.set(ing.name, { ...ing });
+      }
+    });
+    
     // Sort ingredients alphabetically
-    const sortedIngredients = [...ingredients].sort((a, b) => 
+    const sortedIngredients = Array.from(uniqueIngredientsMap.values()).sort((a, b) => 
       a.name.localeCompare(b.name)
     );
     
