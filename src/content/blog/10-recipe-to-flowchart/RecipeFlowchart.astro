@@ -19,45 +19,47 @@ Mash 'em
 Stick 'em in a stew
 Out"
     ></textarea>
-    <div class="flex gap-2 mt-2">
-      <button
-        id="generate-flowchart"
-        class="button  px-1.5"
-      >
-        Generate Flowchart
-      </button>
-      <button
-        id="save-svg"
-        class="button  px-1.5"
-      >
-        Save as SVG
-      </button>
-      <button
-        id="save-png"
-        class="button  px-1.5"
-      >
-        Save as PNG
-      </button>
-      <button
-        id="share-recipe"
-        class="button  px-1.5"
-        title="Copy shareable link"
-      >
-        Share Recipe
-      </button>
-      <label class="ml-2 flex items-center gap-2 text-sm">
-        <input type="checkbox" id="toggle-pots" checked />
-        <span>Show cookware</span>
-      </label>
-
-      <button
-        id="toggle-theme"
-        class="button px-1.5"
-        type="button"
-      >
-        Switch to Light Mode
-      </button>
-      
+    <div class="flex flex-col gap-2 mt-2">
+      <div class="flex gap-2 items-center justify-between">
+        <button
+          id="generate-flowchart"
+          class="button  px-1.5"
+        >
+          Generate Flowchart
+        </button>
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" id="toggle-pots" checked />
+          <span>Show cookware</span>
+        </label>
+        <button
+          id="toggle-theme"
+          class="button px-1.5"
+          type="button"
+        >
+          Switch to Light Mode
+        </button>
+      </div>
+      <div class="flex gap-2 justify-center">
+        <button
+          id="save-svg"
+          class="button  px-1.5"
+        >
+          Save as SVG
+        </button>
+        <button
+          id="save-png"
+          class="button  px-1.5"
+        >
+          Save as PNG
+        </button>
+        <button
+          id="share-recipe"
+          class="button  px-1.5"
+          title="Copy shareable link"
+        >
+          Share Recipe
+        </button>
+      </div>
     </div>
   </div>
   <div id="recipe-flowchart" data-init={JSON.stringify(initPositions)}></div>
