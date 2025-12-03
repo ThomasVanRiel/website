@@ -2049,48 +2049,79 @@ Out `;
                     (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
       
       if (isIOS) {
-        // For iOS: open in new window/tab so user can save manually
-        const newWindow = window.open();
-        if (newWindow) {
-          newWindow.document.write(`
-            <html>
-              <head>
-                <title>Save Image</title>
-                <meta name="viewport" content="width=device-width, initial-scale=1">
-                <style>
-                  body { margin: 0; padding: 20px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
-                  img { max-width: 100%; height: auto; border: 1px solid #ccc; }
-                  p { color: #666; margin: 10px 0; }
-                </style>
-              </head>
-              <body>
-                <p>Long press the image below and select "Save Image" or "Add to Photos"</p>
-                <img src="${dataUrl}" alt="Recipe Flowchart">
-              </body>
-            </html>
-          `);
-          newWindow.document.close();
-        } else {
-          // If popup blocked, fallback to direct link
-          const a = document.createElement('a');
-          a.href = dataUrl;
-          a.download = getFlowchartFilename('png');
-          a.textContent = 'Download PNG';
-          a.style.cssText = 'display: block; margin: 20px auto; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; width: fit-content;';
-          
-          const wrapper = document.createElement('div');
-          wrapper.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;';
-          wrapper.innerHTML = '<div style="background: white; padding: 30px; border-radius: 10px; max-width: 90%;"><p>Click below to download:</p></div>';
-          wrapper.querySelector('div')!.appendChild(a);
-          
-          const closeBtn = document.createElement('button');
-          closeBtn.textContent = 'Close';
-          closeBtn.style.cssText = 'display: block; margin: 20px auto 0; padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;';
-          closeBtn.onclick = () => wrapper.remove();
-          wrapper.querySelector('div')!.appendChild(closeBtn);
-          
-          document.body.appendChild(wrapper);
-        }
+        // For iOS: Create an image element and display it for manual saving
+        // This avoids any blob URL issues
+        const img = new Image();
+        img.src = dataUrl;
+        
+        // Create a full-screen overlay with the image
+        const overlay = document.createElement('div');
+        overlay.style.cssText = `
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background: rgba(0, 0, 0, 0.95);
+          z-index: 10000;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          padding: 20px;
+          overflow: auto;
+        `;
+        
+        const container = document.createElement('div');
+        container.style.cssText = `
+          background: white;
+          padding: 20px;
+          border-radius: 12px;
+          max-width: 90%;
+          max-height: 90%;
+          overflow: auto;
+          text-align: center;
+        `;
+        
+        const instructions = document.createElement('p');
+        instructions.style.cssText = `
+          color: #333;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+          font-size: 16px;
+          margin: 0 0 15px 0;
+          font-weight: 500;
+        `;
+        instructions.textContent = 'Long press the image below and select "Add to Photos" or "Save Image"';
+        
+        img.style.cssText = `
+          max-width: 100%;
+          height: auto;
+          display: block;
+          margin: 0 auto;
+          border: 1px solid #ddd;
+        `;
+        
+        const closeBtn = document.createElement('button');
+        closeBtn.textContent = 'Close';
+        closeBtn.style.cssText = `
+          display: block;
+          margin: 15px auto 0;
+          padding: 12px 24px;
+          background: #007bff;
+          color: white;
+          border: none;
+          border-radius: 8px;
+          font-size: 16px;
+          cursor: pointer;
+          font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        `;
+        closeBtn.onclick = () => overlay.remove();
+        
+        container.appendChild(instructions);
+        container.appendChild(img);
+        container.appendChild(closeBtn);
+        overlay.appendChild(container);
+        document.body.appendChild(overlay);
       } else {
         // For non-iOS devices: use standard download
         const a = document.createElement('a');
