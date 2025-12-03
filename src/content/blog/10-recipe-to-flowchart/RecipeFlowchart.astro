@@ -1177,6 +1177,11 @@ Out"
           }
         });
         
+        // If no explicit output was defined, use the final node as the default output
+        if (subOutputs.length === 0 && subLastNode) {
+          subOutputs.push({ node: subLastNode, name: '.' });
+        }
+        
         // Store subprocess outputs
         subprocesses.set(subprocessName, subOutputs);
         
