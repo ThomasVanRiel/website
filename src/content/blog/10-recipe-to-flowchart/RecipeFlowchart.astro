@@ -1065,10 +1065,11 @@ Out"
     let i = 0;
     while (i < lines.length) {
       const line = lines[i].trim();
+      const lineLower = line.toLowerCase();
       
       // Handle subprocess definition
-      if (line.startsWith('Subprocess ')) {
-        const match = line.match(/Subprocess\s+(\w+)/);
+      if (lineLower.startsWith('subprocess ')) {
+        const match = line.match(/subprocess\s+(\w+)/i);
         if (!match) {
           i++;
           continue;
@@ -1090,7 +1091,8 @@ Out"
         let pendingSubIngredients: Node[] = [];
         
         subprocessLines.forEach((subLine: string, idx: number) => {
-          if (subLine.startsWith('Add ')) {
+          const subLineLower = subLine.toLowerCase();
+          if (subLineLower.startsWith('add ')) {
             let ingredient = subLine.substring(4).trim();
             let amount = '';
             
@@ -1137,7 +1139,7 @@ Out"
                 pendingSubIngredients.push(ingredientNode);
               }
             }
-          } else if (subLine.startsWith('Out ')) {
+          } else if (subLineLower.startsWith('out ')) {
             const outputName = subLine.substring(4).trim();
             if (subLastNode) {
               // Create an intermediary ingredient node for named outputs
@@ -1185,7 +1187,7 @@ Out"
         // Store subprocess outputs
         subprocesses.set(subprocessName, subOutputs);
         
-      } else if (line.startsWith('Add ')) {
+      } else if (lineLower.startsWith('add ')) {
         let ingredient = line.substring(4).trim();
         let amount = '';
         
@@ -1219,7 +1221,8 @@ Out"
           // Find the next process step and link to it
           for (let j = i + 1; j < lines.length; j++) {
             const nextLine = lines[j].trim();
-            if (!nextLine.startsWith('Add ') && !nextLine.startsWith('Subprocess ') && !nextLine.startsWith('}')) {
+            const nextLineLower = nextLine.toLowerCase();
+            if (!nextLineLower.startsWith('add ') && !nextLineLower.startsWith('subprocess ') && !nextLine.startsWith('}')) {
               // This is the next process step, link subprocess output to it
               const nextId = `next_${j}`;
               // We'll link this after we create the node
@@ -1243,11 +1246,11 @@ Out"
         
       } else if (line && !line.startsWith('}')) {
         // Check if this is an Out statement at the end (final output)
-        if (line.startsWith('Out')) {
+        if (lineLower.startsWith('out')) {
           const id = `node${nodeId++}`;
           // Use any text following 'Out' as the output label; default to 'Serve'
           // when no label is provided (e.g. a bare 'Out' line).
-          let outLabel = line.replace(/^Out\s*/i, '').trim();
+          let outLabel = line.replace(/^out\s*/i, '').trim();
           if (!outLabel) outLabel = 'Serve';
           const node: Node = { id, label: outLabel, group: "output" };
           nodes.push(node);
@@ -1269,7 +1272,8 @@ Out"
           // Link any immediately preceding ingredients to this final node
           for (let j = i - 1; j >= 0; j--) {
             const prevLine = lines[j].trim();
-            if (prevLine.startsWith('Add ') && !prevLine.includes(' from ')) {
+            const prevLineLower = prevLine.toLowerCase();
+            if (prevLineLower.startsWith('add ') && !prevLine.includes(' from ')) {
               let ingredient = prevLine.substring(4).trim();
               // Remove amount if present
               const amountMatch = ingredient.match(/^(.+?)\s*\{([^}]+)\}$/);
@@ -1280,7 +1284,7 @@ Out"
               if (ingredientNode) {
                 addLink(ingredientNode.id, id);
               }
-            } else if (!prevLine.startsWith('Add ')) {
+            } else if (!prevLineLower.startsWith('add ')) {
               break;
             }
           }
@@ -1305,7 +1309,8 @@ Out"
           // Link any immediately preceding ingredients to this step (not from subprocess)
           for (let j = i - 1; j >= 0; j--) {
             const prevLine = lines[j].trim();
-            if (prevLine.startsWith('Add ') && !prevLine.includes(' from ')) {
+            const prevLineLower = prevLine.toLowerCase();
+            if (prevLineLower.startsWith('add ') && !prevLine.includes(' from ')) {
               let ingredient = prevLine.substring(4).trim();
               // Remove amount if present
               const amountMatch = ingredient.match(/^(.+?)\s*\{([^}]+)\}$/);
@@ -1316,7 +1321,7 @@ Out"
               if (ingredientNode) {
                 addLink(ingredientNode.id, id);
               }
-            } else if (!prevLine.startsWith('Add ')) {
+            } else if (!prevLineLower.startsWith('add ')) {
               break;
             }
           }
