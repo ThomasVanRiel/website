@@ -39,7 +39,7 @@ Out"
           Switch to Light Mode
         </button>
       </div>
-      <div class="flex gap-2 justify-center">
+      <div class="flex gap-2 justify-center items-center">
         <button
           id="save-svg"
           class="button  px-1.5"
@@ -52,6 +52,10 @@ Out"
         >
           Save as PNG
         </button>
+        <label class="flex items-center gap-2 text-sm">
+          <input type="checkbox" id="png-white-bg" />
+          <span>Transparent background</span>
+        </label>
         <button
           id="share-recipe"
           class="button  px-1.5"
@@ -1931,7 +1935,7 @@ Out `;
   });
   
   // Helper: rasterize an SVG element into a canvas (returns Promise<HTMLCanvasElement>)
-  async function exportSVGToCanvas(svgElement: SVGSVGElement, scale = (window.devicePixelRatio || 1)) {
+  async function exportSVGToCanvas(svgElement: SVGSVGElement, scale = (window.devicePixelRatio || 1), whiteBackground = false) {
     // Clone to avoid mutating original
     const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
 
@@ -1973,6 +1977,11 @@ Out `;
           if (!ctx) throw new Error('Could not get canvas context');
           // Scale so image renders crisply on high-DPI screens
           ctx.setTransform(scale, 0, 0, scale, 0, 0);
+          // Add white background if requested
+          if (whiteBackground) {
+            ctx.fillStyle = 'white';
+            ctx.fillRect(0, 0, intrinsicWidth, intrinsicHeight);
+          }
           ctx.drawImage(img, 0, 0);
           URL.revokeObjectURL(url);
           resolve(canvas);
@@ -1993,9 +2002,9 @@ Out `;
   }
 
   // Download as PNG
-  async function downloadPNG(svgElement: SVGSVGElement) {
+  async function downloadPNG(svgElement: SVGSVGElement, whiteBackground = false) {
     try {
-      const canvas = await exportSVGToCanvas(svgElement);
+      const canvas = await exportSVGToCanvas(svgElement, window.devicePixelRatio || 1, whiteBackground);
       canvas.toBlob((blob) => {
         if (!blob) return;
         const url = URL.createObjectURL(blob);
@@ -2028,7 +2037,8 @@ Out `;
   document.getElementById('save-png')!.addEventListener('click', async () => {
     const svgElement = document.querySelector('#recipe-flowchart svg') as SVGSVGElement;
     if (!svgElement) return;
-    await downloadPNG(svgElement);
+    const transparentBackground = (document.getElementById('png-white-bg') as HTMLInputElement).checked;
+    await downloadPNG(svgElement, !transparentBackground);
   });
 
   // Share button: copy URL with recipe to clipboard
