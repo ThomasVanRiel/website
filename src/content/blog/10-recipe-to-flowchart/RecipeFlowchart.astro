@@ -2002,8 +2002,8 @@ Out `;
 
     return new Promise<HTMLCanvasElement>((resolve, reject) => {
       const serialized = new XMLSerializer().serializeToString(svgClone);
-      const blob = new Blob([serialized], { type: 'image/svg+xml;charset=utf-8' });
-      const url = URL.createObjectURL(blob);
+      // Use data URL instead of blob URL for better iOS Safari compatibility
+      const svgDataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(serialized);
       const img = new Image();
 
       img.onload = () => {
@@ -2021,21 +2021,18 @@ Out `;
             ctx.fillRect(0, 0, intrinsicWidth, intrinsicHeight);
           }
           ctx.drawImage(img, 0, 0);
-          URL.revokeObjectURL(url);
           resolve(canvas);
         } catch (err) {
-          URL.revokeObjectURL(url);
           reject(err);
         }
       };
 
       img.onerror = (e) => {
-        URL.revokeObjectURL(url);
         reject(e);
       };
 
-      // Use a data URL for CORS-safe rendering when possible
-      img.src = url;
+      // Use data URL for CORS-safe rendering, especially important for iOS
+      img.src = svgDataUrl;
     });
   }
 
@@ -2043,29 +2040,83 @@ Out `;
   async function downloadPNG(svgElement: SVGSVGElement, whiteBackground = false) {
     try {
       const canvas = await exportSVGToCanvas(svgElement, window.devicePixelRatio || 1, whiteBackground);
-      canvas.toBlob((blob) => {
-        if (!blob) return;
-        const url = URL.createObjectURL(blob);
+      
+      // Convert canvas to data URL - more reliable on iOS than blob
+      const dataUrl = canvas.toDataURL('image/png');
+      
+      // iOS Safari doesn't support download attribute well, so we need a different approach
+      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+      
+      if (isIOS) {
+        // For iOS: open in new window/tab so user can save manually
+        const newWindow = window.open();
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+              <head>
+                <title>Save Image</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1">
+                <style>
+                  body { margin: 0; padding: 20px; text-align: center; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+                  img { max-width: 100%; height: auto; border: 1px solid #ccc; }
+                  p { color: #666; margin: 10px 0; }
+                </style>
+              </head>
+              <body>
+                <p>Long press the image below and select "Save Image" or "Add to Photos"</p>
+                <img src="${dataUrl}" alt="Recipe Flowchart">
+              </body>
+            </html>
+          `);
+          newWindow.document.close();
+        } else {
+          // If popup blocked, fallback to direct link
+          const a = document.createElement('a');
+          a.href = dataUrl;
+          a.download = getFlowchartFilename('png');
+          a.textContent = 'Download PNG';
+          a.style.cssText = 'display: block; margin: 20px auto; padding: 10px 20px; background: #007bff; color: white; text-decoration: none; border-radius: 5px; width: fit-content;';
+          
+          const wrapper = document.createElement('div');
+          wrapper.style.cssText = 'position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.8); z-index: 10000; display: flex; align-items: center; justify-content: center;';
+          wrapper.innerHTML = '<div style="background: white; padding: 30px; border-radius: 10px; max-width: 90%;"><p>Click below to download:</p></div>';
+          wrapper.querySelector('div')!.appendChild(a);
+          
+          const closeBtn = document.createElement('button');
+          closeBtn.textContent = 'Close';
+          closeBtn.style.cssText = 'display: block; margin: 20px auto 0; padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 5px; cursor: pointer;';
+          closeBtn.onclick = () => wrapper.remove();
+          wrapper.querySelector('div')!.appendChild(closeBtn);
+          
+          document.body.appendChild(wrapper);
+        }
+      } else {
+        // For non-iOS devices: use standard download
         const a = document.createElement('a');
-        a.href = url;
+        a.href = dataUrl;
         a.download = getFlowchartFilename('png');
         document.body.appendChild(a);
         a.click();
         a.remove();
-        URL.revokeObjectURL(url);
-      }, 'image/png');
+      }
     } catch (err) {
       // Fallback: download SVG if rasterization fails
       console.error('PNG export failed, falling back to SVG:', err);
-      const blob = new Blob([new XMLSerializer().serializeToString(svgElement)], { type: 'image/svg+xml' });
-      const url = URL.createObjectURL(blob);
+      const svgClone = svgElement.cloneNode(true) as SVGSVGElement;
+      const fontDataUrl = await getEmbeddedFontDataUrl();
+      const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
+      style.textContent = `@font-face { font-family: "xkcd Script"; src: url('${fontDataUrl}') format('woff'); font-weight: normal; font-style: normal; } text { font-family: 'xkcd Script', cursive; }`;
+      svgClone.insertBefore(style, svgClone.firstChild);
+      
+      const serialized = new XMLSerializer().serializeToString(svgClone);
+      const dataUrl = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(serialized);
       const a = document.createElement('a');
-      a.href = url;
+      a.href = dataUrl;
       a.download = getFlowchartFilename('svg');
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(url);
     }
   }
 
