@@ -8,10 +8,17 @@ import solidJs from "@astrojs/solid-js"
 export default defineConfig({
   site: "https://thomasvanriel.com",
   integrations: [mdx(), sitemap({
-      filter: (page) =>
-        page !== 'https://thomasvanriel.com/blog/04-sunk-cost-fallacy/' &&
-        page !== 'https://thomasvanriel.com/blog/05-failing/' &&
-        page !== 'https://thomasvanriel.com/blog/07-mdx-test/' &&
-        page !== 'https://thomasvanriel.com/blog/08-machining-window/',
+      filter: (page) => {
+        // Filter out known draft posts
+        const draftPaths = [
+          '/blog/04-sunk-cost-fallacy/',
+          '/blog/07-mdx-test/',
+          '/blog/08-machining-window/',
+          '/blog/11-cartography/',
+          '/blog/12-jet-engines/'
+        ]
+        
+        return !draftPaths.some(path => page.includes(path))
+      }
     }), solidJs(), tailwind({ applyBaseStyles: false })],
 })

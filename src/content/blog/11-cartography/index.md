@@ -15,5 +15,6 @@ https://github.com/rtlemos/spilhaus
 https://proj.org/en/stable/operations/projections/spilhaus.html
 https://pyproj4.github.io/pyproj/stable/index.html
 https://pythongis.org/part2/chapter-06/nb/03-coordinate-reference-system.html
+Pixel art style maps!
 
 
