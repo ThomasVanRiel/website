@@ -1568,8 +1568,23 @@ Simmer (on low heat) in Casserole
 Add Vinegar
 Out `;
 
-  // Preload font asynchronously on page load
-  getEmbeddedFontDataUrl().catch(() => {
+  // Preload font asynchronously on page load and ensure it's loaded in the document
+  getEmbeddedFontDataUrl().then(fontDataUrl => {
+    // Ensure font is loaded into the document for iOS compatibility
+    const fontFaceStyle = document.createElement('style');
+    fontFaceStyle.textContent = `@font-face { font-family: "xkcd Script"; src: url('${fontDataUrl}') format('woff'); font-weight: normal; font-style: normal; }`;
+    document.head.appendChild(fontFaceStyle);
+    
+    // Use Font Loading API to ensure font is ready
+    if ('fonts' in document) {
+      const font = new FontFace('xkcd Script', `url('${fontDataUrl}') format('woff')`);
+      font.load().then(() => {
+        (document as any).fonts.add(font);
+      }).catch(() => {
+        // Silently fail - will retry on export if needed
+      });
+    }
+  }).catch(() => {
     // Silently fail - will retry on export if needed
   });
 
@@ -1986,6 +2001,15 @@ Out `;
     // Get the embedded font data URL (cached after first call)
     const fontDataUrl = await getEmbeddedFontDataUrl();
 
+    // Ensure font is loaded before proceeding
+    if ('fonts' in document) {
+      try {
+        await (document as any).fonts.load('16px "xkcd Script"');
+      } catch (e) {
+        console.warn('Font loading API failed, proceeding anyway:', e);
+      }
+    }
+
     // Inject xkcd font-face CSS into SVG with embedded font data
     const style = document.createElementNS('http://www.w3.org/2000/svg', 'style');
     style.textContent = `@font-face { font-family: "xkcd Script"; src: url('${fontDataUrl}') format('woff'); font-weight: normal; font-style: normal; } text { font-family: 'xkcd Script', cursive; }`;
@@ -2013,24 +2037,31 @@ Out `;
       const img = new Image();
 
       img.onload = () => {
-        try {
-          const canvas = document.createElement('canvas');
-          canvas.width = Math.round(intrinsicWidth * scale);
-          canvas.height = Math.round(intrinsicHeight * scale);
-          const ctx = canvas.getContext('2d');
-          if (!ctx) throw new Error('Could not get canvas context');
-          // Scale so image renders crisply on high-DPI screens
-          ctx.setTransform(scale, 0, 0, scale, 0, 0);
-          // Add white background if requested
-          if (whiteBackground) {
-            ctx.fillStyle = 'white';
-            ctx.fillRect(0, 0, intrinsicWidth, intrinsicHeight);
+        // Additional delay for iOS to ensure font renders properly
+        // iOS Safari needs extra time to process embedded fonts in SVG images
+        const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 200 : 0;
+        
+        setTimeout(() => {
+          try {
+            const canvas = document.createElement('canvas');
+            canvas.width = Math.round(intrinsicWidth * scale);
+            canvas.height = Math.round(intrinsicHeight * scale);
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('Could not get canvas context');
+            // Scale so image renders crisply on high-DPI screens
+            ctx.setTransform(scale, 0, 0, scale, 0, 0);
+            // Add white background if requested
+            if (whiteBackground) {
+              ctx.fillStyle = 'white';
+              ctx.fillRect(0, 0, intrinsicWidth, intrinsicHeight);
+            }
+            ctx.drawImage(img, 0, 0);
+            resolve(canvas);
+          } catch (err) {
+            reject(err);
           }
-          ctx.drawImage(img, 0, 0);
-          resolve(canvas);
-        } catch (err) {
-          reject(err);
-        }
+        }, delay);
       };
 
       img.onerror = (e) => {
