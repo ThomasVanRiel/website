@@ -27,22 +27,25 @@ Out"
         >
           Generate Flowchart
         </button>
-        <label class="flex items-center gap-2 text-sm">
-          <input type="checkbox" id="toggle-pots" checked />
-          <span>Show cookware</span>
-        </label>
-        <label class="flex items-center gap-2 text-sm">
-          <span>Ingredient width:</span>
-          <input 
-            type="range" 
-            id="ingredient-width-slider" 
-            min="15" 
-            max="35" 
-            value="25" 
-            step="1"
-            class="w-24"
-          />
-        </label>
+        <div class="flex flex-col gap-1 items-center">
+          
+          <label class="flex items-center gap-2 text-sm">
+            <input type="checkbox" id="toggle-pots" checked />
+            <span>Show cookware</span>
+          </label>
+          <label class="flex items-center gap-2 text-sm">
+            <span>Ingredient width:</span>
+            <input 
+              type="range" 
+              id="ingredient-width-slider" 
+              min="15" 
+              max="35" 
+              value="25" 
+              step="1"
+              class="w-24"
+            />
+          </label>
+        </div>
         <button
           id="toggle-theme"
           class="button px-1.5"
