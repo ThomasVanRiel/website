@@ -1880,6 +1880,9 @@ Out `;
     }, 100);
     // Clear URL hash to keep URL clean
     window.history.replaceState({}, '', window.location.pathname);
+  } else {
+    // Load default stoofvlees recipe if no URL recipe
+    recipeInput.value = stoofvleesRecipe;
   }
   
   // Update button state on input
