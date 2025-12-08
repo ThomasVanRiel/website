@@ -11,11 +11,6 @@ export default defineConfig({
       filter: (page) => {
         // Filter out known draft posts
         const draftPaths = [
-          '/blog/04-sunk-cost-fallacy/',
-          '/blog/07-mdx-test/',
-          '/blog/08-machining-window/',
-          '/blog/11-cartography/',
-          '/blog/12-jet-engines/'
         ]
         
         return !draftPaths.some(path => page.includes(path))
