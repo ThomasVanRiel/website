@@ -1,0 +1,239 @@
+---
+type Props = {
+  images: Array<{
+    src: string
+    alt: string
+    name: string
+    filters: Array<{ closedFraction: number }>
+    sorters: Array<{ 
+      radius: number
+      rmsError: number
+      rmsErrorNorm: number
+      city: string
+      roadId: string
+    }>
+  }>
+  columns?: 2 | 3 | 4 | 5 | 6
+  gap?: "sm" | "md" | "lg"
+}
+
+const { 
+  images, 
+  columns = 3, 
+  gap = "md"
+} = Astro.props
+
+const gapSizes = {
+  sm: 8,
+  md: 16,
+  lg: 24
+}
+
+const gapPx = gapSizes[gap]
+---
+
+<div class="isotope-controls mb-6 space-y-4">
+  <div class="flex flex-wrap gap-4">
+    <!-- Filter Controls -->
+    <div class="flex-1 min-w-[200px]">
+      <label class="block text-sm font-medium mb-2">Filter</label>
+      <select 
+        id="filter-select" 
+        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900"
+      >
+        <option value="all">All ring roads</option>
+        <option value="closed" selected>Closed ring roads only</option>
+        <option value="open">Open ring roads only</option>
+      </select>
+    </div>
+
+    <!-- Sort Controls -->
+    <div class="flex-1 min-w-[200px]">
+      <label class="block text-sm font-medium mb-2">Sort By</label>
+      <select 
+        id="sort-select" 
+        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900"
+      >
+        <option value="original-order">Road index (R#)</option>
+        <option value="name">Name</option>
+        <option value="radius">Radius</option>
+        <option value="rms-error" selected>RMS Error</option>
+        <option value="rms-error-norm">RMS Error (Normalized)</option>
+        <option value="closed-fraction">Closed Fraction</option>
+      </select>
+    </div>
+
+    <!-- Sort Order Controls -->
+    <div class="flex-1 min-w-[200px]">
+      <label class="block text-sm font-medium mb-2">Sort Order</label>
+      <select 
+        id="order-select" 
+        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900"
+      >
+        <option value="asc">Ascending</option>
+        <option value="desc">Descending</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div 
+  class="isotope-grid w-full" 
+  data-columns={columns}
+  data-gap={gapPx}
+>
+  {images.map((image) => (
+    <div 
+      class="grid-item relative overflow-hidden"
+      data-closed-fraction={image.filters[0]?.closedFraction}
+      data-radius={image.sorters[0]?.radius}
+      data-rms-error={image.sorters[0]?.rmsError}
+      data-rms-error-norm={image.sorters[0]?.rmsErrorNorm}
+      data-city={image.sorters[0]?.city}
+      data-road-id={image.sorters[0]?.roadId}
+    >
+      <div class="px-3 py-0">
+        <h3 class="text-sm font-medium font-semibold truncate text-center">{image.name}</h3>
+      </div>
+      <div class="relative aspect-square">
+        <img 
+          src={image.src} 
+          alt={image.alt}
+          class="absolute inset-0 w-full h-full object-cover py-0"
+        />
+      </div>
+      <div class="px-3 py-0">
+        <p class="text-xs text-center">
+          RMS Error: <span class="font-semibold">{image.sorters[0]?.rmsError?.toFixed(0) || 'N/A'} m ({image.sorters[0]?.rmsErrorNorm?.toFixed(2) || 'N/A'})</span><br/>
+          Radius: <span class="font-semibold">{image.sorters[0]?.radius?.toFixed(0) || 'N/A'} m</span> <br/>
+          <span class="font-semibold">{(image.filters[0]?.closedFraction * 100).toFixed(1) || 'N/A'}%</span> closed
+        </p>
+      </div>
+    </div>
+  ))}
+</div>
+
+<script>
+  import Isotope from 'isotope-layout';
+
+  let isotopeInstances: Isotope[] = [];
+
+  function initIsotope() {
+    const grids = document.querySelectorAll('.isotope-grid');
+    
+    // Clear previous instances
+    isotopeInstances.forEach(iso => iso.destroy());
+    isotopeInstances = [];
+    
+    grids.forEach((gridElement) => {
+      const grid = gridElement as HTMLElement;
+      const columns = parseInt(grid.dataset.columns || '3');
+      const gap = parseInt(grid.dataset.gap || '16');
+      
+      // Calculate column width based on number of columns
+      const columnWidth = `calc((100% - ${gap * (columns - 1)}px) / ${columns})`;
+      
+      // Apply styles to grid items
+      const items = grid.querySelectorAll('.grid-item');
+      items.forEach((item) => {
+        const el = item as HTMLElement;
+        el.style.width = columnWidth;
+        el.style.marginBottom = `${gap}px`;
+      });
+      
+      // Initialize Isotope
+      const iso = new Isotope(grid, {
+        itemSelector: '.grid-item',
+        layoutMode: 'fitRows',
+        fitRows: {
+          gutter: gap
+        },
+        transitionDuration: '0.3s',
+        percentPosition: false,
+        getSortData: {
+          name: (itemElem: Element) => {
+            const nameEl = itemElem.querySelector('h3');
+            return nameEl?.textContent?.toLowerCase() || '';
+          },
+          radius: '[data-radius] parseFloat',
+          'rms-error': '[data-rms-error] parseFloat',
+          'rms-error-norm': '[data-rms-error-norm] parseFloat',
+          'closed-fraction': '[data-closed-fraction] parseFloat'
+        },
+        // Apply initial filter and sort
+        filter: (itemElem: Element) => {
+          const closedFraction = parseFloat((itemElem as HTMLElement).dataset.closedFraction || '0');
+          return closedFraction > 0.9;
+        },
+        sortBy: 'rms-error',
+        sortAscending: true
+      });
+      
+      isotopeInstances.push(iso);
+    });
+    
+    setupControls();
+  }
+
+  function setupControls() {
+    const filterSelect = document.getElementById('filter-select') as HTMLSelectElement;
+    const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
+    const orderSelect = document.getElementById('order-select') as HTMLSelectElement;
+    
+    if (!filterSelect || !sortSelect || !orderSelect) return;
+    
+    // Filter handler
+    filterSelect.addEventListener('change', () => {
+      const filterValue = filterSelect.value;
+      isotopeInstances.forEach(iso => {
+        if (filterValue === 'all') {
+          iso.arrange({ filter: '*' });
+        } else if (filterValue === 'closed') {
+          iso.arrange({ 
+            filter: (itemElem: Element) => {
+              const closedFraction = parseFloat((itemElem as HTMLElement).dataset.closedFraction || '0');
+              return closedFraction > 0.9;
+            }
+          });
+        } else if (filterValue === 'open') {
+          iso.arrange({ 
+            filter: (itemElem: Element) => {
+              const closedFraction = parseFloat((itemElem as HTMLElement).dataset.closedFraction || '0');
+              return closedFraction <= 0.9;
+            }
+          });
+        }
+      });
+    });
+    
+    // Sort handler
+    const applySorting = () => {
+      const sortValue = sortSelect.value;
+      const orderValue = orderSelect.value === 'desc';
+      
+      isotopeInstances.forEach(iso => {
+        if (sortValue === 'original-order') {
+          iso.arrange({ sortBy: 'original-order' });
+        } else {
+          iso.arrange({ 
+            sortBy: sortValue,
+            sortAscending: !orderValue
+          });
+        }
+      });
+    };
+    
+    sortSelect.addEventListener('change', applySorting);
+    orderSelect.addEventListener('change', applySorting);
+  }
+
+  // Initialize on page load
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initIsotope);
+  } else {
+    initIsotope();
+  }
+
+  // Reinitialize on view transitions
+  document.addEventListener('astro:page-load', initIsotope);
+</script>
