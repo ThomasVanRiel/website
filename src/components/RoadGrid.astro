@@ -118,6 +118,12 @@ const gapPx = gapSizes[gap]
 
   let isotopeInstances: Isotope[] = [];
 
+  function getResponsiveColumns(): number {
+    const width = window.innerWidth;
+    if (width < 768) return 3;      // md
+    return 4;                        // 2xl+
+  }
+
   function initIsotope() {
     const grids = document.querySelectorAll('.isotope-grid');
     
@@ -127,7 +133,7 @@ const gapPx = gapSizes[gap]
     
     grids.forEach((gridElement) => {
       const grid = gridElement as HTMLElement;
-      const columns = parseInt(grid.dataset.columns || '3');
+      const columns = getResponsiveColumns();
       const gap = parseInt(grid.dataset.gap || '16');
       
       // Calculate column width based on number of columns
@@ -236,4 +242,13 @@ const gapPx = gapSizes[gap]
 
   // Reinitialize on view transitions
   document.addEventListener('astro:page-load', initIsotope);
+
+  // Handle responsive layout on window resize
+  let resizeTimeout: number;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = window.setTimeout(() => {
+      initIsotope();
+    }, 250);
+  });
 </script>
