@@ -198,19 +198,25 @@ const gapPx = gapSizes[gap]
     setupControls();
   }
 
-  function updateCounts() {
+  function updateCounts(threshold: number) {
     const visibleCountEl = document.getElementById('visibleCount') as HTMLSpanElement;
     const totalCountEl = document.getElementById('totalCount') as HTMLSpanElement;
     
     if (visibleCountEl && totalCountEl) {
+      const grids = document.querySelectorAll('.isotope-grid');
       let visibleCount = 0;
       let totalCount = 0;
       
-      isotopeInstances.forEach(iso => {
-        const items = iso.getFilteredItemElements();
-        const allItems = iso.getItemElements();
-        visibleCount += items.length;
+      grids.forEach(grid => {
+        const allItems = grid.querySelectorAll('.grid-item');
         totalCount += allItems.length;
+        
+        allItems.forEach(item => {
+          const closedFraction = parseFloat((item as HTMLElement).dataset.closedFraction || '0');
+          if (closedFraction >= threshold) {
+            visibleCount++;
+          }
+        });
       });
       
       visibleCountEl.textContent = visibleCount.toString();
@@ -227,7 +233,7 @@ const gapPx = gapSizes[gap]
     if (!closedFractionSlider || !sortSelect || !orderSelect || !closedFractionValue) return;
     
     // Update initial counts
-    updateCounts();
+    updateCounts(0.9);
     
     // Filter handler with slider
     closedFractionSlider.addEventListener('input', () => {
@@ -243,8 +249,8 @@ const gapPx = gapSizes[gap]
         });
       });
       
-      // Update counts after filtering
-      updateCounts();
+      // Update counts based on current threshold
+      updateCounts(threshold);
     });
     
     // Sort handler
