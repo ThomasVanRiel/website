@@ -4,7 +4,7 @@ import PageLayout from "@layouts/PageLayout.astro"
 import ArrowCard from "@components/ArrowCard"
 import { SITE, SOCIALS } from "@consts"
 
-const posts = (await getCollection("blog"))
+const posts = (await getCollection("articles"))
   .filter(post => !post.data.draft)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
   .slice(0,3)
@@ -29,16 +29,16 @@ const projects = (await getCollection("projects"))
             Thomas <span class='uppercase'>Van Riel</span>
           </p>
           <p class='animated text-sm md:text-base lg:text-lg'>
-            Mechanical Engineer, Teacher, Nerd
+            Mechanical Engineer, Tinkerer, and Creator
           </p>
           <div id="ctaButtons" class='animated flex flex-wrap gap-4 justify-center mt-5'>
-            <a href='/blog' class='button-invert py-2 px-4 rounded truncate text-xs md:text-sm lg:text-base text-white dark:text-brand-dk hover:opacity-75 blend'>
-              Read my blog
+            <a href='/articles' class='button-invert py-2 px-4 rounded truncate text-xs md:text-sm lg:text-base text-white dark:text-brand-dk hover:opacity-75 blend'>
+              Read my articles
             </a>
             <a href='/projects' class='button py-2 px-4 truncate rounded text-xs md:text-sm lg:text-base border border-black/25 dark:border-white/25 blend'>
               View my projects
             </a>
-            <a href='/blog/10-recipe-to-flowchart' class='button py-2 px-4 truncate rounded text-xs md:text-sm lg:text-base border border-black/25 dark:border-white/25 blend'>
+            <a href='/articles/10-recipe-to-flowchart' class='button py-2 px-4 truncate rounded text-xs md:text-sm lg:text-base border border-black/25 dark:border-white/25 blend'>
               Try my flowchart recipe generator
             </a>
           </div>
@@ -59,14 +59,14 @@ const projects = (await getCollection("projects"))
         </article>
       </section>
 
-      <!-- Blog Preview Section -->
+      <!-- Articles Preview Section -->
       <section class="animate">
         <div class="space-y-4">
           <div class="flex justify-between">
             <p class="font-semibold text-brand-dk dark:text-white">
               Recent posts
             </p>
-            <a href="/blog" class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-brand-dk dark:text-white underline-offset-2 blend">
+            <a href="/articles" class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-brand-dk dark:text-white underline-offset-2 blend">
               <span class="text-brand-dk/75 dark:text-white/75 group-hover:text-brand-dk group-hover:dark:text-white blend">
                 All posts
               </span>

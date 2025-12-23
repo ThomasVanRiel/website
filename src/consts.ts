@@ -3,7 +3,7 @@ import type { Site, Page, Links, Socials } from "@types"
 // Global
 export const SITE: Site = {
   TITLE: "Thomas VAN RIEL",
-  DESCRIPTION: "Thomas Van Riel's personal website and blog.",
+  DESCRIPTION: "Thomas Van Riel's personal website and articles.",
   AUTHOR: "Thomas Van Riel",
 }
 
@@ -13,9 +13,9 @@ export const WORK: Page = {
   DESCRIPTION: "Places I have worked.",
 }
 
-// Blog Page
-export const BLOG: Page = {
-  TITLE: "Blog",
+// Articles Page
+export const ARTICLES: Page = {
+  TITLE: "Articles",
   DESCRIPTION: "Writing on topics I am passionate about.",
 }
 
@@ -42,8 +42,8 @@ export const LINKS: Links = [
     HREF: "/work", 
   },*/
   { 
-    TEXT: "Blog", 
-    HREF: "/blog", 
+    TEXT: "Articles", 
+    HREF: "/articles", 
   },
   { 
     TEXT: "Projects", 
