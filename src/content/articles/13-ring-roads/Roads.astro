@@ -5,10 +5,14 @@ import RoadGrid from "../../../components/RoadGrid.astro"
 const images = ringRoadsData.map((road) => {
   const city = road.ring_road[0]
   const roadId = road.ring_road[1]
+  const pixelSizeM = road.pixel_size_m
   return {
     src: `/ring-roads/${roadId}.png`,
     alt: `${city} ${roadId} - Ring Road`,
     name: `${city} - ${roadId}`,
+    cx: road.cc[0],
+    cy: road.cc[1],
+    radius: road.radius/pixelSizeM,
     filters: [{ closedFraction: road.closed_fraction }],
     sorters: [{ radius: road.radius, rmsError: road.rms_error_m, rmsErrorNorm: road.rms_error_norm, city: city, roadId: roadId }]
   }

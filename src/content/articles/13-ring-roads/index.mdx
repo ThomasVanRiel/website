@@ -1,6 +1,6 @@
 ---
 title: "One ring (road) to rule them all!"
-summary: "Which Belgian ring road is the most circular?"
+summary: "Which Belgian ring road is the most circular, and hence the best one?"
 date: "12/23/2025"
 draft: true
 tags:
@@ -12,9 +12,7 @@ import RoadLabel from "../../../components/RoadLabel.astro"
 import Definition from "../../../components/Definition.astro"
 
 ## Introduction
-Which Belgian ring road is the best ring?
-
-### Definitions
+Which Belgian ring road is the best ring? To answer this question, we first need to define what a ring road is:
 
 <Definition 
     term="ring road"
@@ -26,10 +24,14 @@ Which Belgian ring road is the best ring?
     ]}
 />
 
-In our case, let's call all, and only, roads which are referered to with an R-number a ring road. This excludes several national roads, such as the <RoadLabel label="N" number="712"/> around Pelt, which shows promising ring-like characteristics.  
-If a road is not deemed impressive enough to warant an R-number, it is certainly not impressive enough to be classified as a _true_ ring road.  
-Some roads were planned to become a ring road but ultimately failed to become a ring. A noteable example is the <RoadLabel label="R" number="7"/> around Liège, which was planned to be formed by <RoadLabel label="A" number="604"/> and <RoadLabel label="A" number="605"/>
+In our case, let's call **all**, and **only**, roads which are referered to with an **R-number** a ring road. 
+This excludes several national roads, such as the <RoadLabel label="N" number="712"/> around Pelt, which shows promising ring-like characteristics. 
+If a road is not deemed impressive or important enough to warant an R-number, it is certainly not impressive enough to be called the _ringiest_ Belgian ring road.  
+Some ring roads were planned but ultimately failed to come to fruition. A noteable example is the <RoadLabel label="R" number="7"/> around Liège, 
+which was planned to be formed by the unfinished <RoadLabel label="A" number="604"/>, the <RoadLabel label="E" number="42"/>, the <RoadLabel label="E" number="25"/>, and the planned but cancelled <RoadLabel label="A" number="605"/>.
 
+The name "ring road" implies two properties of such roads: they are _ringlike_, and they are roads.  
+The latter property is trivially satisfied by our definition above, so let's focus on the former:
 
 <Definition
     term="ring" 
@@ -42,11 +44,35 @@ Some roads were planned to become a ring road but ultimately failed to become a 
     ]}
 />
 
-Let's define a ring as **circular**, and **closed**. The latter of these properties is a tad more flexible than the former, as an open ring is quite common, both in road infrastructure and in other _ringlike_ objects (earrings, keychains). The best ring road is hence the one that is the most circular while being reasonably closed.
+Let's define a ring as **circular**, and **closed**. 
+The latter of these properties is a tad more flexible than the former, as an open ring is quite common, 
+both in road infrastructure and in other _ringlike_ objects (earrings, keychains).
+The best ring road is hence the one that is the most circular while being reasonably closed.
+
+As the problem is now clearly defined, we can focus on finding the solution. 
+The next section will explain the method that was selected to evaluate the circularity.
 
 ## Method
 
-TODO
+
+### Data acquisition
+Road data is acquired from OpenStreetMap using the Overpass API.
+
+**TODO**: Add image showing the wayfeatures on the map, with ring roads highlighted.
+
+### Rasterization
+Because the road data is in vector format, it needs to be rasterized to avoid bias towards roads with more data points.
+The roads are rasterized to a 800x800 pixel image, with pixel size chosen such that the entire road fits within the image.
+
+**TODO**: Add image showing rasterization process. Dilation erosion etc
+
+### Circle fitting
+A circle is fitted to the rasterized road data using MSAC, a variant of RANSAC.
+
+**TODO**: Explain MSAC briefly.
+
+
+
 
 ## Results and conclusion
 
@@ -56,9 +82,11 @@ import Roads from "Roads.astro"
 
 <Roads/>
 
-## Pitfalls
+## Discussion
+
+### Pitfalls
 Projectie in m tov centrum want lon lat is niet equal aspect
 
-## Technical notes
+### Technical notes
 Created with IsotopeJS
 The road signs are a react component
