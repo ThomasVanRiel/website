@@ -1,4 +1,6 @@
 ---
+import RoadLabel from './RoadLabel.astro';
+
 type Props = {
   images: Array<{
     src: string
@@ -36,15 +38,18 @@ const gapPx = gapSizes[gap]
   <div class="flex flex-wrap gap-4">
     <!-- Filter Controls -->
     <div class="flex-1 min-w-[200px]">
-      <label class="block text-sm font-medium mb-2">Filter</label>
-      <select 
-        id="filter-select" 
-        class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900"
-      >
-        <option value="all">All ring roads</option>
-        <option value="closed" selected>Closed ring roads only</option>
-        <option value="open">Open ring roads only</option>
-      </select>
+      <label class="block text-sm font-medium mb-2">
+        Min. <span id="closedFractionValue" class="font-semibold">90%</span> closed.
+      </label>
+      <input 
+        type="range" 
+        id="closed-fraction-slider" 
+        min="0" 
+        max="100" 
+        value="90" 
+        step="5"
+        class="w-full h-2 bg-neutral-200 dark:bg-neutral-700 rounded-lg appearance-none cursor-pointer accent-neutral-900 dark:accent-neutral-100"
+      />
     </div>
 
     <!-- Sort Controls -->
@@ -55,7 +60,7 @@ const gapPx = gapSizes[gap]
         class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900"
       >
         <option value="original-order">Road index (R#)</option>
-        <option value="name">Name</option>
+        <option value="name">City</option>
         <option value="radius">Radius</option>
         <option value="rms-error" selected>RMS Error</option>
         <option value="rms-error-norm">RMS Error (Normalized)</option>
@@ -93,7 +98,13 @@ const gapPx = gapSizes[gap]
       data-road-id={image.sorters[0]?.roadId}
     >
       <div class="px-3 py-0">
-        <h3 class="text-sm font-medium font-semibold truncate text-center">{image.name}</h3>
+        <h3 class="text-sm font-medium font-semibold text-center">
+          {image.sorters[0]?.city || 'Unknown City'}
+          <RoadLabel 
+            label={image.sorters[0]?.roadId.charAt(0) || 'R'} 
+            number={image.sorters[0]?.roadId.slice(1) || ''}
+          />
+        </h3>
       </div>
       <div class="relative aspect-square">
         <img 
@@ -169,7 +180,7 @@ const gapPx = gapSizes[gap]
         // Apply initial filter and sort
         filter: (itemElem: Element) => {
           const closedFraction = parseFloat((itemElem as HTMLElement).dataset.closedFraction || '0');
-          return closedFraction > 0.9;
+          return closedFraction >= 0.9;
         },
         sortBy: 'rms-error',
         sortAscending: true
@@ -182,33 +193,25 @@ const gapPx = gapSizes[gap]
   }
 
   function setupControls() {
-    const filterSelect = document.getElementById('filter-select') as HTMLSelectElement;
+    const closedFractionSlider = document.getElementById('closed-fraction-slider') as HTMLInputElement;
+    const closedFractionValue = document.getElementById('closedFractionValue') as HTMLSpanElement;
     const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
     const orderSelect = document.getElementById('order-select') as HTMLSelectElement;
     
-    if (!filterSelect || !sortSelect || !orderSelect) return;
+    if (!closedFractionSlider || !sortSelect || !orderSelect || !closedFractionValue) return;
     
-    // Filter handler
-    filterSelect.addEventListener('change', () => {
-      const filterValue = filterSelect.value;
+    // Filter handler with slider
+    closedFractionSlider.addEventListener('input', () => {
+      const threshold = parseFloat(closedFractionSlider.value) / 100;
+      closedFractionValue.textContent = `${closedFractionSlider.value}%`;
+      
       isotopeInstances.forEach(iso => {
-        if (filterValue === 'all') {
-          iso.arrange({ filter: '*' });
-        } else if (filterValue === 'closed') {
-          iso.arrange({ 
-            filter: (itemElem: Element) => {
-              const closedFraction = parseFloat((itemElem as HTMLElement).dataset.closedFraction || '0');
-              return closedFraction > 0.9;
-            }
-          });
-        } else if (filterValue === 'open') {
-          iso.arrange({ 
-            filter: (itemElem: Element) => {
-              const closedFraction = parseFloat((itemElem as HTMLElement).dataset.closedFraction || '0');
-              return closedFraction <= 0.9;
-            }
-          });
-        }
+        iso.arrange({ 
+          filter: (itemElem: Element) => {
+            const closedFraction = parseFloat((itemElem as HTMLElement).dataset.closedFraction || '0');
+            return closedFraction >= threshold;
+          }
+        });
       });
     });
     

@@ -8,15 +8,45 @@ tags:
 - Interactive
 ---
 
+import RoadLabel from "../../../components/RoadLabel.astro"
+import Definition from "../../../components/Definition.astro"
+
 ## Introduction
+Which Belgian ring road is the best ring?
+
 ### Definitions
-Ring Road
-- Wegen aangeduid met R#
 
-Ring
-- perfecte cirkel
-- gesloten
+<Definition 
+    term="ring road"
+    partOfSpeech="noun"
+    pronunciation="/rĭng roʊd/"
+    definitions={[
+        { number: 1, text: "A circumferential highway around a town, city, or other conurbation." },
+        { number: 2, text: "A highway that encircles an urban area so that traffic does not have to pass through the center.", example: "The Brussels Ring Road handles over 20 vehicles daily." }
+    ]}
+/>
 
+In our case, let's call all, and only, roads which are referered to with an R-number a ring road. This excludes several national roads, such as the <RoadLabel label="N" number="712"/> around Pelt, which shows promising ring-like characteristics.  
+If a road is not deemed impressive enough to warant an R-number, it is certainly not impressive enough to be classified as a _true_ ring road.  
+Some roads were planned to become a ring road but ultimately failed to become a ring. A noteable example is the <RoadLabel label="R" number="7"/> around Liège was planned to be formed by <RoadLabel label="A" number="604"/> and <RoadLabel label="A" number="605"/>
+
+
+<Definition
+    term="ring" 
+    partOfSpeech="noun" 
+    pronunciation="/rĭng/"
+    definitions={[
+        { number: 1, text: "A circular object, form, line, or arrangement. " },
+        { number: 2, text: "A small circular band, generally made of precious metal and often set with jewels, worn on the finger." },
+        { number: 3, text: "A circular band used for carrying, holding, or containing something. ", example: "a ***** ring." }
+    ]}
+/>
+
+Let's define a ring as **circular**, and **closed**. The latter of these properties is a tad more flexible than the former, as an open ring is quite common, both in road infrastructure and in other _ringlike_ objects (earrings, keychains). The best ring road is hence the one that is the most circular while being reasonably closed.
+
+## Method
+
+## Results
 
 import Roads from "Roads.astro"
 
@@ -24,3 +54,7 @@ import Roads from "Roads.astro"
 
 ## Pitfalls
 Projectie in m tov centrum want lon lat is niet equal aspect
+
+## Technical notes
+Created with IsotopeJS
+The road signs are a react component

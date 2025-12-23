@@ -1,0 +1,47 @@
+---
+type Definition = {
+  number: number;
+  text: string;
+  example?: string;
+};
+
+type Props = {
+  term: string;
+  partOfSpeech?: string;
+  pronunciation?: string;
+  definitions: Definition[];
+};
+
+const { term, partOfSpeech, pronunciation, definitions } = Astro.props;
+---
+
+<div class="definition-block my-6 border-l-4 border-neutral-300 dark:border-neutral-700 pl-4">
+  <div class="mb-2">
+    <span class="text-lg font-bold">{term}</span>
+    {pronunciation && (
+      <span class="ml-2 text-lg text-neutral-600 dark:text-neutral-400 italic">{pronunciation}</span>
+    )}
+  </div>
+  
+  {partOfSpeech && (
+    <div class="text-sm italic text-neutral-600 dark:text-neutral-400 mb-3">
+      {partOfSpeech}
+    </div>
+  )}
+  
+  <ol class="space-y-2">
+    {definitions.map((def) => (
+      <li class="text-sm flex gap-2">
+        <span class="font-semibold text-neutral-700 dark:text-neutral-300 min-w-[1.5rem]">{def.number}.</span>
+        <div class="flex-1">
+          <span class="text-neutral-900 dark:text-neutral-100">{def.text}</span>
+          {def.example && (
+            <div class="mt-1 text-sm text-neutral-600 dark:text-neutral-400 italic">
+              "{def.example}"
+            </div>
+          )}
+        </div>
+      </li>
+    ))}
+  </ol>
+</div>
