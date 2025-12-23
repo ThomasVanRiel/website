@@ -1,6 +1,6 @@
 ---
 title: "Welcome to my new website"
-summary: "This is the first blog post on my new website"
+summary: "This is the first article post on my new website"
 date: "02/24/2025"
 draft: false
 tags:

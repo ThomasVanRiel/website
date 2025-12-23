@@ -5,12 +5,12 @@ import { cn } from "@lib/utils"
 
 type Props = {
   tags: string[]
-  data: CollectionEntry<"blog">[]
+  data: CollectionEntry<"articles">[]
 }
 
-export default function Blog({ data, tags }: Props) {
+export default function Articles({ data, tags }: Props) {
   const [filter, setFilter] = createSignal(new Set<string>())
-  const [posts, setPosts] = createSignal<CollectionEntry<"blog">[]>([])
+  const [posts, setPosts] = createSignal<CollectionEntry<"articles">[]>([])
 
   createEffect(() => {
     setPosts(data.filter((entry) => 
@@ -56,7 +56,7 @@ export default function Blog({ data, tags }: Props) {
       <div class="col-span-3 sm:col-span-2">
         <div class="flex flex-col">
           <div class="text-sm uppercase mb-2">
-            SHOWING {posts().length} OF {data.length} POSTS
+            SHOWING {posts().length} OF {data.length} ARTICLES
           </div>
           <ul class="flex flex-col gap-3">
             {posts().map((post) => (
