@@ -71,7 +71,7 @@ The coordinates are in **WGS84** format (longitude and latitude), which are conv
 Because the road data is in vector format, it needs to be rasterized to avoid bias towards roads with more data points.
 The vector lines representing roads are rasterized using **Bresenham's line algorithm** to a 800x800 pixel image, 
 with pixel size chosen such that the entire road fits within the image.  
-Next, the rasterized image is **dilated** using a 5x5 square structuring element to ensure that the road is continuous, 
+Next, the rasterized image is **dilated** to ensure that the road is continuous, 
 as some roads have gaps due to missing data in the OpenStreetMap query (e.g. overpasses or crossings). Some roads further have wider lanes, a wide median, or multiple lanes, which are all part of the same road.   
 The mask is finally **eroded** using the slightly smaller kernel size to avoid creating new gaps.
 

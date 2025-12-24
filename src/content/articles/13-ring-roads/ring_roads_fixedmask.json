@@ -1,0 +1,1366 @@
+[
+    {
+        "ring_road": [
+            "Brussels",
+            "R0"
+        ],
+        "extent": [
+            -16500.0,
+            16500.0,
+            -16500.0,
+            16500.0
+        ],
+        "pixel_size_m": 41.25,
+        "cc": [
+            431.3009905019602,
+            304.39635241802705
+        ],
+        "radius": 7719.342065435251,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": 82.22886989184244,
+            "residual_std": 112.03179888163827,
+            "rmse": 138.9701802702486,
+            "max_error": 319.01092938417685,
+            "r_squared": -2.4499747009613735,
+            "n_points": 11756,
+            "n_inliers": 6914,
+            "iterations": 4000
+        },
+        "rms_error_m": 5732.519936147755,
+        "rms_error_norm": 0.7426176852320289
+    },
+    {
+        "ring_road": [
+            "Antwerp",
+            "R1"
+        ],
+        "extent": [
+            -4400.0,
+            4400.0,
+            -4400.0,
+            4400.0
+        ],
+        "pixel_size_m": 11.0,
+        "cc": [
+            340.34515589975774,
+            503.976758411986
+        ],
+        "radius": 2997.5370687411782,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": 33.07050674137291,
+            "residual_std": 72.40622553718681,
+            "rmse": 79.60100447025249,
+            "max_error": 258.57425488456084,
+            "r_squared": -0.0018761673025975423,
+            "n_points": 20433,
+            "n_inliers": 15751,
+            "iterations": 4000
+        },
+        "rms_error_m": 875.6110491727774,
+        "rms_error_norm": 0.29211016547678326
+    },
+    {
+        "ring_road": [
+            "Antwerp",
+            "R2"
+        ],
+        "extent": [
+            -5700.0,
+            5700.0,
+            -5700.0,
+            5700.0
+        ],
+        "pixel_size_m": 14.25,
+        "cc": [
+            758.5654914217594,
+            784.969332658339
+        ],
+        "radius": 8005.533077819094,
+        "closed_fraction": 0.23,
+        "fit_metrics": {
+            "residual_mean": -0.2626406207968944,
+            "residual_std": 21.585989151723517,
+            "rmse": 21.58758689047986,
+            "max_error": 75.90684403458044,
+            "r_squared": 0.9613682959635306,
+            "n_points": 7273,
+            "n_inliers": 7002,
+            "iterations": 4000
+        },
+        "rms_error_m": 307.62311318933797,
+        "rms_error_norm": 0.03842631217672042
+    },
+    {
+        "ring_road": [
+            "Charleroi",
+            "R3"
+        ],
+        "extent": [
+            -8500.0,
+            8500.0,
+            -8500.0,
+            8500.0
+        ],
+        "pixel_size_m": 21.25,
+        "cc": [
+            378.2686373261279,
+            295.6959576846433
+        ],
+        "radius": 5999.442535251474,
+        "closed_fraction": 0.71,
+        "fit_metrics": {
+            "residual_mean": 20.032016646903717,
+            "residual_std": 44.20108130535296,
+            "rmse": 48.528520269056735,
+            "max_error": 140.26002264802145,
+            "r_squared": 0.6058404422833246,
+            "n_points": 9919,
+            "n_inliers": 7703,
+            "iterations": 4000
+        },
+        "rms_error_m": 1031.2310557174555,
+        "rms_error_norm": 0.17188781285230367
+    },
+    {
+        "ring_road": [
+            "Ghent",
+            "R4"
+        ],
+        "extent": [
+            -12600.0,
+            12600.0,
+            -12600.0,
+            12600.0
+        ],
+        "pixel_size_m": 31.5,
+        "cc": [
+            383.04191639966564,
+            521.4080020632103
+        ],
+        "radius": 5482.743971054913,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": 76.54456306189293,
+            "residual_std": 124.72681460479569,
+            "rmse": 146.34154712792665,
+            "max_error": 374.6640276636607,
+            "r_squared": -1.2027715038280218,
+            "n_points": 14859,
+            "n_inliers": 9219,
+            "iterations": 4000
+        },
+        "rms_error_m": 4609.75873452969,
+        "rms_error_norm": 0.8407758521765779
+    },
+    {
+        "ring_road": [
+            "Mons",
+            "R5"
+        ],
+        "extent": [
+            -3600.0,
+            3600.0,
+            -3600.0,
+            3600.0
+        ],
+        "pixel_size_m": 9.0,
+        "cc": [
+            609.7089027638037,
+            201.50536455140758
+        ],
+        "radius": 3419.1336708376757,
+        "closed_fraction": 0.35,
+        "fit_metrics": {
+            "residual_mean": 18.065856754212312,
+            "residual_std": 51.060983752439725,
+            "rmse": 54.16271080762698,
+            "max_error": 220.23668154527434,
+            "r_squared": 0.7732846007257409,
+            "n_points": 7778,
+            "n_inliers": 6670,
+            "iterations": 4000
+        },
+        "rms_error_m": 487.4643972686428,
+        "rms_error_norm": 0.14256956416366598
+    },
+    {
+        "ring_road": [
+            "Kortrijk",
+            "R8"
+        ],
+        "extent": [
+            -3100.0,
+            3100.0,
+            -3100.0,
+            3100.0
+        ],
+        "pixel_size_m": 7.75,
+        "cc": [
+            403.0589970067397,
+            430.3312096985964
+        ],
+        "radius": 2563.5061266074713,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": -8.67333890704503,
+            "residual_std": 39.117979208296205,
+            "rmse": 40.06798104643102,
+            "max_error": 101.22562970168951,
+            "r_squared": -0.05951054980055259,
+            "n_points": 19006,
+            "n_inliers": 14768,
+            "iterations": 4000
+        },
+        "rms_error_m": 310.5268531098404,
+        "rms_error_norm": 0.12113364968656805
+    },
+    {
+        "ring_road": [
+            "Charleroi",
+            "R9"
+        ],
+        "extent": [
+            -1000.0,
+            1000.0,
+            -1000.0,
+            1000.0
+        ],
+        "pixel_size_m": 2.5,
+        "cc": [
+            474.38314972376884,
+            349.9542990358645
+        ],
+        "radius": 644.8161286099752,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": 57.266883041689745,
+            "residual_std": 83.29301905877126,
+            "rmse": 101.08027956646838,
+            "max_error": 238.15253001093333,
+            "r_squared": -2.777978973905595,
+            "n_points": 12370,
+            "n_inliers": 7811,
+            "iterations": 4000
+        },
+        "rms_error_m": 252.70069891617098,
+        "rms_error_norm": 0.39189574780164976
+    },
+    {
+        "ring_road": [
+            "Antwerp",
+            "R10"
+        ],
+        "extent": [
+            -3000.0,
+            3000.0,
+            -3000.0,
+            3000.0
+        ],
+        "pixel_size_m": 7.5,
+        "cc": [
+            289.6402456647868,
+            307.51924585721747
+        ],
+        "radius": 2372.701468976775,
+        "closed_fraction": 0.62,
+        "fit_metrics": {
+            "residual_mean": -0.08354801397935481,
+            "residual_std": 19.934053487951665,
+            "rmse": 19.93422857125798,
+            "max_error": 47.58806207873221,
+            "r_squared": 0.9372348494832422,
+            "n_points": 9964,
+            "n_inliers": 9946,
+            "iterations": 4000
+        },
+        "rms_error_m": 149.50671428443485,
+        "rms_error_norm": 0.06301117786592406
+    },
+    {
+        "ring_road": [
+            "Antwerp",
+            "R11"
+        ],
+        "extent": [
+            -6600.0,
+            6600.0,
+            -6600.0,
+            6600.0
+        ],
+        "pixel_size_m": 16.5,
+        "cc": [
+            228.13758187837004,
+            133.8017914238872
+        ],
+        "radius": 6369.542567501288,
+        "closed_fraction": 0.33,
+        "fit_metrics": {
+            "residual_mean": 1.6406689596927893,
+            "residual_std": 20.799528216685324,
+            "rmse": 20.864135943575242,
+            "max_error": 74.62464979897908,
+            "r_squared": 0.9499122444465765,
+            "n_points": 5451,
+            "n_inliers": 5315,
+            "iterations": 4000
+        },
+        "rms_error_m": 344.25824306899153,
+        "rms_error_norm": 0.054047561409741984
+    },
+    {
+        "ring_road": [
+            "Mechelen",
+            "R12"
+        ],
+        "extent": [
+            -900,
+            900,
+            -900,
+            900
+        ],
+        "pixel_size_m": 2.25,
+        "cc": [
+            411.0521158512457,
+            398.44143370730524
+        ],
+        "radius": 707.8481982194018,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": 6.504581470661195,
+            "residual_std": 24.518034330891204,
+            "rmse": 25.366189851044414,
+            "max_error": 96.56574456811626,
+            "r_squared": 0.6002466102237028,
+            "n_points": 24768,
+            "n_inliers": 22289,
+            "iterations": 4000
+        },
+        "rms_error_m": 57.073927164849934,
+        "rms_error_norm": 0.08063017933565401
+    },
+    {
+        "ring_road": [
+            "Turnhout",
+            "R13"
+        ],
+        "extent": [
+            -2000.0,
+            2000.0,
+            -2000.0,
+            2000.0
+        ],
+        "pixel_size_m": 5.0,
+        "cc": [
+            416.4467514850122,
+            235.59111539508842
+        ],
+        "radius": 1929.3434107695682,
+        "closed_fraction": 0.77,
+        "fit_metrics": {
+            "residual_mean": -24.627409864419267,
+            "residual_std": 50.297717182085044,
+            "rmse": 56.00330053094289,
+            "max_error": 170.97192641019754,
+            "r_squared": 0.3436038700367905,
+            "n_points": 15473,
+            "n_inliers": 11948,
+            "iterations": 4000
+        },
+        "rms_error_m": 280.0165026547145,
+        "rms_error_norm": 0.14513564619531508
+    },
+    {
+        "ring_road": [
+            "Geel",
+            "R14"
+        ],
+        "extent": [
+            -3900.0,
+            3900.0,
+            -3900.0,
+            3900.0
+        ],
+        "pixel_size_m": 9.75,
+        "cc": [
+            491.0713562509066,
+            367.52956588372655
+        ],
+        "radius": 1922.9904272656306,
+        "closed_fraction": 0.69,
+        "fit_metrics": {
+            "residual_mean": 5.2432943610186715,
+            "residual_std": 24.12853545300659,
+            "rmse": 24.69166577740931,
+            "max_error": 108.02942393143866,
+            "r_squared": 0.7324131710025559,
+            "n_points": 7269,
+            "n_inliers": 6775,
+            "iterations": 4000
+        },
+        "rms_error_m": 240.7437413297408,
+        "rms_error_norm": 0.12519237637186942
+    },
+    {
+        "ring_road": [
+            "Lier",
+            "R16"
+        ],
+        "extent": [
+            -1800.0,
+            1800.0,
+            -1800.0,
+            1800.0
+        ],
+        "pixel_size_m": 4.5,
+        "cc": [
+            497.1650093631354,
+            362.4769841045948
+        ],
+        "radius": 1524.4026666744371,
+        "closed_fraction": 0.71,
+        "fit_metrics": {
+            "residual_mean": 1.516277799756003e-14,
+            "residual_std": 15.467907225420193,
+            "rmse": 15.467907225420193,
+            "max_error": 32.772778991802625,
+            "r_squared": 0.9432762098771945,
+            "n_points": 13376,
+            "n_inliers": 13376,
+            "iterations": 4000
+        },
+        "rms_error_m": 69.60558251439086,
+        "rms_error_norm": 0.04566089002339455
+    },
+    {
+        "ring_road": [
+            "Retie",
+            "R18"
+        ],
+        "extent": [
+            -900.0,
+            900.0,
+            -900.0,
+            900.0
+        ],
+        "pixel_size_m": 2.25,
+        "cc": [
+            573.189562980479,
+            353.23871385652603
+        ],
+        "radius": 732.3498083072341,
+        "closed_fraction": 0.56,
+        "fit_metrics": {
+            "residual_mean": 1.3420031434254843e-14,
+            "residual_std": 15.945616865341181,
+            "rmse": 15.945616865341181,
+            "max_error": 37.71347064526941,
+            "r_squared": 0.9637387901730649,
+            "n_points": 7116,
+            "n_inliers": 7116,
+            "iterations": 4000
+        },
+        "rms_error_m": 35.877637947017654,
+        "rms_error_norm": 0.048989755360141135
+    },
+    {
+        "ring_road": [
+            "Brussels",
+            "R20"
+        ],
+        "extent": [
+            -3300.0,
+            3300.0,
+            -3300.0,
+            3300.0
+        ],
+        "pixel_size_m": 8.25,
+        "cc": [
+            553.0842355740917,
+            508.2441493401677
+        ],
+        "radius": 1178.8837599998476,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": 98.92466166069896,
+            "residual_std": 153.52773054699304,
+            "rmse": 182.63858500216725,
+            "max_error": 506.46487805423425,
+            "r_squared": -1.7751924001227564,
+            "n_points": 11930,
+            "n_inliers": 7579,
+            "iterations": 4000
+        },
+        "rms_error_m": 1506.7683262678795,
+        "rms_error_norm": 1.2781313793550555
+    },
+    {
+        "ring_road": [
+            "Brussels",
+            "R21"
+        ],
+        "extent": [
+            -4400.0,
+            4400.0,
+            -4400.0,
+            4400.0
+        ],
+        "pixel_size_m": 11.0,
+        "cc": [
+            216.84667034662715,
+            518.2303291631201
+        ],
+        "radius": 3296.23249744415,
+        "closed_fraction": 0.44,
+        "fit_metrics": {
+            "residual_mean": 32.8120400188633,
+            "residual_std": 67.2889691837211,
+            "rmse": 74.86277675859515,
+            "max_error": 212.84978839157844,
+            "r_squared": 0.5456576828917318,
+            "n_points": 7455,
+            "n_inliers": 5814,
+            "iterations": 4000
+        },
+        "rms_error_m": 823.4905443445466,
+        "rms_error_norm": 0.24982780947128852
+    },
+    {
+        "ring_road": [
+            "Brussels",
+            "R22"
+        ],
+        "extent": [
+            -9500.0,
+            9500.0,
+            -9500.0,
+            9500.0
+        ],
+        "pixel_size_m": 23.75,
+        "cc": [
+            -105.88922464249055,
+            305.8233125612988
+        ],
+        "radius": 13725.077983139761,
+        "closed_fraction": 0.22,
+        "fit_metrics": {
+            "residual_mean": -9.201000164438573,
+            "residual_std": 31.781616926619964,
+            "rmse": 33.086697908622064,
+            "max_error": 84.66041737884854,
+            "r_squared": 0.9019386932544531,
+            "n_points": 6503,
+            "n_inliers": 5569,
+            "iterations": 4000
+        },
+        "rms_error_m": 785.809075329774,
+        "rms_error_norm": 0.057253523535172775
+    },
+    {
+        "ring_road": [
+            "Leuven",
+            "R23"
+        ],
+        "extent": [
+            -1400.0,
+            1400.0,
+            -1400.0,
+            1400.0
+        ],
+        "pixel_size_m": 3.5,
+        "cc": [
+            422.1469449622762,
+            356.52484320919274
+        ],
+        "radius": 1140.7037404840823,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": -0.6896964694293124,
+            "residual_std": 23.90566916774816,
+            "rmse": 23.915616228267428,
+            "max_error": 58.63773842545629,
+            "r_squared": 0.10589812169906498,
+            "n_points": 21383,
+            "n_inliers": 21112,
+            "iterations": 4000
+        },
+        "rms_error_m": 83.70465679893601,
+        "rms_error_norm": 0.0733798389785363
+    },
+    {
+        "ring_road": [
+            "Nivelles",
+            "R24"
+        ],
+        "extent": [
+            -3100.0,
+            3100.0,
+            -3100.0,
+            3100.0
+        ],
+        "pixel_size_m": 7.75,
+        "cc": [
+            476.57964850338385,
+            257.0302855770281
+        ],
+        "radius": 2264.895820070693,
+        "closed_fraction": 0.51,
+        "fit_metrics": {
+            "residual_mean": -15.83977024858501,
+            "residual_std": 36.66578147178973,
+            "rmse": 39.94092953932091,
+            "max_error": 93.23622195203626,
+            "r_squared": 0.7781640251620707,
+            "n_points": 7199,
+            "n_inliers": 5719,
+            "iterations": 4000
+        },
+        "rms_error_m": 309.54220392973707,
+        "rms_error_norm": 0.13666951088287826
+    },
+    {
+        "ring_road": [
+            "Aarschot",
+            "R25"
+        ],
+        "extent": [
+            -1600.0,
+            1600.0,
+            -1600.0,
+            1600.0
+        ],
+        "pixel_size_m": 4.0,
+        "cc": [
+            332.6044681243902,
+            405.0350228941761
+        ],
+        "radius": 1457.4891330097703,
+        "closed_fraction": 0.88,
+        "fit_metrics": {
+            "residual_mean": -60.95836206281744,
+            "residual_std": 93.36847351233028,
+            "rmse": 111.5060256282335,
+            "max_error": 293.28326987110677,
+            "r_squared": -1.5240480022980232,
+            "n_points": 13671,
+            "n_inliers": 8138,
+            "iterations": 4000
+        },
+        "rms_error_m": 446.024102512934,
+        "rms_error_norm": 0.3060222490934648
+    },
+    {
+        "ring_road": [
+            "Diest",
+            "R26"
+        ],
+        "extent": [
+            -1100.0,
+            1100.0,
+            -1100.0,
+            1100.0
+        ],
+        "pixel_size_m": 2.75,
+        "cc": [
+            398.5484959306101,
+            428.23924922494353
+        ],
+        "radius": 806.3890010498229,
+        "closed_fraction": 0.98,
+        "fit_metrics": {
+            "residual_mean": 10.986526362955605,
+            "residual_std": 65.69110772608909,
+            "rmse": 66.60349387085154,
+            "max_error": 192.68684638729877,
+            "r_squared": -0.19126959973352275,
+            "n_points": 16436,
+            "n_inliers": 10781,
+            "iterations": 4000
+        },
+        "rms_error_m": 183.1596081448417,
+        "rms_error_norm": 0.22713554860791704
+    },
+    {
+        "ring_road": [
+            "Tienen",
+            "R27"
+        ],
+        "extent": [
+            -2900.0,
+            2900.0,
+            -2900.0,
+            2900.0
+        ],
+        "pixel_size_m": 7.25,
+        "cc": [
+            526.1705241909197,
+            154.69874851342013
+        ],
+        "radius": 2580.7160251891078,
+        "closed_fraction": 0.38,
+        "fit_metrics": {
+            "residual_mean": 3.2856239615590056e-14,
+            "residual_std": 16.441496774954366,
+            "rmse": 16.441496774954366,
+            "max_error": 44.7975551502326,
+            "r_squared": 0.967021596112627,
+            "n_points": 6422,
+            "n_inliers": 6422,
+            "iterations": 4000
+        },
+        "rms_error_m": 119.20085161841916,
+        "rms_error_norm": 0.04618906166155358
+    },
+    {
+        "ring_road": [
+            "Brugge",
+            "R30"
+        ],
+        "extent": [
+            -1600.0,
+            1600.0,
+            -1600.0,
+            1600.0
+        ],
+        "pixel_size_m": 4.0,
+        "cc": [
+            361.85237765858585,
+            415.5920344256015
+        ],
+        "radius": 1322.7900562594189,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": -39.63325136596964,
+            "residual_std": 72.31045791168731,
+            "rmse": 82.45966854915217,
+            "max_error": 200.06073284683444,
+            "r_squared": -1.0046830976162489,
+            "n_points": 19190,
+            "n_inliers": 12596,
+            "iterations": 4000
+        },
+        "rms_error_m": 329.8386741966087,
+        "rms_error_norm": 0.24935073607169783
+    },
+    {
+        "ring_road": [
+            "Oostende",
+            "R31"
+        ],
+        "extent": [
+            -2200.0,
+            2200.0,
+            -2200.0,
+            2200.0
+        ],
+        "pixel_size_m": 5.5,
+        "cc": [
+            315.7836551382606,
+            -35.30808338143373
+        ],
+        "radius": 2704.643803057058,
+        "closed_fraction": 0.26,
+        "fit_metrics": {
+            "residual_mean": 8.363169671475202e-15,
+            "residual_std": 13.441663810585862,
+            "rmse": 13.441663810585862,
+            "max_error": 29.175979026912387,
+            "r_squared": 0.9820437505601716,
+            "n_points": 7395,
+            "n_inliers": 7395,
+            "iterations": 4000
+        },
+        "rms_error_m": 73.92915095822224,
+        "rms_error_norm": 0.027334154270022597
+    },
+    {
+        "ring_road": [
+            "Roeselare",
+            "R32"
+        ],
+        "extent": [
+            -4600.0,
+            4600.0,
+            -4600.0,
+            4600.0
+        ],
+        "pixel_size_m": 11.5,
+        "cc": [
+            513.940704913798,
+            496.17966752171805
+        ],
+        "radius": 3355.3794441838286,
+        "closed_fraction": 0.58,
+        "fit_metrics": {
+            "residual_mean": 5.381767618468787e-14,
+            "residual_std": 18.903180054896023,
+            "rmse": 18.903180054896023,
+            "max_error": 47.06941896198009,
+            "r_squared": 0.9388718490856325,
+            "n_points": 7571,
+            "n_inliers": 7571,
+            "iterations": 4000
+        },
+        "rms_error_m": 217.38657063130424,
+        "rms_error_norm": 0.06478747761542121
+    },
+    {
+        "ring_road": [
+            "Poperinge",
+            "R33"
+        ],
+        "extent": [
+            -1500.0,
+            1500.0,
+            -1500.0,
+            1500.0
+        ],
+        "pixel_size_m": 3.75,
+        "cc": [
+            345.3859258930206,
+            391.54703343294085
+        ],
+        "radius": 1193.6774833256504,
+        "closed_fraction": 0.86,
+        "fit_metrics": {
+            "residual_mean": 3.108896650332777,
+            "residual_std": 19.25290150785475,
+            "rmse": 19.50229357931026,
+            "max_error": 64.34028612206424,
+            "r_squared": 0.7282369770933731,
+            "n_points": 12757,
+            "n_inliers": 12061,
+            "iterations": 4000
+        },
+        "rms_error_m": 73.13360092241346,
+        "rms_error_norm": 0.06126747127595913
+    },
+    {
+        "ring_road": [
+            "Torhout",
+            "R34"
+        ],
+        "extent": [
+            -3600.0,
+            3600.0,
+            -3600.0,
+            3600.0
+        ],
+        "pixel_size_m": 9.0,
+        "cc": [
+            517.7925785931508,
+            469.2969205781201
+        ],
+        "radius": 1665.6406056980932,
+        "closed_fraction": 0.57,
+        "fit_metrics": {
+            "residual_mean": 13.839756647421273,
+            "residual_std": 40.13227220109161,
+            "rmse": 42.4515975680816,
+            "max_error": 146.99499381529628,
+            "r_squared": 0.6287903702164682,
+            "n_points": 4851,
+            "n_inliers": 4181,
+            "iterations": 4000
+        },
+        "rms_error_m": 382.0643781127344,
+        "rms_error_norm": 0.22937984148903834
+    },
+    {
+        "ring_road": [
+            "Waregem",
+            "R35"
+        ],
+        "extent": [
+            -1100.0,
+            1100.0,
+            -1100.0,
+            1100.0
+        ],
+        "pixel_size_m": 2.75,
+        "cc": [
+            496.9459794172165,
+            352.9250963480988
+        ],
+        "radius": 829.654059064889,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": -27.57384767362802,
+            "residual_std": 57.53516178470294,
+            "rmse": 63.80134729862986,
+            "max_error": 179.80534999362493,
+            "r_squared": -0.8740607627391184,
+            "n_points": 17015,
+            "n_inliers": 13174,
+            "iterations": 4000
+        },
+        "rms_error_m": 175.45370507123212,
+        "rms_error_norm": 0.21147814942168505
+    },
+    {
+        "ring_road": [
+            "Kortrijk",
+            "R36"
+        ],
+        "extent": [
+            -900.0,
+            900.0,
+            -900.0,
+            900.0
+        ],
+        "pixel_size_m": 2.25,
+        "cc": [
+            420.672924337097,
+            385.2111627232982
+        ],
+        "radius": 691.3724773763715,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": 4.365129253629407,
+            "residual_std": 27.13539362799012,
+            "rmse": 27.484248957300217,
+            "max_error": 83.91871653522185,
+            "r_squared": 0.46809549724196975,
+            "n_points": 17038,
+            "n_inliers": 15775,
+            "iterations": 4000
+        },
+        "rms_error_m": 61.83956015392548,
+        "rms_error_norm": 0.08944463683106822
+    },
+    {
+        "ring_road": [
+            "Ghent",
+            "R40"
+        ],
+        "extent": [
+            -2100.0,
+            2100.0,
+            -2100.0,
+            2100.0
+        ],
+        "pixel_size_m": 5.25,
+        "cc": [
+            489.942184527952,
+            386.4999867913468
+        ],
+        "radius": 1576.9727225649544,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": 13.859536581570042,
+            "residual_std": 86.9826415220374,
+            "rmse": 88.07988805855251,
+            "max_error": 192.47097697751462,
+            "r_squared": -1.3348466353504462,
+            "n_points": 17628,
+            "n_inliers": 10519,
+            "iterations": 4000
+        },
+        "rms_error_m": 462.4194123074007,
+        "rms_error_norm": 0.2932323468190833
+    },
+    {
+        "ring_road": [
+            "Aalst",
+            "R41"
+        ],
+        "extent": [
+            -2100.0,
+            2100.0,
+            -2100.0,
+            2100.0
+        ],
+        "pixel_size_m": 5.25,
+        "cc": [
+            419.09617536264665,
+            528.3108899491942
+        ],
+        "radius": 1432.1020409538012,
+        "closed_fraction": 0.71,
+        "fit_metrics": {
+            "residual_mean": 1.9689738460822052e-14,
+            "residual_std": 13.212815768641414,
+            "rmse": 13.212815768641414,
+            "max_error": 30.843232972242447,
+            "r_squared": 0.9409013652278942,
+            "n_points": 10624,
+            "n_inliers": 10624,
+            "iterations": 4000
+        },
+        "rms_error_m": 69.36728278536742,
+        "rms_error_norm": 0.0484373883994801
+    },
+    {
+        "ring_road": [
+            "Sint-Niklaas",
+            "R42"
+        ],
+        "extent": [
+            -2200.0,
+            2200.0,
+            -2200.0,
+            2200.0
+        ],
+        "pixel_size_m": 5.5,
+        "cc": [
+            385.42999778190557,
+            583.5759327493803
+        ],
+        "radius": 1396.6905622976483,
+        "closed_fraction": 0.46,
+        "fit_metrics": {
+            "residual_mean": 7.956392033360871,
+            "residual_std": 30.862320219206996,
+            "rmse": 31.871413264889917,
+            "max_error": 120.91379197135822,
+            "r_squared": 0.837393608308683,
+            "n_points": 6359,
+            "n_inliers": 5764,
+            "iterations": 4000
+        },
+        "rms_error_m": 175.29277295689457,
+        "rms_error_norm": 0.12550580471348383
+    },
+    {
+        "ring_road": [
+            "Eeklo",
+            "R43"
+        ],
+        "extent": [
+            -1500.0,
+            1500.0,
+            -1500.0,
+            1500.0
+        ],
+        "pixel_size_m": 3.75,
+        "cc": [
+            788.6712201912087,
+            421.3069374946355
+        ],
+        "radius": 1551.45494250194,
+        "closed_fraction": 0.26,
+        "fit_metrics": {
+            "residual_mean": -1.7669950659724152e-14,
+            "residual_std": 9.359755661384682,
+            "rmse": 9.359755661384684,
+            "max_error": 21.912691584727895,
+            "r_squared": 0.9875404356271568,
+            "n_points": 4478,
+            "n_inliers": 4478,
+            "iterations": 4000
+        },
+        "rms_error_m": 35.09908373019256,
+        "rms_error_norm": 0.022623334244944514
+    },
+    {
+        "ring_road": [
+            "Mons",
+            "R50"
+        ],
+        "extent": [
+            -900.0,
+            900.0,
+            -900.0,
+            900.0
+        ],
+        "pixel_size_m": 2.25,
+        "cc": [
+            475.5991385231712,
+            290.05348398938963
+        ],
+        "radius": 580.2428738276784,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": 84.16826937603494,
+            "residual_std": 106.49028130155932,
+            "rmse": 135.73679523785,
+            "max_error": 282.12469710716255,
+            "r_squared": -3.883319098770544,
+            "n_points": 13377,
+            "n_inliers": 7511,
+            "iterations": 4000
+        },
+        "rms_error_m": 305.4077892851625,
+        "rms_error_norm": 0.5263447481405227
+    },
+    {
+        "ring_road": [
+            "Tournai",
+            "R52"
+        ],
+        "extent": [
+            -1100.0,
+            1100.0,
+            -1100.0,
+            1100.0
+        ],
+        "pixel_size_m": 2.75,
+        "cc": [
+            430.5555369093591,
+            310.30783761695375
+        ],
+        "radius": 1068.4093108070044,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": -55.99625712215393,
+            "residual_std": 87.63507982658432,
+            "rmse": 103.99753856655543,
+            "max_error": 263.0507201485073,
+            "r_squared": -3.8482956204324275,
+            "n_points": 20651,
+            "n_inliers": 13582,
+            "iterations": 4000
+        },
+        "rms_error_m": 285.9932310580274,
+        "rms_error_norm": 0.2676813353882206
+    },
+    {
+        "ring_road": [
+            "Ch\u00e2telet",
+            "R53"
+        ],
+        "extent": [
+            -600.0,
+            600.0,
+            -600.0,
+            600.0
+        ],
+        "pixel_size_m": 1.5,
+        "cc": [
+            393.6109173682313,
+            439.64447146792133
+        ],
+        "radius": 455.7595696958345,
+        "closed_fraction": 0.99,
+        "fit_metrics": {
+            "residual_mean": -14.402097834959278,
+            "residual_std": 37.847593572021964,
+            "rmse": 40.49519429809785,
+            "max_error": 110.37243666774188,
+            "r_squared": -0.5000492267778434,
+            "n_points": 11918,
+            "n_inliers": 9686,
+            "iterations": 4000
+        },
+        "rms_error_m": 60.74279144714678,
+        "rms_error_norm": 0.13327814814220004
+    },
+    {
+        "ring_road": [
+            "La Louvi\u00e8re",
+            "R54"
+        ],
+        "extent": [
+            -1400.0,
+            1400.0,
+            -1400.0,
+            1400.0
+        ],
+        "pixel_size_m": 3.5,
+        "cc": [
+            475.41861528153487,
+            425.9468112094303
+        ],
+        "radius": 1102.7068865458511,
+        "closed_fraction": 0.52,
+        "fit_metrics": {
+            "residual_mean": -43.87419251883315,
+            "residual_std": 68.19925614015808,
+            "rmse": 81.09305338467978,
+            "max_error": 182.60500721970988,
+            "r_squared": 0.21102842408331735,
+            "n_points": 6106,
+            "n_inliers": 4057,
+            "iterations": 4000
+        },
+        "rms_error_m": 283.8256868463792,
+        "rms_error_norm": 0.25738996492117905
+    },
+    {
+        "ring_road": [
+            "Chimay",
+            "R55"
+        ],
+        "extent": [
+            -1300.0,
+            1300.0,
+            -1300.0,
+            1300.0
+        ],
+        "pixel_size_m": 3.25,
+        "cc": [
+            -157.52192295970735,
+            634.0393627686988
+        ],
+        "radius": 2077.8391266854837,
+        "closed_fraction": 0.18,
+        "fit_metrics": {
+            "residual_mean": -2.4930299836636216,
+            "residual_std": 20.269074789155727,
+            "rmse": 20.42181655259478,
+            "max_error": 53.357735388239576,
+            "r_squared": 0.9570146877639366,
+            "n_points": 4413,
+            "n_inliers": 4123,
+            "iterations": 4000
+        },
+        "rms_error_m": 66.37090379593305,
+        "rms_error_norm": 0.03194227259634206
+    },
+    {
+        "ring_road": [
+            "Verviers",
+            "R61"
+        ],
+        "extent": [
+            -1600.0,
+            1600.0,
+            -1600.0,
+            1600.0
+        ],
+        "pixel_size_m": 4.0,
+        "cc": [
+            438.75059179809347,
+            388.10563944887565
+        ],
+        "radius": 736.6602095947079,
+        "closed_fraction": 0.77,
+        "fit_metrics": {
+            "residual_mean": 17.99361479604353,
+            "residual_std": 43.20865845060841,
+            "rmse": 46.80553747720168,
+            "max_error": 162.17433838539435,
+            "r_squared": 0.2751358971143174,
+            "n_points": 9185,
+            "n_inliers": 7312,
+            "iterations": 4000
+        },
+        "rms_error_m": 187.22214990880673,
+        "rms_error_norm": 0.25414994249765666
+    },
+    {
+        "ring_road": [
+            "Hannuit",
+            "R62"
+        ],
+        "extent": [
+            -3400.0,
+            3400.0,
+            -3400.0,
+            3400.0
+        ],
+        "pixel_size_m": 8.5,
+        "cc": [
+            356.9047101764702,
+            470.27982933678913
+        ],
+        "radius": 1607.7578876731118,
+        "closed_fraction": 0.64,
+        "fit_metrics": {
+            "residual_mean": 17.985174984744145,
+            "residual_std": 48.99647008192764,
+            "rmse": 52.1931087378506,
+            "max_error": 173.68762685622903,
+            "r_squared": 0.3685474411383062,
+            "n_points": 5924,
+            "n_inliers": 5066,
+            "iterations": 4000
+        },
+        "rms_error_m": 443.6414242717301,
+        "rms_error_norm": 0.27593795538071153
+    },
+    {
+        "ring_road": [
+            "Hasselt",
+            "R70"
+        ],
+        "extent": [
+            -500.0,
+            500.0,
+            -500.0,
+            500.0
+        ],
+        "pixel_size_m": 1.25,
+        "cc": [
+            417.4402635009554,
+            404.0516156909047
+        ],
+        "radius": 393.80073414835493,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": 2.0650220280280564e-14,
+            "residual_std": 16.64572700822441,
+            "rmse": 16.64572700822441,
+            "max_error": 39.15253552495528,
+            "r_squared": 0.03693607867255344,
+            "n_points": 12332,
+            "n_inliers": 12332,
+            "iterations": 4000
+        },
+        "rms_error_m": 20.80715876028051,
+        "rms_error_norm": 0.05283676985843789
+    },
+    {
+        "ring_road": [
+            "Hasselt",
+            "R71"
+        ],
+        "extent": [
+            -1800.0,
+            1800.0,
+            -1800.0,
+            1800.0
+        ],
+        "pixel_size_m": 4.5,
+        "cc": [
+            394.2817244632717,
+            364.283723407235
+        ],
+        "radius": 1604.8126041738117,
+        "closed_fraction": 1.0,
+        "fit_metrics": {
+            "residual_mean": -8.956422045162775,
+            "residual_std": 30.511030183589558,
+            "rmse": 31.79843484693847,
+            "max_error": 92.04596020111939,
+            "r_squared": -0.2813477930722432,
+            "n_points": 20912,
+            "n_inliers": 18415,
+            "iterations": 4000
+        },
+        "rms_error_m": 143.0929568112231,
+        "rms_error_norm": 0.08916490089812705
+    },
+    {
+        "ring_road": [
+            "Tongeren",
+            "R72"
+        ],
+        "extent": [
+            -1000.0,
+            1000.0,
+            -1000.0,
+            1000.0
+        ],
+        "pixel_size_m": 2.5,
+        "cc": [
+            518.6572447425517,
+            437.00447183008293
+        ],
+        "radius": 525.6242812489696,
+        "closed_fraction": 0.52,
+        "fit_metrics": {
+            "residual_mean": 18.873036880227016,
+            "residual_std": 46.81644638902963,
+            "rmse": 50.47743231959501,
+            "max_error": 163.61359800174213,
+            "r_squared": 0.6173882352256267,
+            "n_points": 6073,
+            "n_inliers": 5085,
+            "iterations": 4000
+        },
+        "rms_error_m": 126.19358079898754,
+        "rms_error_norm": 0.240083240635556
+    }
+]
