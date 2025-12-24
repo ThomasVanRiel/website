@@ -2,6 +2,7 @@
 interface Props {
   src: string;
   alt: string;
+  caption: string;
   class?: string;
   width?: number;
   height?: number;
@@ -28,12 +29,13 @@ const imageId = `themed-image-${Math.random().toString(36).substr(2, 9)}`;
   id={imageId}
   src={src} 
   alt={alt} 
-  class={className}
+  class={`${className} py-0`}
   width={width}
   height={height}
   data-light-src={src}
   data-dark-src={darkSrc}
 />
+<p class="caption text-sm mt-0 px-10 text-center italic text-gray-600 dark:text-gray-400">{Astro.props.alt}</p>
 
 <script define:vars={{ imageId, src, darkSrc }}>
   function updateImage() {

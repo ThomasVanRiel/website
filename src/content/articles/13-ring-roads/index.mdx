@@ -10,7 +10,7 @@ tags:
 
 import RoadLabel from "../../../components/RoadLabel.astro"
 import Definition from "../../../components/Definition.astro"
-import ImageThemed from "../../../components/ImageThemed.astro"
+import Figure from "../../../components/Figure.astro"
 
 ## Introduction
 Which Belgian ring road is the best ring? To answer this question, we first need to define what a ring road is:
@@ -41,7 +41,7 @@ The latter property is trivially satisfied by our definition above, so let's foc
     definitions={[
         { number: 1, text: "A circular object, form, line, or arrangement. " },
         { number: 2, text: "A small circular band, generally made of precious metal and often set with jewels, worn on the finger." },
-        { number: 3, text: "A circular band used for carrying, holding, or containing something. ", example: "a ***** ring." }
+        { number: 3, text: "A circular band used for carrying, holding, or containing something. ", example: "a wedding ring." }
     ]}
 />
 
@@ -54,20 +54,30 @@ As the problem is now clearly defined, we can focus on finding the solution.
 The next section will explain the method that was selected to evaluate the circularity.
 
 ## Method
-
+To visualize, ring road R23 around Leuven is selected as an example in a chauvinistic homage to my alma mater.
 
 ### Data acquisition
 Road data is acquired from OpenStreetMap using the Overpass API.
 
-**TODO**: Add image showing the wayfeatures on the map, with ring roads highlighted.
+**TODO: Check this placeholder paragraph.**
+Overpass returns the road data in **GeoJSON** format, which contains the vector representation of the roads as well as metadata such as the road name and type.
+The coordinates are in **WGS84** format (longitude and latitude), which are converted to local distances in meters using the **Haversine formula**. Long and lat do not correspond to equal distances, so it is not possible to directly rasterize the data without this conversion. The circulatirty must be evaluated projecting the ring road according to the local normal projection, approximated by the local distances.
+
+
+**TODO**: Add image showing the wayfeatures on the map, with ring roads highlighted. ALso show projection to local distances.
+
 
 ### Rasterization
 Because the road data is in vector format, it needs to be rasterized to avoid bias towards roads with more data points.
-The roads are rasterized to a 800x800 pixel image, with pixel size chosen such that the entire road fits within the image.
+The vector lines representing roads are rasterized using **Bresenham's line algorithm** to a 800x800 pixel image, 
+with pixel size chosen such that the entire road fits within the image.  
+Next, the rasterized image is **dilated** using a 5x5 square structuring element to ensure that the road is continuous, 
+as some roads have gaps due to missing data in the OpenStreetMap query (e.g. overpasses or crossings). Some roads further have wider lanes, a wide median, or multiple lanes, which are all part of the same road.   
+The mask is finally **eroded** using the slightly smaller kernel size to avoid creating new gaps.
 
-<ImageThemed
+<Figure
     src="/ring-roads/road_R23_BE_mask_rendering.png"
-    alt="Rasterized road R23 in Belgium."
+    alt="Visualization of the rasterization of ring road R23 (Leuven) showing the steps from vector data (left) to rasterized image (right)."
 />
 
 ### Circle fitting
