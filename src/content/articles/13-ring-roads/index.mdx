@@ -63,8 +63,10 @@ Road data is acquired from OpenStreetMap using the Overpass API.
 Overpass returns the road data in **GeoJSON** format, which contains the vector representation of the roads as well as metadata such as the road name and type.
 The coordinates are in **WGS84** format (longitude and latitude), which are converted to local distances in meters using the **Haversine formula**. Long and lat do not correspond to equal distances, so it is not possible to directly rasterize the data without this conversion. The circulatirty must be evaluated projecting the ring road according to the local normal projection, approximated by the local distances.
 
-
-**TODO**: Add image showing the wayfeatures on the map, with ring roads highlighted. ALso show projection to local distances.
+<Figure
+    src="/ring-roads/road_R23_BE_fetched.png"
+    alt="Data fetching. Caption WIP"
+/>
 
 
 ### Rasterization
@@ -77,7 +79,7 @@ The mask is finally **eroded** using the slightly smaller kernel size to avoid c
 
 <Figure
     src="/ring-roads/road_R23_BE_mask_rendering.png"
-    alt="Visualization of the rasterization of ring road R23 (Leuven) showing the steps from vector data (left) to rasterized image (right)."
+    alt="Visualization of the rasterization of ring road R23 (Leuven) showing the steps from vector data to rasterized image."
 />
 
 ### Circle fitting
