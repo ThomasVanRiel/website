@@ -10,6 +10,7 @@ tags:
 
 import RoadLabel from "../../../components/RoadLabel.astro"
 import Definition from "../../../components/Definition.astro"
+import ImageThemed from "../../../components/ImageThemed.astro"
 
 ## Introduction
 Which Belgian ring road is the best ring? To answer this question, we first need to define what a ring road is:
@@ -64,7 +65,10 @@ Road data is acquired from OpenStreetMap using the Overpass API.
 Because the road data is in vector format, it needs to be rasterized to avoid bias towards roads with more data points.
 The roads are rasterized to a 800x800 pixel image, with pixel size chosen such that the entire road fits within the image.
 
-**TODO**: Add image showing rasterization process. Dilation erosion etc
+<ImageThemed
+    src="/ring-roads/road_R23_BE_mask_rendering.png"
+    alt="Rasterized road R23 in Belgium."
+/>
 
 ### Circle fitting
 A circle is fitted to the rasterized road data using MSAC, a variant of RANSAC.

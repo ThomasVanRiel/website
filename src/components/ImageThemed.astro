@@ -1,0 +1,68 @@
+---
+interface Props {
+  src: string;
+  alt: string;
+  class?: string;
+  width?: number;
+  height?: number;
+}
+
+const { src, alt, class: className, width, height } = Astro.props;
+
+// Generate dark variant path by inserting '_dark' before the file extension
+const getPathWithoutExtension = (path: string) => {
+  const lastDot = path.lastIndexOf('.');
+  return lastDot === -1 ? path : path.substring(0, lastDot);
+};
+
+const getExtension = (path: string) => {
+  const lastDot = path.lastIndexOf('.');
+  return lastDot === -1 ? '' : path.substring(lastDot);
+};
+
+const darkSrc = `${getPathWithoutExtension(src)}_dark${getExtension(src)}`;
+const imageId = `themed-image-${Math.random().toString(36).substr(2, 9)}`;
+---
+
+<img 
+  id={imageId}
+  src={src} 
+  alt={alt} 
+  class={className}
+  width={width}
+  height={height}
+  data-light-src={src}
+  data-dark-src={darkSrc}
+/>
+
+<script define:vars={{ imageId, src, darkSrc }}>
+  function updateImage() {
+    const img = document.getElementById(imageId);
+    if (!img) return;
+    
+    const isDark = document.documentElement.classList.contains('dark');
+    img.src = isDark ? darkSrc : src;
+  }
+
+  // Update on initial load
+  updateImage();
+
+  // Create a MutationObserver to watch for theme changes
+  const observer = new MutationObserver((mutations) => {
+    mutations.forEach((mutation) => {
+      if (mutation.attributeName === 'class') {
+        updateImage();
+      }
+    });
+  });
+
+  observer.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ['class']
+  });
+
+  // Also update after Astro page transitions
+  document.addEventListener('astro:after-swap', updateImage);
+</script>
+
+
