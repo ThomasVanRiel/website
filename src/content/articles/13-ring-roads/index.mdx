@@ -90,7 +90,7 @@ out body;
 #### Transforming the fetched data
 **TODO: Check this placeholder paragraph.**
 Overpass returns the road data in **GeoJSON** format, which contains the vector representation of the roads as well as metadata such as the road name and type.
-The coordinates are in **WGS84** format (longitude and latitude), which are converted to local distances in meters using the **Haversine formula**. Long and lat do not correspond to equal distances, so it is not possible to directly rasterize the data without this conversion. The circulatirty must be evaluated projecting the ring road according to the local normal projection, approximated by the local distances.
+The coordinates are in **WGS84** format (longitude and latitude), which are converted to local distances in meters using an **equirectangular approximation**, which is accurate enough for the small distances in this work. Long and lat do not correspond to equal distances, so it is not possible to directly rasterize the data without this conversion. The circulatirty must be evaluated projecting the ring road according to the local normal projection, approximated by the local distances.
 
 <Figure
     src="/ring-roads/road_R23_BE_fetched.png"
