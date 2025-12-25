@@ -74,6 +74,26 @@ const isDesktop = variant === 'desktop';
 <script>
   // Highlight current section as user scrolls
   function initTOC() {
+    // Check for hash in URL on load and highlight corresponding link
+    function highlightFromHash() {
+      const hash = window.location.hash;
+      if (hash) {
+        const tocLink = document.querySelector(`.toc-link[href="${hash}"]`);
+        if (tocLink) {
+          document.querySelectorAll('.toc-link').forEach(link => {
+            link.classList.remove('toc-active');
+          });
+          tocLink.classList.add('toc-active');
+        }
+      }
+    }
+
+    // Highlight on initial load
+    highlightFromHash();
+
+    // Update highlight when hash changes
+    window.addEventListener('hashchange', highlightFromHash);
+
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
