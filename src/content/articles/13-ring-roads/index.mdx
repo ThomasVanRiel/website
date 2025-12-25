@@ -51,7 +51,7 @@ both in road infrastructure and in other _ringlike_ objects (e.g., a celtic torc
 The best ring road is hence the one that is the most circular while being reasonably closed.
 
 As the problem is now clearly defined, we can focus on finding the solution. 
-The next section will explain the method that was selected to evaluate the circularity.
+The next section will explain the method that was selected to evaluate the circularity, [or skip straight to the interactive visualization of the results](#results-and-conclusion).
 
 ## Method
 The evaluation process consists of several steps:
@@ -93,7 +93,6 @@ Overpass returns the road data in **GeoJSON** format, which contains the vector 
 The original coordinates in **WGS84** format (longitude and latitude) are converted to local distances to the center of the road using an **equirectangular approximation** of the sphere, which is accurate enough for the small distances in this work.  
 Evaluation in local distances is necessary to avoid distortions, as the Earth is **not** flat. 
 Local distances is anyway how we normally think of the world, and is how most mapping applications represent the world.
-
 
 <Figure
     src="/ring-roads/road_R23_BE_fetched.png"
