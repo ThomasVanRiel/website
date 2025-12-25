@@ -140,8 +140,8 @@ const gapPx = gapSizes[gap]
 
   let isotopeInstances: Isotope[] = [];
   let controlsBound = false;
-  let currentThreshold = 0.8; // keep slider/filter in sync (80%)
-  let currentSortBy: string = 'rms-error';
+  let currentThreshold = 0.0; // keep slider/filter in sync (80%)
+  let currentSortBy: string = 'original-order';
   let currentSortAscending = true;
 
   function getResponsiveColumns(): number {
