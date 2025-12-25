@@ -90,21 +90,23 @@ out body;
 #### Transforming the fetched data
 **TODO: Check this placeholder paragraph.**
 Overpass returns the road data in **GeoJSON** format, which contains the vector representation of the roads as well as metadata such as the road name and type.
-The coordinates are in **WGS84** format (longitude and latitude), which are converted to local distances in meters using an **equirectangular approximation**, which is accurate enough for the small distances in this work. Long and lat do not correspond to equal distances, so it is not possible to directly rasterize the data without this conversion. The circulatirty must be evaluated projecting the ring road according to the local normal projection, approximated by the local distances.
+The original coordinates in **WGS84** format (longitude and latitude) are converted to local distances to the center of the road using an **equirectangular approximation** of the sphere, which is accurate enough for the small distances in this work.  
+Evaluation in local distances is necessary to avoid distortions, as the Earth is **not** flat. 
+Local distances is anyway how we normally think of the world, and is how most mapping applications represent the world.
+
 
 <Figure
     src="/ring-roads/road_R23_BE_fetched.png"
-    alt="Data fetching. Caption WIP"
+    alt="Visualization of the transformation of the WGS84 coordinates into local kilometers to more intuitively represent the roads."
 />
-
 
 ### Rasterization
 Because the road data is in vector format, it needs to be rasterized to avoid bias towards roads with more data points.
 The vector lines representing roads are rasterized using **Bresenham's line algorithm** to a black and white image using a constant pixel size. Each pixel corresponds to a **5x5 m** square on the map. 
 The image size is chosen to fit the entire road within.  
-Next, the rasterized image is **dilated 32.5 m** (kernel size 13) to ensure that the road is continuous, as every road has an initial thickness of 1 pixel. 
+Next, the rasterized image is **dilated 32.5 m** (kernel size 13 px) to ensure that the road is continuous, as every road has an initial thickness of 1 pixel. 
 Some roads, furthermore have gaps due to missing data in the OpenStreetMap response (e.g., overpasses or crossings). Some roads have wider lanes, a wide median, or multiple lanes, which are all part of the same road and result in multiple parallel-ish lines.  
-The mask is finally **eroded 22.5 m** (kernel size 9) to give some width to the road, as the initial rasterized image is only one pixel or 5 m wide. The final road width is hence at least **20 m**.  
+The mask is finally **eroded 22.5 m** (kernel size 9 px) to give some width to the road, as the initial rasterized image is only one pixel or 5 m wide. The final road width is hence at least **20 m**.  
 The figure below shows the intermediary road masks after every step. The algorithms that were used are quite common in computer vision and image processing and are readily available in the [`python-opencv`](https://pypi.org/project/opencv-python/) library. The rasterization process is given below the figure in simplified Python code.
 
 <Figure
