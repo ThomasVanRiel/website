@@ -5,6 +5,7 @@ import TopLayout from "@layouts/TopLayout.astro"
 import BottomLayout from "@layouts/BottomLayout.astro"
 import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
 import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
+import TableOfContents from "@components/TableOfContents.astro"
 
 // Create the static article pages
 export async function getStaticPaths() {
@@ -19,6 +20,7 @@ export async function getStaticPaths() {
 type Props = CollectionEntry<"articles">
 const post = Astro.props
 const { title, summary } = post.data
+const { headings } = await post.render()
 ---
 
 <PageLayout title={title} description={summary}>
@@ -29,7 +31,10 @@ const { title, summary } = post.data
   </TopLayout>
   <BottomLayout>
     <div class="animate">
+      <TableOfContents headings={headings} />
       <ArticleBottomLayout entry={post} />
     </div>
   </BottomLayout>
+  <!-- Floating TOC for desktop -->
+  <TableOfContents headings={headings} variant="desktop" />
 </PageLayout>

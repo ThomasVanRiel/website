@@ -1,0 +1,133 @@
+---
+import type { MarkdownHeading } from 'astro';
+
+type Props = {
+  headings: MarkdownHeading[];
+  variant?: 'mobile' | 'desktop';
+};
+
+const { headings, variant } = Astro.props;
+
+// Filter to only include h2 and h3 headings
+const toc = headings.filter(h => h.depth <= 3);
+
+// If variant is not specified, show mobile version
+const isMobile = !variant || variant === 'mobile';
+const isDesktop = variant === 'desktop';
+---
+
+{toc.length > 0 && (
+  <>
+    {/* Mobile dropdown */}
+    {isMobile && (
+      <details class="xl:hidden mb-8 border rounded-lg border-black/15 dark:border-white/20 p-4">
+        <summary class="cursor-pointer text-sm font-semibold uppercase text-black dark:text-white flex items-center justify-between">
+          <span>On This Page</span>
+          <svg class="w-4 h-4 transition-transform details-arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </summary>
+        <ul class="mt-4 space-y-2 text-sm">
+          {toc.map((heading) => (
+            <li
+              class={`toc-item toc-depth-${heading.depth}`}
+              style={heading.depth === 3 ? 'margin-left: 1rem;' : ''}
+            >
+              <a
+                href={`#${heading.slug}`}
+                class="toc-link-mobile block py-1 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors duration-200"
+              >
+                {heading.text}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </details>
+    )}
+
+    {/* Desktop floating sidebar */}
+    {isDesktop && (
+      <aside class="hidden xl:block fixed right-8 top-32 w-64 max-h-[calc(100vh-10rem)] overflow-y-auto">
+        <nav class="toc">
+          <h2 class="text-sm font-semibold uppercase mb-4 text-black dark:text-white">On This Page</h2>
+          <ul class="space-y-2 text-sm">
+            {toc.map((heading) => (
+              <li
+                class={`toc-item toc-depth-${heading.depth}`}
+                style={heading.depth === 3 ? 'margin-left: 1rem;' : ''}
+              >
+                <a
+                  href={`#${heading.slug}`}
+                  class="toc-link block py-1 text-black/60 dark:text-white/60 hover:text-black dark:hover:text-white transition-colors duration-200"
+                >
+                  {heading.text}
+                </a>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </aside>
+    )}
+  </>
+)}
+
+<script>
+  // Highlight current section as user scrolls
+  function initTOC() {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          const id = entry.target.id;
+          const tocLink = document.querySelector(`.toc-link[href="#${id}"]`);
+          
+          if (tocLink) {
+            if (entry.isIntersecting) {
+              // Remove active class from all links
+              document.querySelectorAll('.toc-link').forEach(link => {
+                link.classList.remove('toc-active');
+              });
+              // Add active class to current link
+              tocLink.classList.add('toc-active');
+            }
+          }
+        });
+      },
+      {
+        rootMargin: '-100px 0px -66%',
+        threshold: 1
+      }
+    );
+
+    // Observe all headings
+    document.querySelectorAll('article h2, article h3').forEach((heading) => {
+      observer.observe(heading);
+    });
+
+    // Close mobile dropdown when clicking a link
+    const mobileLinks = document.querySelectorAll('.toc-link-mobile');
+    const details = document.querySelector('details');
+    mobileLinks.forEach(link => {
+      link.addEventListener('click', () => {
+        if (details) {
+          details.removeAttribute('open');
+        }
+      });
+    });
+  }
+
+  // Run on page load
+  initTOC();
+
+  // Re-run after view transitions (if using Astro view transitions)
+  document.addEventListener('astro:page-load', initTOC);
+</script>
+
+<style>
+  .toc-link.toc-active {
+    @apply text-black dark:text-white font-medium border-l-2 border-black dark:border-white pl-2 -ml-2;
+  }
+
+  details[open] .details-arrow {
+    transform: rotate(180deg);
+  }
+</style>
