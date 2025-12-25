@@ -121,7 +121,7 @@ const gapPx = gapSizes[gap]
       </div>
       <div class="px-3 py-0">
         <p class="text-xs text-center">
-          RMS Error: <span class="font-semibold">{image.sorters[0]?.rmsError?.toFixed(0) || 'N/A'} m ({image.sorters[0]?.rmsErrorNorm?.toFixed(2) || 'N/A'})</span><br/>
+          Error: <span class="font-semibold">{image.sorters[0]?.rmsError?.toFixed(0) || 'N/A'} m</span> ({(image.sorters[0]?.rmsErrorNorm * 100).toFixed(2) || 'N/A'}%)<br/>
           Radius: <span class="font-semibold">{image.sorters[0]?.radius?.toFixed(0) || 'N/A'} m</span> <br/>
           <span class="font-semibold">{(image.filters[0]?.closedFraction * 100).toFixed(0) || 'N/A'}%</span> closed
         </p>
@@ -134,6 +134,10 @@ const gapPx = gapSizes[gap]
   import Isotope from 'isotope-layout';
 
   let isotopeInstances: Isotope[] = [];
+  let controlsBound = false;
+  let currentThreshold = 0.8; // keep slider/filter in sync (80%)
+  let currentSortBy: string = 'rms-error';
+  let currentSortAscending = true;
 
   function getResponsiveColumns(): number {
     const width = window.innerWidth;
@@ -141,30 +145,55 @@ const gapPx = gapSizes[gap]
     return 4;                        // 2xl+
   }
 
-  function initIsotope() {
+  function applyGridSizing() {
+    const columns = getResponsiveColumns();
     const grids = document.querySelectorAll('.isotope-grid');
-    
-    // Clear previous instances
-    isotopeInstances.forEach(iso => iso.destroy());
-    isotopeInstances = [];
-    
+
     grids.forEach((gridElement) => {
       const grid = gridElement as HTMLElement;
-      const columns = getResponsiveColumns();
       const gap = parseInt(grid.dataset.gap || '16');
-      
-      // Calculate column width based on number of columns
       const columnWidth = `calc((100% - ${gap * (columns - 1)}px) / ${columns})`;
-      
-      // Apply styles to grid items
+
       const items = grid.querySelectorAll('.grid-item');
       items.forEach((item) => {
         const el = item as HTMLElement;
         el.style.width = columnWidth;
         el.style.marginBottom = `${gap}px`;
       });
-      
-      // Initialize Isotope
+    });
+  }
+
+  function filterPredicate(threshold: number) {
+    return (itemElem: Element) => {
+      const closedFraction = parseFloat((itemElem as HTMLElement).dataset.closedFraction || '0');
+      return closedFraction >= threshold;
+    };
+  }
+
+  function applyStateToInstances() {
+    isotopeInstances.forEach(iso => {
+      iso.arrange({
+        filter: filterPredicate(currentThreshold),
+        sortBy: currentSortBy,
+        sortAscending: currentSortAscending
+      });
+    });
+
+    updateCounts(currentThreshold);
+  }
+
+  function initIsotope() {
+    const grids = document.querySelectorAll('.isotope-grid');
+
+    isotopeInstances.forEach(iso => iso.destroy());
+    isotopeInstances = [];
+
+    applyGridSizing();
+
+    grids.forEach((gridElement) => {
+      const grid = gridElement as HTMLElement;
+      const gap = parseInt(grid.dataset.gap || '16');
+
       const iso = new Isotope(grid, {
         itemSelector: '.grid-item',
         layoutMode: 'fitRows',
@@ -183,34 +212,31 @@ const gapPx = gapSizes[gap]
           'rms-error-norm': '[data-rms-error-norm] parseFloat',
           'closed-fraction': '[data-closed-fraction] parseFloat'
         },
-        // Apply initial filter and sort
-        filter: (itemElem: Element) => {
-          const closedFraction = parseFloat((itemElem as HTMLElement).dataset.closedFraction || '0');
-          return closedFraction >= 0.9;
-        },
-        sortBy: 'rms-error',
-        sortAscending: true
+        filter: filterPredicate(currentThreshold),
+        sortBy: currentSortBy,
+        sortAscending: currentSortAscending
       });
-      
+
       isotopeInstances.push(iso);
     });
-    
+
     setupControls();
+    updateCounts(currentThreshold);
   }
 
   function updateCounts(threshold: number) {
     const visibleCountEl = document.getElementById('visibleCount') as HTMLSpanElement;
     const totalCountEl = document.getElementById('totalCount') as HTMLSpanElement;
-    
+
     if (visibleCountEl && totalCountEl) {
       const grids = document.querySelectorAll('.isotope-grid');
       let visibleCount = 0;
       let totalCount = 0;
-      
+
       grids.forEach(grid => {
         const allItems = grid.querySelectorAll('.grid-item');
         totalCount += allItems.length;
-        
+
         allItems.forEach(item => {
           const closedFraction = parseFloat((item as HTMLElement).dataset.closedFraction || '0');
           if (closedFraction >= threshold) {
@@ -218,78 +244,60 @@ const gapPx = gapSizes[gap]
           }
         });
       });
-      
+
       visibleCountEl.textContent = visibleCount.toString();
       totalCountEl.textContent = totalCount.toString();
     }
   }
 
   function setupControls() {
+    if (controlsBound) return;
+
     const closedFractionSlider = document.getElementById('closed-fraction-slider') as HTMLInputElement;
     const closedFractionValue = document.getElementById('closedFractionValue') as HTMLSpanElement;
     const sortSelect = document.getElementById('sort-select') as HTMLSelectElement;
     const orderSelect = document.getElementById('order-select') as HTMLSelectElement;
-    
+
     if (!closedFractionSlider || !sortSelect || !orderSelect || !closedFractionValue) return;
-    
-    // Update initial counts
-    updateCounts(0.9);
-    
-    // Filter handler with slider
+
+    controlsBound = true;
+
+    // Sync UI with current state
+    closedFractionSlider.value = String(Math.round(currentThreshold * 100));
+    closedFractionValue.textContent = `${closedFractionSlider.value}%`;
+    sortSelect.value = currentSortBy;
+    orderSelect.value = currentSortAscending ? 'asc' : 'desc';
+
     closedFractionSlider.addEventListener('input', () => {
-      const threshold = parseFloat(closedFractionSlider.value) / 100;
+      currentThreshold = parseFloat(closedFractionSlider.value) / 100;
       closedFractionValue.textContent = `${closedFractionSlider.value}%`;
-      
-      isotopeInstances.forEach(iso => {
-        iso.arrange({ 
-          filter: (itemElem: Element) => {
-            const closedFraction = parseFloat((itemElem as HTMLElement).dataset.closedFraction || '0');
-            return closedFraction >= threshold;
-          }
-        });
-      });
-      
-      // Update counts based on current threshold
-      updateCounts(threshold);
+      applyStateToInstances();
     });
-    
-    // Sort handler
+
     const applySorting = () => {
-      const sortValue = sortSelect.value;
-      const orderValue = orderSelect.value === 'desc';
-      
-      isotopeInstances.forEach(iso => {
-        if (sortValue === 'original-order') {
-          iso.arrange({ sortBy: 'original-order' });
-        } else {
-          iso.arrange({ 
-            sortBy: sortValue,
-            sortAscending: !orderValue
-          });
-        }
-      });
+      currentSortBy = sortSelect.value;
+      currentSortAscending = orderSelect.value !== 'desc';
+      applyStateToInstances();
     };
-    
+
     sortSelect.addEventListener('change', applySorting);
     orderSelect.addEventListener('change', applySorting);
   }
 
-  // Initialize on page load
   if (document.readyState === 'loading') {
     document.addEventListener('DOMContentLoaded', initIsotope);
   } else {
     initIsotope();
   }
 
-  // Reinitialize on view transitions
   document.addEventListener('astro:page-load', initIsotope);
 
-  // Handle responsive layout on window resize
   let resizeTimeout: number;
   window.addEventListener('resize', () => {
     clearTimeout(resizeTimeout);
     resizeTimeout = window.setTimeout(() => {
-      initIsotope();
+      applyGridSizing();
+      isotopeInstances.forEach(iso => iso.layout());
     }, 250);
   });
 </script>

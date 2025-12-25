@@ -1,6 +1,6 @@
 ---
 title: "One ring (road) to rule them all!"
-summary: "Which Belgian ring road is the most circular, and hence the best one?"
+summary: "Which Belgian ring road is the most circular, and hence the best one? An excessive analysis of Belgian ring roads no one asked for."
 date: "12/23/2025"
 draft: true
 tags:
@@ -25,13 +25,13 @@ Which Belgian ring road is the best ring? To answer this question, we first need
     ]}
 />
 
-In our case, let's call **all**, and **only**, roads which are referered to with an **R-number** a ring road. 
+In our case, let's call **all**, and **only**, roads that are referred to with an **R-number** a ring road. 
 This excludes several national roads, such as the <RoadLabel label="N" number="712"/> around Pelt, which shows promising ring-like characteristics. 
-If a road is not deemed impressive or important enough to warant an R-number, it is certainly not impressive enough to be called the _ringiest_ Belgian ring road.  
-Some ring roads were planned but ultimately failed to come to fruition. A noteable example is the <RoadLabel label="R" number="7"/> around Liège, 
+If a road is not deemed impressive or important enough to warrant an R-number, it is certainly not impressive enough to be called the _ringiest_ Belgian ring road.  
+Some ring roads were planned but ultimately failed to come to fruition. A notable example is the <RoadLabel label="R" number="7"/> around Liège, 
 which was planned to be formed by the unfinished <RoadLabel label="A" number="604"/>, the <RoadLabel label="E" number="42"/>, the <RoadLabel label="E" number="25"/>, and the planned but cancelled <RoadLabel label="A" number="605"/>.
 
-The name "ring road" implies two properties of such roads: they are _ringlike_, and they are roads.  
+The name _"ring road"_ implies two properties of such roads: they are _ringlike_, and they are roads.  
 The latter property is trivially satisfied by our definition above, so let's focus on the former:
 
 <Definition
@@ -45,20 +45,49 @@ The latter property is trivially satisfied by our definition above, so let's foc
     ]}
 />
 
-Let's define a ring as **circular**, and **closed**. 
+Let's define a ring as **circular** and **closed**. 
 The latter of these properties is a tad more flexible than the former, as an open ring is quite common, 
-both in road infrastructure and in other _ringlike_ objects (earrings, keychains).
+both in road infrastructure and in other _ringlike_ objects (e.g., a celtic torc).
 The best ring road is hence the one that is the most circular while being reasonably closed.
 
 As the problem is now clearly defined, we can focus on finding the solution. 
 The next section will explain the method that was selected to evaluate the circularity.
 
 ## Method
-To visualize, ring road R23 around Leuven is selected as an example in a chauvinistic homage to my alma mater.
+The evaluation process consists of several steps:
+1. **Data acquisition** from [OpenStreetMap](https://www.openstreetmap.org/#map=14/50.87997/4.70738),
+2. **Rasterization** of the vector-formatted roads,
+3. **Circle fitting** using RANSAC,
+4. **Evaluation** of the circularity of the ring roads.
+
+To facilitate the interpretation of the presented method, every step is illustrated with figures taken in between important steps. The ring road <RoadLabel label="R" number="23"/> around Leuven is selected as an example in a chauvinistic homage to my alma mater. 
 
 ### Data acquisition
-Road data is acquired from OpenStreetMap using the Overpass API.
+#### Getting GeoJSON road data
+Road data is acquired from OpenStreetMap using the [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API).
+The query given below is sent in the body of a `POST`request to the Overpass API. The response is a JSON object containing the relevant elements (including ways, traffic signals, zebra crossings, ...).  
+For this article, only the ways are relevant, but it is nonetheless interesting to know that <RoadLabel label="R" number="23"/> contains **71** traffic lights and **32** zebra crossings (according to the Overpass query). 
+The ring road with the most traffic signals is <RoadLabel label="R" number="22"/> with **228** signals. The same road <RoadLabel label="R" number="22"/> has the most zebra crossings with a respectable **101** crossings. 
+The ring roads with the least amount of signals are those that consist of only highways, such as <RoadLabel label="R" number="0"/>. Brussels wins across the board! 
+```javascript
+// Set output format and timeout
+[out:json][timeout:60];                         
+// Get country area for filtering
+area["ISO3166-1"="BE"]->.country;
+// Union '(...)' combines queries into one
+(
+// Search ways in Belgium where "ref" matches R23
+way(area.country)["highway"]["ref"="R23"];      
+// Search groups of ways where "ref" matches R23
+relation(area.country)["highway"]["ref"="R23"]; 
+);
+// Recursively fetch all nodes in the previous query
+(._;>;);                                        
+// Output the fetched data
+out body;                                       
+```
 
+#### Transforming the fetched data
 **TODO: Check this placeholder paragraph.**
 Overpass returns the road data in **GeoJSON** format, which contains the vector representation of the roads as well as metadata such as the road name and type.
 The coordinates are in **WGS84** format (longitude and latitude), which are converted to local distances in meters using the **Haversine formula**. Long and lat do not correspond to equal distances, so it is not possible to directly rasterize the data without this conversion. The circulatirty must be evaluated projecting the ring road according to the local normal projection, approximated by the local distances.
@@ -71,16 +100,36 @@ The coordinates are in **WGS84** format (longitude and latitude), which are conv
 
 ### Rasterization
 Because the road data is in vector format, it needs to be rasterized to avoid bias towards roads with more data points.
-The vector lines representing roads are rasterized using **Bresenham's line algorithm** to a black and white image using a constant pixel size. Each pixel corresponds to a 1x1 m square on the map.
-with pixel size chosen such that the entire road fits within the image.  
-Next, the rasterized image is **dilated** to ensure that the road is continuous, 
-as some roads have gaps due to missing data in the OpenStreetMap query (e.g. overpasses or crossings). Some roads further have wider lanes, a wide median, or multiple lanes, which are all part of the same road.   
-The mask is finally **eroded** using the slightly smaller kernel size to avoid creating new gaps.
+The vector lines representing roads are rasterized using **Bresenham's line algorithm** to a black and white image using a constant pixel size. Each pixel corresponds to a **5x5 m** square on the map. 
+The image size is chosen to fit the entire road within.  
+Next, the rasterized image is **dilated 32.5 m** (kernel size 13) to ensure that the road is continuous, as every road has an initial thickness of 1 pixel. 
+Some roads, furthermore have gaps due to missing data in the OpenStreetMap response (e.g., overpasses or crossings). Some roads have wider lanes, a wide median, or multiple lanes, which are all part of the same road and result in multiple parallel-ish lines.  
+The mask is finally **eroded 22.5 m** (kernel size 9) to give some width to the road, as the initial rasterized image is only one pixel or 5 m wide. The final road width is hence at least **20 m**.  
+The figure below shows the intermediary road masks after every step. The algorithms that were used are quite common in computer vision and image processing and are readily available in the [`python-opencv`](https://pypi.org/project/opencv-python/) library. The rasterization process is given below the figure in simplified Python code.
 
 <Figure
     src="/ring-roads/road_R23_BE_mask_rendering.png"
     alt="Visualization of the rasterization of ring road R23 (Leuven) showing the steps from vector data to rasterized image."
 />
+
+``` python
+import numpy as np
+import cv2
+
+def rasterize_road(local_lines):
+    # Rasterize the list of vector lines from OpenStreetMap
+    mask = Bresenham(local_lines, pixel_size=5)
+    # Pad the mask with 20 black pixels on every side to avoid edge effects
+    mask = np.pad(mask, pad_width=20, mode='constant', constant_values=0)
+    # Dilate with kernel size 13x13 (65x65 m)
+    mask = cv2.dilate(mask.astype(np.float32), np.ones((13,13), np.uint8))
+    # Erode with kernel size 9x9 (45x45 m)
+    mask = cv2.erode(mask.astype(np.float32), np.ones((9,9), np.uint8))
+    # Remove padding
+    mask = mask[20:-20, 20:-20]
+
+    return mask
+```
 
 ### Circle fitting
 A circle is fitted to the rasterized road data using MSAC, a variant of RANSAC.
@@ -100,8 +149,6 @@ import Roads from "Roads.astro"
 
 ## Discussion
 
-### Pitfalls
-Projectie in m tov centrum want lon lat is niet equal aspect
 
 ### Technical notes
 Created with IsotopeJS
