@@ -23,7 +23,9 @@ const next = items[(index + 1) % items.length];
   <article>
     <Content />
   </article>
-  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+  
+  <!-- Navigation buttons -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
     <a
       href={`/${prev.collection}/${prev.slug}`}
       class="button group p-4 gap-3 flex items-center border rounded-lg border-black/15 dark:border-white/20 blend"

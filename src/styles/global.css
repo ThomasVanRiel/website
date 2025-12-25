@@ -50,6 +50,15 @@ article p {
   @apply text-justify;
 }
 
+/* Add scroll margin to headings so they're not hidden by the header */
+article h2,
+article h3,
+article h4,
+article h5,
+article h6 {
+  scroll-margin-top: 6rem;
+}
+
 .page-heading {
   @apply font-semibold text-black dark:text-white;
 }
