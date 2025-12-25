@@ -14,6 +14,7 @@ type Props = {
       radius: number
       rmsError: number
       rmsErrorNorm: number
+      distanceToCityCenter: number
       city: string
       roadId: string
     }>
@@ -67,6 +68,7 @@ const gapPx = gapSizes[gap]
         <option value="radius">Radius</option>
         <option value="rms-error" selected>RMS Error</option>
         <option value="rms-error-norm">RMS Error (Normalized)</option>
+        <option value="distance-to-city-center">Distance to City Center</option>
         <option value="closed-fraction">Closed Fraction</option>
       </select>
     </div>
@@ -97,6 +99,7 @@ const gapPx = gapSizes[gap]
       data-radius={image.sorters[0]?.radius}
       data-rms-error={image.sorters[0]?.rmsError}
       data-rms-error-norm={image.sorters[0]?.rmsErrorNorm}
+      data-distance-to-city-center={image.sorters[0]?.distanceToCityCenter}
       data-city={image.sorters[0]?.city}
       data-road-id={image.sorters[0]?.roadId}
     >
@@ -123,6 +126,7 @@ const gapPx = gapSizes[gap]
         <p class="text-xs text-center">
           Error: <span class="font-semibold">{image.sorters[0]?.rmsError?.toFixed(0) || 'N/A'} m</span> ({(image.sorters[0]?.rmsErrorNorm * 100).toFixed(2) || 'N/A'}%)<br/>
           Radius: <span class="font-semibold">{image.sorters[0]?.radius?.toFixed(0) || 'N/A'} m</span> <br/>
+          Center offset: <span class="font-semibold">{image.sorters[0]?.distanceToCityCenter ? (image.sorters[0].distanceToCityCenter / 1000).toFixed(2) : 'N/A'} km</span> <br/>
           <span class="font-semibold">{(image.filters[0]?.closedFraction * 100).toFixed(0) || 'N/A'}%</span> closed
         </p>
       </div>
@@ -210,6 +214,7 @@ const gapPx = gapSizes[gap]
           radius: '[data-radius] parseFloat',
           'rms-error': '[data-rms-error] parseFloat',
           'rms-error-norm': '[data-rms-error-norm] parseFloat',
+          'distance-to-city-center': '[data-distance-to-city-center] parseFloat',
           'closed-fraction': '[data-closed-fraction] parseFloat'
         },
         filter: filterPredicate(currentThreshold),
