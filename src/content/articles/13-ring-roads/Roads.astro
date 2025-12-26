@@ -13,7 +13,9 @@ const images = ringRoadsData.map((road) => {
     alt: `${city} ${roadId} - Ring Road`,
     name: `${city} - ${roadId}`,
     cx: (road.cc_m[0] + extent)/pixelSizeM,
-    cy: (road.cc_m[1] + extent)/pixelSizeM,
+    cy: -(road.cc_m[1] - extent)/pixelSizeM,
+    city_x: (road.city_center_m[0]+extent)/pixelSizeM,
+    city_y: -(road.city_center_m[1]-extent)/pixelSizeM,
     radius: road.radius_m/pixelSizeM,
     filters: [{ closedFraction: road.closed_fraction }],
     sorters: [{ radius: road.radius_m, rmsError: road.rms_error_m, rmsErrorNorm: road.rms_error_norm, distanceToCityCenter, city, roadId }]

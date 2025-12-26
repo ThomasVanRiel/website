@@ -1,5 +1,16 @@
 ---
-const { label, number } = Astro.props;
+type Props = {
+  label: string
+  number: string
+  disabled?: boolean
+}
+
+const { 
+  label, 
+  number,
+  disabled = false
+} = Astro.props;
+
 
 // Set colors based on road type
 let bg_color: string;
