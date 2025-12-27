@@ -23,9 +23,31 @@ const getExtension = (path: string) => {
 
 const darkSrc = `${getPathWithoutExtension(src)}_dark${getExtension(src)}`;
 const imageId = `themed-image-${Math.random().toString(36).substr(2, 9)}`;
+
+// Check if the source is a video file
+const videoExtensions = ['.mp4', '.webm', '.ogg'];
+const isVideo = videoExtensions.some(ext => src.toLowerCase().endsWith(ext));
 ---
 
-<img 
+<div class="flex justify-center">
+  {isVideo ? (
+    <video 
+    id={imageId}
+    class={`${className} py-0`}
+    width={width}
+    height={height}
+    data-light-src={src}
+    data-dark-src={darkSrc}
+    autoplay
+    muted
+    playsinline
+    controls
+    >
+    <source src={src} type={`video/${getExtension(src).substring(1)}`} />
+    {alt}
+  </video>
+) : (
+  <img 
   id={imageId}
   src={src} 
   alt={alt} 
@@ -34,26 +56,38 @@ const imageId = `themed-image-${Math.random().toString(36).substr(2, 9)}`;
   height={height}
   data-light-src={src}
   data-dark-src={darkSrc}
-/>
+  />
+)}
+</div>
 <p class="caption text-sm mt-0 px-10 text-center italic text-gray-600 dark:text-gray-400">{Astro.props.alt}</p>
 
 <script define:vars={{ imageId, src, darkSrc }}>
-  function updateImage() {
-    const img = document.getElementById(imageId);
-    if (!img) return;
+  function updateMedia() {
+    const media = document.getElementById(imageId);
+    if (!media) return;
     
     const isDark = document.documentElement.classList.contains('dark');
-    img.src = isDark ? darkSrc : src;
+    const newSrc = isDark ? darkSrc : src;
+    
+    if (media.tagName === 'VIDEO') {
+      const source = media.querySelector('source');
+      if (source && source.src !== newSrc) {
+        source.src = newSrc;
+        media.load();
+      }
+    } else {
+      media.src = newSrc;
+    }
   }
 
   // Update on initial load
-  updateImage();
+  updateMedia();
 
   // Create a MutationObserver to watch for theme changes
   const observer = new MutationObserver((mutations) => {
     mutations.forEach((mutation) => {
       if (mutation.attributeName === 'class') {
-        updateImage();
+        updateMedia();
       }
     });
   });
@@ -64,7 +98,6 @@ const imageId = `themed-image-${Math.random().toString(36).substr(2, 9)}`;
   });
 
   // Also update after Astro page transitions
-  document.addEventListener('astro:after-swap', updateImage);
+  document.addEventListener('astro:after-swap', updateMedia);
 </script>
-
 
