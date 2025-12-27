@@ -36,7 +36,7 @@ The recipe syntax is designed to be close to natural language, with some caveats
 
 <RecipeFlowchart />
 
-## Recipe syntax[^1]
+## Recipe syntax
 
 Let's start with some examples based on the recipes from [the previous post on the topic](/articles/06-flowchart-recipes). They showcase the current capabilities of the flowchart generator. 
 
@@ -434,6 +434,3 @@ When rendered as a flowchart:
 - The last process step in the main recipe is treated as the output if no `Out` statement is present
 - Subprocess outputs marked with `.` use the last process node in that subprocess
 - All ingredients from `Add` statements (not from subprocesses) are alphabetically sorted in the ingredient list
-
-
-[^1]: Yes, this is a custom programming language.
