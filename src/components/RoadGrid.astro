@@ -154,25 +154,31 @@ const gapPx = gapSizes[gap]
   let currentSortBy: string = 'original-order';
   let currentSortAscending = true;
 
+  /*  Determine number of columns based on viewport width */
   function getResponsiveColumns(): number {
     const width = window.innerWidth;
-    if (width < 768) return 3;      // md
+    if (width < 800) return 3;      // md
     return 4;                        // 2xl+
   }
 
   function applyGridSizing() {
-    const columns = getResponsiveColumns();
     const grids = document.querySelectorAll('.isotope-grid');
 
     grids.forEach((gridElement) => {
       const grid = gridElement as HTMLElement;
+      const columns = getResponsiveColumns();
       const gap = parseInt(grid.dataset.gap || '16');
-      const columnWidth = `calc((100% - ${gap * (columns - 1)}px) / ${columns})`;
+      const gridWidth = grid.clientWidth || grid.getBoundingClientRect().width;
+      if (!gridWidth) return;
+
+      // Use integer math based on the actual grid width to avoid float rounding
+      // that occasionally drops the layout to 2 columns at certain viewport widths.
+      const columnWidthPx = Math.max(1, Math.floor((gridWidth - gap * (columns - 1)) / columns));
 
       const items = grid.querySelectorAll('.grid-item');
       items.forEach((item) => {
         const el = item as HTMLElement;
-        el.style.width = columnWidth;
+        el.style.width = `${columnWidthPx}px`;
         el.style.marginBottom = `${gap}px`;
       });
     });
