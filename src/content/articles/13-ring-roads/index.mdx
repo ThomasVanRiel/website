@@ -98,9 +98,8 @@ out body;
 ```
 
 #### Transforming the fetched data
-**TODO: Check this placeholder paragraph.**
-Overpass returns the road data in **GeoJSON** format, which contains the vector representation of the roads as well as metadata such as the road name and type.
-The original coordinates in **WGS84** format (longitude and latitude) are converted to local distances to the center of the road using an **equirectangular approximation** of the sphere, which is accurate enough for the small distances in this work.  
+The ways in the Overpass response are in the **GeoJSON** format, with coordinates in **WGS84** format (longitude and latitude). 
+They are converted to local distances to the geometric center of the road using an **equirectangular approximation** of the sphere, which is accurate enough for the small distances in this work.  
 Evaluation in local distances is necessary to avoid distortions, as the Earth is **not** flat. 
 Local distances is anyway how we normally think of the world, and is how most mapping applications represent the world.
 
@@ -112,7 +111,7 @@ Local distances is anyway how we normally think of the world, and is how most ma
 ### Rasterization
 Because the road data is in vector format, it needs to be rasterized to avoid bias towards roads with more data points.
 The vector lines representing roads are rasterized using **Bresenham's line algorithm** to a black and white image using a constant pixel size. Each pixel corresponds to a **5x5 m** square on the map. 
-The image size is chosen to fit the entire road within.  
+The image size is chosen to fit the entire road within. The black and white image is called a **mask** and indicates the presence (**white**) or absence (**black**) of a road.    
 Next, the rasterized image is **dilated 32.5 m** (kernel size 13 px) to ensure that the road is continuous, as every road has an initial thickness of 1 pixel. 
 Some roads, furthermore have gaps due to missing data in the OpenStreetMap response (e.g., overpasses or crossings). Some roads have wider lanes, a wide median, or multiple lanes, which are all part of the same road and result in multiple parallel-ish lines.  
 The mask is finally **eroded 22.5 m** (kernel size 9 px) to give some width to the road, as the initial rasterized image is only one pixel or 5 m wide. The final road width is hence at least **20 m**.  
@@ -144,14 +143,14 @@ def rasterize_road(local_lines):
 
 ### Circle fitting
 To evaluate the circularity of the ring roads, we can now look for the circle that best conforms the rasterized road. Since we are certain there is exactly **one** *circle* in the mask, a simple stochastic evaluation algorithm is sufficient.  
-The RANSAC (RANdom SAmple and Consensus) algorithm is a tried and tested method in computer vision to find shapes in images.
-A circle is fitted to the rasterized road data using MSAC, a variant of RANSAC.
+The RANSAC (RANdom SAmple and Consensus) algorithm is a tried and tested method in computer vision to find shapes in images. It tries a large number of random circles, tests their match to the sample data, and takes the circle which fitted the data best. 
 
 #### Evaluating a random circle
 
 The **RANSAC** estimator evaluates the fit by looking at which point fall within a certain margin from the tried circle, but because we are not looking for perfect circles, this margin needs to be chosen quite wide (**400 m**) to provide plausible results.  
 Every point that lies further than **400 m** from the tried circle is included in the cost equally. Since the margin is quite large, there are many solutions which includes all points, which can be clearly seen on the figure below. 
-To increase the robustness of the circle fitting algorithm, an alternative estimator (MSAC) is chosen, in which the cost increases with distance to the circle **squared** up to a maximum of **400&nbsp;m**. In contrast to the RANSAC estimator, MSAC can provide a **best** fitting circle given enough iterations.  
+To increase the robustness of the circle fitting algorithm, an alternative M-estimator (**MSAC**) is chosen as the cost function, in which the cost increases with distance to the circle **squared** up to a maximum of **400&nbsp;m**. 
+In contrast to the RANSAC estimator, MSAC can provide a **best** fitting circle given enough iterations.  
 The circle with the minimum cost is deemed the best fit and is used for further processing.
 The difference in cost evaluation between the **RANSAC** and **MSAC** is shown in the figure below.
 
@@ -162,7 +161,7 @@ The difference in cost evaluation between the **RANSAC** and **MSAC** is shown i
 
 
 #### Evaluating many circles and finding the best fit
-By evaluating many random samples and comparing every circle to the previous best fit, the best fitting circle is found given enough iterations. The next two figures visualize the sampling and evaluation process as a plot showing the reduction in cost after every iteration, and visually applied on ring road R23.
+By evaluating many random samples and comparing every circle to the previous best fit, the best fitting circle is found given enough iterations. The next two figures visualize the sampling and evaluation process as a plot showing the reduction in cost after every iteration, and visually applied on ring road <RoadLabel label="R" number="23"/>.
 
 <Figure
     src="/ring-roads/R23_circle_fit_costs_80.0_msac.png"
@@ -176,6 +175,15 @@ By evaluating many random samples and comparing every circle to the previous bes
     width="50%"
     darkmode={false}
 />
+
+#### Calculating interesting parameters to determine the ringiest ring road
+
+
+##### Root mean square (RMS) error
+
+##### Distance from city center
+
+##### Closure
 
 
 ## Results and conclusion
