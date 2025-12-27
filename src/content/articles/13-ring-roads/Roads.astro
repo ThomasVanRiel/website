@@ -3,19 +3,22 @@ import ringRoadsData from "./ring_roads.json"
 import RoadGrid from "../../../components/RoadGrid.astro"
 
 const images = ringRoadsData.map((road) => {
-  const city = road.ring_road[0]
-  const roadId = road.ring_road[1]
+  const city = String(road.ring_road?.[0] ?? '')
+  const roadId = String(road.ring_road?.[1] ?? '')
   const pixelSizeM = road.pixel_size_m_fixed
   const extent = - road.extent[0]
+  const distanceToCityCenter = road.center_distance_m
   return {
     src: `/ring-roads/${roadId}.png`,
     alt: `${city} ${roadId} - Ring Road`,
     name: `${city} - ${roadId}`,
     cx: (road.cc_m[0] + extent)/pixelSizeM,
-    cy: (road.cc_m[1] + extent)/pixelSizeM,
-    radius: road.radius/pixelSizeM,
+    cy: -(road.cc_m[1] - extent)/pixelSizeM,
+    city_x: (road.city_center_m[0]+extent)/pixelSizeM,
+    city_y: -(road.city_center_m[1]-extent)/pixelSizeM,
+    radius: road.radius_m/pixelSizeM,
     filters: [{ closedFraction: road.closed_fraction }],
-    sorters: [{ radius: road.radius, rmsError: road.rms_error_m, rmsErrorNorm: road.rms_error_norm, city: city, roadId: roadId }]
+    sorters: [{ radius: road.radius_m, rmsError: road.rms_error_m, rmsErrorNorm: road.rms_error_norm, distanceToCityCenter, city, roadId }]
   }
 })
 ---

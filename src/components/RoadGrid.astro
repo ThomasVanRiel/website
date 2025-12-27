@@ -8,24 +8,29 @@ type Props = {
     name: string
     cx: number
     cy: number
+    city_x: number
+    city_y: number
     radius: number
     filters: Array<{ closedFraction: number }>
     sorters: Array<{ 
       radius: number
       rmsError: number
       rmsErrorNorm: number
+      distanceToCityCenter: number
       city: string
       roadId: string
     }>
   }>
   columns?: 2 | 3 | 4 | 5 | 6
   gap?: "sm" | "md" | "lg"
+  townHallScale?: number
 }
 
 const { 
   images, 
   columns = 3, 
-  gap = "md"
+  gap = "md",
+  townHallScale = 1.5
 } = Astro.props
 
 const gapSizes = {
@@ -67,6 +72,7 @@ const gapPx = gapSizes[gap]
         <option value="radius">Radius</option>
         <option value="rms-error" selected>RMS Error</option>
         <option value="rms-error-norm">RMS Error (Normalized)</option>
+        <option value="distance-to-city-center">Distance to City Center</option>
         <option value="closed-fraction">Closed Fraction</option>
       </select>
     </div>
@@ -97,6 +103,7 @@ const gapPx = gapSizes[gap]
       data-radius={image.sorters[0]?.radius}
       data-rms-error={image.sorters[0]?.rmsError}
       data-rms-error-norm={image.sorters[0]?.rmsErrorNorm}
+      data-distance-to-city-center={image.sorters[0]?.distanceToCityCenter}
       data-city={image.sorters[0]?.city}
       data-road-id={image.sorters[0]?.roadId}
     >
@@ -116,13 +123,21 @@ const gapPx = gapSizes[gap]
           class="absolute inset-0 w-full h-full object-cover py-0"
         />
         <svg class="absolute inset-0 w-full h-full pointer-events-none" viewBox={`0 0 800 800`} xmlns="http://www.w3.org/2000/svg">
-          <circle cx={image.cx.toFixed(0)} cy={image.cy.toFixed(0)} r={image.radius.toFixed(0)} fill="none" stroke="black" stroke-width="2" stroke-dasharray="10,10" class="dark:stroke-white" />
+          <circle cx={image.cx.toFixed(0)} cy={image.cy.toFixed(0)} r={image.radius.toFixed(0)} fill="none" stroke="black" stroke-width="5" stroke-dasharray="10,10" class="dark:stroke-white" />
+          <g transform={`translate(${image.city_x.toFixed(0)}, ${image.city_y.toFixed(0)})`}>
+            <g transform={`scale(${townHallScale})`} opacity="0.5">
+              <path d="M0 0 L10.4 -18 A12 12 0 0 0 0 -36 A12 12 0 0 0 -10.4 -18Z" fill="black" class="dark:fill-white" />
+              <circle cx="0" cy="-24" r="4" fill="white" class="dark:fill-black" />
+            </g>
+          </g>
+          <circle cx={image.cx.toFixed(0)} cy={image.cy.toFixed(0)} r="5" fill="black" class="dark:fill-white" />
         </svg>
       </div>
       <div class="px-3 py-0">
         <p class="text-xs text-center">
-          Error: <span class="font-semibold">{image.sorters[0]?.rmsError?.toFixed(0) || 'N/A'} m</span> ({(image.sorters[0]?.rmsErrorNorm * 100).toFixed(2) || 'N/A'}%)<br/>
+          Error: <span class="font-semibold">{image.sorters[0]?.rmsError?.toFixed(0) || 'N/A'} m</span> ({(image.sorters[0]?.rmsErrorNorm * 100).toFixed(1) || 'N/A'}%)<br/>
           Radius: <span class="font-semibold">{image.sorters[0]?.radius?.toFixed(0) || 'N/A'} m</span> <br/>
+          Center offset: <span class="font-semibold">{image.sorters[0]?.distanceToCityCenter ? (image.sorters[0].distanceToCityCenter).toFixed(0) : 'N/A'} m</span> <br/>
           <span class="font-semibold">{(image.filters[0]?.closedFraction * 100).toFixed(0) || 'N/A'}%</span> closed
         </p>
       </div>
@@ -135,8 +150,8 @@ const gapPx = gapSizes[gap]
 
   let isotopeInstances: Isotope[] = [];
   let controlsBound = false;
-  let currentThreshold = 0.8; // keep slider/filter in sync (80%)
-  let currentSortBy: string = 'rms-error';
+  let currentThreshold = 0.0; // keep slider/filter in sync (80%)
+  let currentSortBy: string = 'original-order';
   let currentSortAscending = true;
 
   function getResponsiveColumns(): number {
@@ -210,6 +225,7 @@ const gapPx = gapSizes[gap]
           radius: '[data-radius] parseFloat',
           'rms-error': '[data-rms-error] parseFloat',
           'rms-error-norm': '[data-rms-error-norm] parseFloat',
+          'distance-to-city-center': '[data-distance-to-city-center] parseFloat',
           'closed-fraction': '[data-closed-fraction] parseFloat'
         },
         filter: filterPredicate(currentThreshold),
