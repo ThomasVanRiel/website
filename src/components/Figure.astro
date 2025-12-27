@@ -6,9 +6,10 @@ interface Props {
   class?: string;
   width?: number;
   height?: number;
+  darkmode?: boolean;
 }
 
-const { src, alt, class: className, width, height } = Astro.props;
+const { src, alt, class: className, width, height, darkmode = true } = Astro.props;
 
 // Generate dark variant path by inserting '_dark' before the file extension
 const getPathWithoutExtension = (path: string) => {
@@ -21,7 +22,7 @@ const getExtension = (path: string) => {
   return lastDot === -1 ? '' : path.substring(lastDot);
 };
 
-const darkSrc = `${getPathWithoutExtension(src)}_dark${getExtension(src)}`;
+const darkSrc = darkmode ? `${getPathWithoutExtension(src)}_dark${getExtension(src)}` : src;
 const imageId = `themed-image-${Math.random().toString(36).substr(2, 9)}`;
 
 // Check if the source is a video file

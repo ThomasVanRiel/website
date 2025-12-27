@@ -143,24 +143,40 @@ def rasterize_road(local_lines):
 ```
 
 ### Circle fitting
+To evaluate the circularity of the ring roads, we can now look for the circle that best conforms the rasterized road. Since we are certain there is exactly **one** *circle* in the mask, a simple stochastic evaluation algorithm is sufficient.  
+The RANSAC (RANdom SAmple and Consensus) algorithm is a tried and tested method in computer vision to find shapes in images.
 A circle is fitted to the rasterized road data using MSAC, a variant of RANSAC.
 
-**TODO**: Explain MSAC briefly.
+#### Evaluating a random circle
 
-RANSAC is sufficient as exactly one circle will be present in the mask. Other possible options: (Circle) Hough Transform 
-RANSAC counts the points that are **not** part of the tested circle and tries to minimize this count in further iterations.
-MSAC is better https://doi.org/10.1109/ICCV.1998.710798
-MLESAC is better https://doi.org/10.1006/cviu.1999.0832
-
-<Figure
-    src="/ring-roads/cost_function.png"
-    alt="Caption WIP"
-/>
+The **RANSAC** estimator evaluates the fit by looking at which point fall within a certain margin from the tried circle, but because we are not looking for perfect circles, this margin needs to be chosen quite wide (**400 m**) to provide plausible results.  
+Every point that lies further than **400 m** from the tried circle is included in the cost equally. Since the margin is quite large, there are many solutions which includes all points, which can be clearly seen on the figure below. 
+To increase the robustness of the circle fitting algorithm, an alternative estimator (MSAC) is chosen, in which the cost increases with distance to the circle **squared** up to a maximum of **400&nbsp;m**. In contrast to the RANSAC estimator, MSAC can provide a **best** fitting circle given enough iterations.  
+The circle with the minimum cost is deemed the best fit and is used for further processing.
+The difference in cost evaluation between the **RANSAC** and **MSAC** is shown in the figure below.
 
 <Figure
-    src="/ring-roads/RANSAC.mp4"
-    alt="Animation of the MSAC fitting process"
+    src="/ring-roads/R23_cost_function_comparison_80.0.png"
+    alt="Difference between the RANSAC and MSAC cost evaluation function visualized for R23."
 />
+
+
+#### Evaluating many circles and finding the best fit
+By evaluating many random samples and comparing every circle to the previous best fit, the best fitting circle is found given enough iterations. The next two figures visualize the sampling and evaluation process as a plot showing the reduction in cost after every iteration, and visually applied on ring road R23.
+
+<Figure
+    src="/ring-roads/R23_circle_fit_costs_80.0_msac.png"
+    alt="A plot showing the cost of every circle fit on R23 evaluated using the MSAC estimator and the running tally of the best fitting circle's cost. The x-axis shows the iterations where a new best fit is found."
+/>
+
+
+<Figure
+    src="/ring-roads/R23_circle_fit_animation_80.0_msac.mp4"
+    alt="Animation of the MSAC fitting process applied visually on R23."
+    width="50%"
+    darkmode={false}
+/>
+
 
 ## Results and conclusion
 
