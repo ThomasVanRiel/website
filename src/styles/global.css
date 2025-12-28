@@ -152,7 +152,8 @@ mark {
   @apply bg-yellow-200 dark:bg-blue-200 rounded;
 }
 
-/* TODO: Probably breaks inline maths */
-.MathJax svg {
-  width: 100% !important  ;
+mjx-container{
+  @apply text-center;
+  @apply inline-block items-baseline align-baseline;
+
 }

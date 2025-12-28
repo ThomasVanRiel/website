@@ -143,7 +143,7 @@ def rasterize_road(local_lines):
 
 ### Circle fitting
 To evaluate the circularity of the ring roads, we can now look for the circle that best conforms the rasterized road. Since we are certain there is exactly **one** *circle* in the mask, a simple stochastic evaluation algorithm is sufficient.  
-The RANSAC (RANdom SAmple and Consensus) algorithm is a tried and tested method in computer vision to find shapes in images. It tries a large number of random circles, tests their match to the sample data, and takes the circle which fitted the data best. 
+The **RANSAC** (RANdom SAmple and Consensus) algorithm is a tried and tested method in computer vision to find shapes in images. It tries a large number of random circles, tests their match to the sample data, and takes the circle which fitted the data best. 
 
 #### Evaluating a random circle
 
@@ -172,23 +172,25 @@ By evaluating many random samples and comparing every circle to the previous bes
 <Figure
     src="/ring-roads/R23_circle_fit_animation_80.0_msac.mp4"
     alt="Animation of the MSAC fitting process applied visually on R23."
-    width="50%"
     darkmode={false}
 />
 
-#### Calculating interesting parameters to determine the ringiest ring road
+### Evaluation of the ring roads
+To determine the *ringiest* ring road, we need some parameters to compare.
 
-
-##### Root mean square (RMS) error
+#### Root mean square (RMS) error
 The root mean square error can be calculated from the distances from every point to the nearest point on the fitted circle. This distance is quite straightforward to calculate due to the properties of a circle. The line from the sample point to the center of the circle crosses the nearest point, located one radius from the center.  
 
-$$d = \sqrt{(px - cx)^2 + (py - cy)^2} - R$$
+$d(x,y) = \sqrt{(x - C(x))^2 + (y - C(y))^2} - R$
 
+Where $R$ is the radius of the best fitting circle, $C(x)$ and $C(y)$ are the coordinates of the circle center.
 
-##### Distance from city center
-The distance to the city
+$RMS = \sqrt{\frac{\sum_{i}^{n}{d_i^2}}{n}}$
 
-##### Closure
+#### Distance from city center
+The distance to the city using administrative center data points from OpenStreetMap.
+
+#### Closure
 
 
 ## Results and conclusion
@@ -203,8 +205,12 @@ import Roads from "Roads.astro"
 
 ## Discussion
 
-Adding provincial road as they sometimes act as a ring road. <RoadLabel label="N" number="712"/> is a straightforward example as it is a single road that runs around the town of Pelt. 
-Not all provincial ring-roads are that neatly organized <RoadLabel label="N" number="7"/> in Ath for instance is a longer road that passes Ath and acts as a ring road for a small fraction of it's length. It is hence difficult to separate the ring part of the road. 
+Adding provincial road as they sometimes act as a ring road. <RoadLabel label="N" number="712"/> is a straightforward example 
+as it is a single road that runs around the town of Pelt. 
+Not all provincial ring-roads are that neatly organized <RoadLabel label="N" number="7"/> in Ath for instance 
+is a longer road that passes Ath and acts as a ring road for a small fraction of it's length. It is hence difficult to separate the ring part of the road. 
+Another complication is that some informal ring roads use parts of multiple roads to form a ring-like road around a city or town.
+The unofficial ring road around Dendermonde for instance consists of parts of roads <RoadLabel label="N" number="17"/>, <RoadLabel label="N" number="41"/>, and <RoadLabel label="N" number="47"/>.
 
 ### Technical notes
 Created with IsotopeJS
