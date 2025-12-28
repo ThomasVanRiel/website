@@ -181,17 +181,32 @@ To determine the *ringiest* ring road, we need some parameters to compare.
 #### Root mean square (RMS) error
 The root mean square error can be calculated from the distances from every point to the nearest point on the fitted circle. This distance is quite straightforward to calculate due to the properties of a circle. The line from the sample point to the center of the circle crosses the nearest point, located one radius from the center.  
 
-$d(x,y) = \sqrt{(x - C(x))^2 + (y - C(y))^2} - R$
+$$
+d(x,y) = \sqrt{(x - C(x))^2 + (y - C(y))^2} - R
+$$
 
 Where $R$ is the radius of the best fitting circle, $C(x)$ and $C(y)$ are the coordinates of the circle center.
 
-$RMS = \sqrt{\frac{\sum_{i}^{n}{d_i^2}}{n}}$
+$$
+RMS = \sqrt{\frac{\sum_{i}^{n}{d_i^2}}{n}}
+$$
+
+A problem with the RMS error is that it favours smaller ring roads. Normalizing the RMS error to the circle radius $R$ is a better indication of the circularity.
+
+$$
+RMS_{normalized} = \frac{RMS}{R}
+$$
 
 #### Distance from city center
-The distance to the city using administrative center data points from OpenStreetMap.
+The distance to the city is calculated using the Pythagorean Theorem to the administrative center according to OpenStreetMap. The city centers are indicated with a location pin in the result section below.
 
-#### Closure
 
+#### Closed fraction
+Not all ring roads form closed loops. To evaluate the *closure* of the ring roads with respect to thhe fitted circle, an array of uniformly spaced rays is cast outward from the city center. Every time a ray hits a white pixel (road presence in the mask), it is registered as a hit. The percentage of closure can then be calculated using:
+
+$$
+Closure = \frac{hits}{n_{rays}} * 100\%
+$$
 
 ## Results and conclusion
 

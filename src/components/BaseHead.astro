@@ -55,6 +55,9 @@ const { title, description, image = "/open-graph.png" } = Astro.props;
   href={`${Astro.site}rss.xml`}
 />
 
+<!-- KaTeX CSS -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css" integrity="sha384-n8MVd4RsNIU0tAv4ct0nTaAbDJwPJzDEaqSD1odI+WdtXRGWt2kTvGFasHpSy3SV" crossorigin="anonymous">
+
 <!-- Global Scripts -->
 <script is:inline src="/js/theme.js"></script>
 <script is:inline src="/js/scroll.js"></script>

@@ -67,12 +67,12 @@ const gapPx = gapSizes[gap]
         id="sort-select" 
         class="w-full px-3 py-2 border border-neutral-300 dark:border-neutral-700 rounded-lg bg-white dark:bg-neutral-900"
       >
-        <option value="original-order">Road index (R#)</option>
+        <option value="original-order">Ring road number</option>
         <option value="name">City</option>
-        <option value="radius">Radius</option>
         <option value="rms-error" selected>RMS Error</option>
         <option value="rms-error-norm">RMS Error (Normalized)</option>
         <option value="distance-to-city-center">Distance to City Center</option>
+        <option value="radius">Radius</option>
         <option value="closed-fraction">Closed Fraction</option>
       </select>
     </div>
@@ -135,9 +135,9 @@ const gapPx = gapSizes[gap]
       </div>
       <div class="px-3 py-0">
         <p class="text-xs text-center">
-          Error: <span class="font-semibold">{image.sorters[0]?.rmsError?.toFixed(0) || 'N/A'} m</span> ({(image.sorters[0]?.rmsErrorNorm * 100).toFixed(1) || 'N/A'}%)<br/>
+          RMS: <span class="font-semibold">{image.sorters[0]?.rmsError?.toFixed(0) || 'N/A'} m</span> ({(image.sorters[0]?.rmsErrorNorm * 100).toFixed(1) || 'N/A'}%)<br/>
+          City center: <span class="font-semibold">{image.sorters[0]?.distanceToCityCenter ? (image.sorters[0].distanceToCityCenter).toFixed(0) : 'N/A'} m</span> <br/>
           Radius: <span class="font-semibold">{image.sorters[0]?.radius?.toFixed(0) || 'N/A'} m</span> <br/>
-          Center offset: <span class="font-semibold">{image.sorters[0]?.distanceToCityCenter ? (image.sorters[0].distanceToCityCenter).toFixed(0) : 'N/A'} m</span> <br/>
           <span class="font-semibold">{(image.filters[0]?.closedFraction * 100).toFixed(0) || 'N/A'}%</span> closed
         </p>
       </div>

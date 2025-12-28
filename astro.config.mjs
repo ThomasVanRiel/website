@@ -11,7 +11,7 @@ export default defineConfig({
   site: "https://thomasvanriel.com",
   integrations: [mdx({
     remarkPlugins: [remarkMath],
-    rehypePlugins: [[rehypeKatex, { output: 'mathml', displayMode: true }]],
+    rehypePlugins: [[rehypeKatex, { output: 'html' }]],
   }), sitemap({
       filter: (page) => {
         // Filter out known draft posts
