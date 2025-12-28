@@ -1,8 +1,8 @@
 ---
 title: "One ring (road) to rule them all!"
 summary: "Which Belgian ring road is the most circular, and hence the best one? An excessive analysis of Belgian ring roads no one asked for."
-date: "12/23/2025"
-draft: true
+date: "12/28/2025"
+draft: false
 tags:
 - Cartograpy
 - Interactive
@@ -185,10 +185,10 @@ $$
 d(x,y) = \sqrt{(x - C(x))^2 + (y - C(y))^2} - R
 $$
 
-Where $R$ is the radius of the best fitting circle, $C(x)$ and $C(y)$ are the coordinates of the circle center.
+Where $R$ is the radius of the best fitting circle, and $C(x)$ and $C(y)$ are the coordinates of it's center. The RMS error can then be calculated as:
 
 $$
-RMS = \sqrt{\frac{\sum_{i}^{n}{d_i^2}}{n}}
+RMS = \sqrt{\frac{1}{n}\sum_{i}^{n}{d_i^2}}
 $$
 
 A problem with the RMS error is that it favours smaller ring roads. Normalizing the RMS error to the circle radius $R$ is a better indication of the circularity.
@@ -205,14 +205,12 @@ The distance to the city is calculated using the Pythagorean Theorem to the admi
 Not all ring roads form closed loops. To evaluate the *closure* of the ring roads with respect to thhe fitted circle, an array of uniformly spaced rays is cast outward from the city center. Every time a ray hits a white pixel (road presence in the mask), it is registered as a hit. The percentage of closure can then be calculated using:
 
 $$
-Closure = \frac{hits}{n_{rays}} * 100\%
+Closure = \frac{hits}{n_{rays}} \cdot 100\%
 $$
 
 ## Results and conclusion
 
-TODO
-
-To avoid bias, the initial order is set to the R-number while showing all ring roads. My personal 
+To avoid bias, the initial order is set to the R-number while showing all ring roads. Select a closure percentage to filter unringlike roads (80% seems a good cut-off) and select sorting methods to your liking.
 
 import Roads from "Roads.astro"
 
@@ -220,13 +218,11 @@ import Roads from "Roads.astro"
 
 ## Discussion
 
+(Paragraph work in progress)
+
 Adding provincial road as they sometimes act as a ring road. <RoadLabel label="N" number="712"/> is a straightforward example 
 as it is a single road that runs around the town of Pelt. 
 Not all provincial ring-roads are that neatly organized <RoadLabel label="N" number="7"/> in Ath for instance 
 is a longer road that passes Ath and acts as a ring road for a small fraction of it's length. It is hence difficult to separate the ring part of the road. 
 Another complication is that some informal ring roads use parts of multiple roads to form a ring-like road around a city or town.
 The unofficial ring road around Dendermonde for instance consists of parts of roads <RoadLabel label="N" number="17"/>, <RoadLabel label="N" number="41"/>, and <RoadLabel label="N" number="47"/>.
-
-### Technical notes
-Created with IsotopeJS
-The road signs are a react component
