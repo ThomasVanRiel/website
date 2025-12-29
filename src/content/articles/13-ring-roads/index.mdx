@@ -35,8 +35,8 @@ The ring roads are numbered in categories:
 - <RoadLabel label="R" number="1"/>-<RoadLabel label="R" number="9"/> around principal cities, 
 - <RoadLabel label="R" number="10"/>-<RoadLabel label="R" number="19"/> in Antwerp,
 - <RoadLabel label="R" number="20"/>-<RoadLabel label="R" number="29"/> in Brabant (Flemish and Walloon),
-- <RoadLabel label="R" number="30"/>-<RoadLabel label="R" number="39"/> in West-Flanders, 
-- <RoadLabel label="R" number="40"/>-<RoadLabel label="R" number="49"/> in East-Flanders,
+- <RoadLabel label="R" number="30"/>-<RoadLabel label="R" number="39"/> in West Flanders, 
+- <RoadLabel label="R" number="40"/>-<RoadLabel label="R" number="49"/> in East Flanders,
 - <RoadLabel label="R" number="50"/>-<RoadLabel label="R" number="59"/> in Hainaut, 
 - <RoadLabel label="R" number="60"/>-<RoadLabel label="R" number="69"/> in Liège, 
 - <RoadLabel label="R" number="70"/>-<RoadLabel label="R" number="79"/> in Limburg.
@@ -57,11 +57,11 @@ The latter property is trivially satisfied by our definition above, so let's foc
 
 Let's define a ring as **circular** and **closed**. 
 The latter of these properties is a tad more flexible than the former, as an open ring is quite common, 
-both in road infrastructure and in other _ringlike_ objects (e.g., a celtic torc).
+both in road infrastructure and in other _ringlike_ objects (e.g., a Celtic torc).
 The best ring road is hence the one that is the most circular while being reasonably closed.
 
 As the problem is now clearly defined, we can focus on finding the solution. 
-The next section will explain the method that was selected to evaluate the circularity, [or skip straight to the interactive visualization of the results](#results-and-conclusion).
+The next section will explain the method that was selected to evaluate the circularity, [or you can skip straight to the interactive visualization of the results](#results-and-conclusion).
 
 ## Method
 The evaluation process consists of several steps:
@@ -75,9 +75,9 @@ To facilitate the interpretation of the presented method, every step is illustra
 ### Data acquisition
 #### Getting GeoJSON road data
 Road data is acquired from OpenStreetMap using the [Overpass API](https://wiki.openstreetmap.org/wiki/Overpass_API).
-The query given below is sent in the body of a `POST`request to the Overpass API. The response is a JSON object containing the relevant elements (including ways, traffic signals, zebra crossings, ...).  
+The query given below is sent in the body of a `POST` request to the Overpass API. The response is a JSON object containing the relevant elements (including ways, traffic signals, zebra crossings, ...).  
 For this article, only the ways are relevant, but it is nonetheless interesting to know that <RoadLabel label="R" number="23"/> contains **71** traffic lights and **32** zebra crossings (according to the Overpass query). 
-The ring road with the most traffic signals is <RoadLabel label="R" number="22"/> with **228** signals. The same road <RoadLabel label="R" number="22"/> has the most zebra crossings with a respectable **101** crossings. 
+The ring road with the most traffic signals is <RoadLabel label="R" number="22"/> with **228** signals. The same road, <RoadLabel label="R" number="22"/>, has the most zebra crossings, with a respectable **101** crossings. 
 The ring roads with the least amount of signals are those that consist of only highways, such as <RoadLabel label="R" number="0"/>. Brussels wins across the board! 
 ```javascript
 // Set output format and timeout
@@ -101,7 +101,7 @@ out body;
 The ways in the Overpass response are in the **GeoJSON** format, with coordinates in **WGS84** format (longitude and latitude). 
 They are converted to local distances to the geometric center of the road using an **equirectangular approximation** of the sphere, which is accurate enough for the small distances in this work.  
 Evaluation in local distances is necessary to avoid distortions, as the Earth is **not** flat. 
-Local distances is anyway how we normally think of the world, and is how most mapping applications represent the world.
+Local distances are anyway how we normally think of the world and are how most mapping applications represent the world.
 
 <Figure
     src="/ring-roads/road_R23_BE_fetched.png"
@@ -113,7 +113,7 @@ Because the road data is in vector format, it needs to be rasterized to avoid bi
 The vector lines representing roads are rasterized using **Bresenham's line algorithm** to a black and white image using a constant pixel size. Each pixel corresponds to a **5x5 m** square on the map. 
 The image size is chosen to fit the entire road within. The black and white image is called a **mask** and indicates the presence (**white**) or absence (**black**) of a road.    
 Next, the rasterized image is **dilated 32.5 m** (kernel size 13 px) to ensure that the road is continuous, as every road has an initial thickness of 1 pixel. 
-Some roads, furthermore have gaps due to missing data in the OpenStreetMap response (e.g., overpasses or crossings). Some roads have wider lanes, a wide median, or multiple lanes, which are all part of the same road and result in multiple parallel-ish lines.  
+Some roads, furthermore, have gaps due to missing data in the OpenStreetMap response (e.g., overpasses or crossings). Some roads have wider lanes, a wide median, or multiple lanes, which are all part of the same road and result in multiple parallel-ish lines.  
 The mask is finally **eroded 22.5 m** (kernel size 9 px) to give some width to the road, as the initial rasterized image is only one pixel or 5 m wide. The final road width is hence at least **20 m**.  
 The figure below shows the intermediary road masks after every step. The algorithms that were used are quite common in computer vision and image processing and are readily available in the [`python-opencv`](https://pypi.org/project/opencv-python/) library. The rasterization process is given below the figure in simplified Python code.
 
@@ -142,15 +142,15 @@ def rasterize_road(local_lines):
 ```
 
 ### Circle fitting
-To evaluate the circularity of the ring roads, we can now look for the circle that best conforms the rasterized road. Since we are certain there is exactly **one** *circle* in the mask, a simple stochastic evaluation algorithm is sufficient.  
-The **RANSAC** (RANdom SAmple and Consensus) algorithm is a tried and tested method in computer vision to find shapes in images. It tries a large number of random circles, tests their match to the sample data, and takes the circle which fitted the data best. 
+To evaluate the circularity of the ring roads, we can now look for the circle that best conforms to the rasterized road. Since we are certain there is exactly **one** *circle* in the mask, a simple stochastic evaluation algorithm is sufficient.  
+The **RANSAC** (RANdom SAmple and Consensus) algorithm is a tried and tested method in computer vision to find shapes in images. It tries a large number of random circles, tests their match to the sample data, and takes the circle that fits the data best. 
 
 #### Evaluating a random circle
 
-The **RANSAC** estimator evaluates the fit by looking at which point fall within a certain margin from the tried circle, but because we are not looking for perfect circles, this margin needs to be chosen quite wide (**400 m**) to provide plausible results.  
-Every point that lies further than **400 m** from the tried circle is included in the cost equally. Since the margin is quite large, there are many solutions which includes all points, which can be clearly seen on the figure below. 
+The **RANSAC** estimator evaluates the fit by looking at which points fall within a certain margin from the tried circle, but because we are not looking for perfect circles, this margin needs to be chosen quite wide (**400 m**) to provide plausible results.  
+Every point that lies further than **400 m** from the tried circle is included in the cost equally. Since the margin is quite large, there are many solutions, which include all points, which can be clearly seen in the figure below. 
 To increase the robustness of the circle fitting algorithm, an alternative M-estimator (**MSAC**) is chosen as the cost function, in which the cost increases with distance to the circle **squared** up to a maximum of **400&nbsp;m**. 
-In contrast to the RANSAC estimator, MSAC can provide a **best** fitting circle given enough iterations.  
+In contrast to the RANSAC estimator, MSAC can provide a **best**-fitting circle given enough iterations.  
 The circle with the minimum cost is deemed the best fit and is used for further processing.
 The difference in cost evaluation between the **RANSAC** and **MSAC** is shown in the figure below.
 
@@ -161,11 +161,11 @@ The difference in cost evaluation between the **RANSAC** and **MSAC** is shown i
 
 
 #### Evaluating many circles and finding the best fit
-By evaluating many random samples and comparing every circle to the previous best fit, the best fitting circle is found given enough iterations. The next two figures visualize the sampling and evaluation process as a plot showing the reduction in cost after every iteration, and visually applied on ring road <RoadLabel label="R" number="23"/>.
+By evaluating many random samples and comparing every circle to the previous best fit, the best-fitting circle is found given enough iterations. The next two figures visualize the sampling and evaluation process as a plot showing the reduction in cost after every iteration and visually applied on ring road <RoadLabel label="R" number="23"/>.
 
 <Figure
     src="/ring-roads/R23_circle_fit_costs_80.0_msac.png"
-    alt="A plot showing the cost of every circle fit on R23 evaluated using the MSAC estimator and the running tally of the best fitting circle's cost. The x-axis shows the iterations where a new best fit is found."
+    alt="A plot showing the cost of every circle fit on R23 evaluated using the MSAC estimator and the running tally of the best-fitting circle's cost. The x-axis shows the iterations where a new best fit is found."
 />
 
 
@@ -185,7 +185,7 @@ $$
 d(x,y) = \sqrt{(x - C(x))^2 + (y - C(y))^2} - R
 $$
 
-Where $R$ is the radius of the best fitting circle, and $C(x)$ and $C(y)$ are the coordinates of it's center. The RMS error can then be calculated as:
+Where $R$ is the radius of the best-fitting circle, and $C(x)$ and $C(y)$ are the coordinates of its center. The RMS error can then be calculated as
 
 $$
 RMS = \sqrt{\frac{1}{n}\sum_{i}^{n}{d_i^2}}
@@ -202,7 +202,7 @@ The distance to the city is calculated using the Pythagorean Theorem to the admi
 
 
 #### Closed fraction
-Not all ring roads form closed loops. To evaluate the *closure* of the ring roads with respect to thhe fitted circle, an array of uniformly spaced rays is cast outward from the city center. Every time a ray hits a white pixel (road presence in the mask), it is registered as a hit. The percentage of closure can then be calculated using:
+Not all ring roads form closed loops. To evaluate the *closure* of the ring roads with respect to the fitted circle, an array of uniformly spaced rays is cast outward from the city center. Every time a ray hits a white pixel (road presence in the mask), it is registered as a hit. The percentage of closure can then be calculated using
 
 $$
 Closure = \frac{hits}{n_{rays}} \cdot 100\%
@@ -210,7 +210,7 @@ $$
 
 ## Results and conclusion
 
-To avoid bias, the initial order is set to the R-number while showing all ring roads. Select a closure percentage to filter unringlike roads (80% seems a good cut-off) and select sorting methods to your liking.
+To avoid bias, the initial order is set to the R-number while showing all ring roads. Select a closure percentage to filter ring-like roads (80% seems a good cut-off) and select sorting methods to your liking.
 
 import Roads from "Roads.astro"
 
@@ -219,10 +219,8 @@ import Roads from "Roads.astro"
 ## Discussion
 
 (Paragraph work in progress)
-
-Adding provincial road as they sometimes act as a ring road. <RoadLabel label="N" number="712"/> is a straightforward example 
-as it is a single road that runs around the town of Pelt. 
-Not all provincial ring-roads are that neatly organized <RoadLabel label="N" number="7"/> in Ath for instance 
-is a longer road that passes Ath and acts as a ring road for a small fraction of it's length. It is hence difficult to separate the ring part of the road. 
+This review contains only ring roads labeled with an R-number. A possible extension is to add selected provincial roads as they sometimes act as a ring road. 
+<RoadLabel label="N" number="712"/> is a straightforward example, as it is a single road that runs around the town of Pelt.  
+Not all provincial ring roads are that neatly organized. <RoadLabel label="N" number="7"/> in Ath, for instance, is a longer road that passes Ath and acts as a ring road for a small fraction of its length. It is hence difficult to separate the ring part of the road. 
 Another complication is that some informal ring roads use parts of multiple roads to form a ring-like road around a city or town.
-The unofficial ring road around Dendermonde for instance consists of parts of roads <RoadLabel label="N" number="17"/>, <RoadLabel label="N" number="41"/>, and <RoadLabel label="N" number="47"/>.
+The unofficial ring road around Dendermonde, for instance, consists of parts of roads <RoadLabel label="N" number="17"/>, <RoadLabel label="N" number="41"/>, and <RoadLabel label="N" number="47"/>.

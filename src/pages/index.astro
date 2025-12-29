@@ -35,9 +35,11 @@ const projects = (await getCollection("projects"))
             <a href='/articles' class='button-invert py-2 px-4 rounded truncate text-xs md:text-sm lg:text-base text-white dark:text-brand-dk hover:opacity-75 blend'>
               Read my articles
             </a>
-            <a href='/projects' class='button py-2 px-4 truncate rounded text-xs md:text-sm lg:text-base border border-black/25 dark:border-white/25 blend'>
+            <!--
+              <a href='/projects' class='button py-2 px-4 truncate rounded text-xs md:text-sm lg:text-base border border-black/25 dark:border-white/25 blend'>
               View my projects
             </a>
+            -->
             <a href='/articles/10-recipe-to-flowchart' class='button py-2 px-4 truncate rounded text-xs md:text-sm lg:text-base border border-black/25 dark:border-white/25 blend'>
               Try my flowchart recipe generator
             </a>
@@ -64,11 +66,11 @@ const projects = (await getCollection("projects"))
         <div class="space-y-4">
           <div class="flex justify-between">
             <p class="font-semibold text-brand-dk dark:text-white">
-              Recent posts
+              Recent articles
             </p>
             <a href="/articles" class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-brand-dk dark:text-white underline-offset-2 blend">
               <span class="text-brand-dk/75 dark:text-white/75 group-hover:text-brand-dk group-hover:dark:text-white blend">
-                All posts
+                All articles
               </span>
             </a>
           </div>
@@ -82,12 +84,12 @@ const projects = (await getCollection("projects"))
         </div>
       </section>
 
-
       <!-- Project Preview Section -->
-      <section class="animate">
-        <div class="space-y-4">
-          <div class="flex justify-between">
-            <p class="font-semibold text-brand-dk dark:text-white">
+      <!--
+        <section class="animate">
+          <div class="space-y-4">
+            <div class="flex justify-between">
+              <p class="font-semibold text-brand-dk dark:text-white">
               Recent projects
             </p>
             <a href="/projects" class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-brand-dk dark:text-white underline-offset-2 blend">
@@ -105,6 +107,7 @@ const projects = (await getCollection("projects"))
           </ul>
         </div>
       </section>
+      -->
 
       <!-- Contact Section -->
       <section class="animate">
