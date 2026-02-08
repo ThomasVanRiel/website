@@ -1,0 +1,375 @@
+---
+// ProjectionVisualizer.astro - 2D map projection visualizer with animated transitions
+---
+
+<div class="projection-visualizer">
+  <div class="canvas-container">
+    <svg id="globe-svg"></svg>
+  </div>
+  <div class="controls" id="projection-controls">
+    <!-- Buttons generated dynamically by category -->
+  </div>
+</div>
+
+<style>
+  .projection-visualizer {
+    width: 100%;
+  }
+
+  .canvas-container {
+    width: 100%;
+    height: 600px;
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  #globe-svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  #globe-svg.projection-mode {
+    cursor: default;
+  }
+
+  .controls {
+    margin-top: 20px;
+  }
+
+  .category-group {
+    margin-bottom: 15px;
+  }
+
+  .category-label {
+    font-weight: 600;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .category-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    backdrop-filter: blur(10px);
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.3s ease;
+  }
+
+  .btn:active {
+    transform: scale(0.95);
+  }
+
+  .btn-active {
+    background: rgba(0, 0, 0, 0.15) !important;
+    font-weight: 600;
+  }
+
+  .data-point {
+    transition: r 0.3s ease;
+  }
+
+  .data-point:hover {
+    r: 4;
+  }
+</style>
+
+<script>
+  import * as d3 from 'd3';
+  import { projections, getProjectionById, type DataPoint, type ProjectionConfig } from './projections';
+
+  // Theme detection
+  const isDarkTheme = () => document.documentElement.classList.contains('dark');
+  
+  const getThemeColors = () => {
+    const dark = isDarkTheme();
+    return {
+      // Data point colors
+      water: '#3b82f6',      // Blue for water points (same in both themes)
+      land: dark ? '#fff' : '#000',  // Lighter green in dark mode
+      pointOpacity: 0.7,
+      pointRadius: 2.5,
+      
+      // Display options
+      showWaterPoints: false,
+      
+      // UI Controls
+      buttonBg: dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
+      buttonBgHover: dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.1)',
+      buttonBorder: dark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
+      buttonBorderHover: dark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)',
+      buttonText: dark ? '#f3f4f6' : '#333',
+    };
+  };
+
+  // ===== CONFIGURATION =====
+  let CONFIG = getThemeColors();
+  // ========================
+
+  // State
+  let currentProjectionId: string = projections[0].id;
+  let gridData: DataPoint[] = [];
+  let svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
+  let width: number;
+  let height: number;
+  let projection: d3.GeoProjection;
+  let path: d3.GeoPath;
+  let rotation: [number, number, number] = [0, -30, 0]; // Greenwich, tilted up 50° latitude
+
+  // Generate projection buttons organized by category
+  function generateButtons() {
+    const controlsContainer = document.getElementById('projection-controls');
+    if (!controlsContainer) return;
+
+    // Group projections by category
+    const categories = new Map<string, ProjectionConfig[]>();
+    projections.forEach(proj => {
+      if (!categories.has(proj.category)) {
+        categories.set(proj.category, []);
+      }
+      categories.get(proj.category)!.push(proj);
+    });
+
+    let isFirstButton = true;
+
+    // Create category groups
+    categories.forEach((projs, category) => {
+      const categoryGroup = document.createElement('div');
+      categoryGroup.className = 'category-group';
+
+      const categoryLabel = document.createElement('div');
+      categoryLabel.className = 'category-label';
+      categoryLabel.textContent = category;
+      categoryGroup.appendChild(categoryLabel);
+
+      const buttonsContainer = document.createElement('div');
+      buttonsContainer.className = 'category-buttons';
+
+      projs.forEach(proj => {
+        const button = document.createElement('button');
+        button.id = `btn-${proj.id}`;
+        button.className = isFirstButton ? 'btn btn-active' : 'btn';
+        button.textContent = proj.label;
+        button.addEventListener('click', () => switchToProjection(proj.id));
+        buttonsContainer.appendChild(button);
+        isFirstButton = false;
+      });
+
+      categoryGroup.appendChild(buttonsContainer);
+      controlsContainer.appendChild(categoryGroup);
+    });
+  }
+
+  // Initialize
+  async function init() {
+    const container = document.querySelector('.projection-visualizer');
+    if (!container) return;
+
+    const rect = container.getBoundingClientRect();
+    width = rect.width;
+    height = rect.height;
+
+    svg = d3.select('#globe-svg');
+
+    // Generate projection buttons
+    generateButtons();
+
+    // Apply button styles and hover handlers
+    applyButtonStyles();
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => {
+      btn.addEventListener('mouseenter', () => {
+        (btn as HTMLElement).style.background = CONFIG.buttonBgHover;
+        (btn as HTMLElement).style.borderColor = CONFIG.buttonBorderHover;
+      });
+      btn.addEventListener('mouseleave', () => {
+        (btn as HTMLElement).style.background = CONFIG.buttonBg;
+        (btn as HTMLElement).style.borderColor = CONFIG.buttonBorder;
+      });
+    });
+
+    // Load data
+    await loadGridData();
+
+    // Setup initial projection
+    setupProjection(currentProjectionId);
+
+    // Render initial view
+    render();
+
+    // Setup event listeners
+    setupEventListeners();
+  }
+
+  async function loadGridData() {
+    try {
+      const response = await fetch('/data/land_water_uniform_8000samples.json');
+      const data = await response.json();
+
+      gridData = Object.entries(data).map(([key, value]) => {
+        const [lon, lat] = key.split(',').map(Number);
+        return { lon, lat, type: value as number };
+      });
+    } catch (error) {
+      console.error('Failed to load grid data:', error);
+      // Fallback: create sample data
+      gridData = [];
+      for (let lon = -180; lon < 180; lon += 5) {
+        for (let lat = -90; lat < 90; lat += 5) {
+          gridData.push({ lon, lat, type: Math.random() > 0.5 ? 1 : 0 });
+        }
+      }
+    }
+  }
+
+  function setupProjection(projectionId: string) {
+    const projConfig = getProjectionById(projectionId);
+    if (!projConfig) return;
+
+    projection = projConfig.setup(
+      width,
+      height,
+      rotation,
+      gridData,
+      CONFIG.showWaterPoints
+    );
+
+    path = d3.geoPath().projection(projection);
+  }
+
+  function render() {
+    svg.selectAll('*').remove();
+
+    // Only render data points - no meshes or spheres
+    const filteredData = CONFIG.showWaterPoints 
+      ? gridData 
+      : gridData.filter(d => d.type !== 0);
+    
+    const points = svg.selectAll('circle')
+      .data(filteredData)
+      .enter()
+      .append('circle')
+      .attr('class', 'data-point')
+      .attr('r', CONFIG.pointRadius)
+      .attr('fill', d => d.type === 0 ? CONFIG.water : CONFIG.land)
+      .attr('cx', d => {
+        const coords = projection([d.lon, d.lat]);
+        return coords && isFinite(coords[0]) ? coords[0] : -9999;
+      })
+      .attr('cy', d => {
+        const coords = projection([d.lon, d.lat]);
+        return coords && isFinite(coords[1]) ? coords[1] : -9999;
+      })
+      .style('display', d => {
+        const coords = projection([d.lon, d.lat]);
+        return coords && isFinite(coords[0]) && isFinite(coords[1]) ? 'block' : 'none';
+      })
+      .attr('opacity', CONFIG.pointOpacity);
+
+    // Add tooltips
+    points.append('title')
+      .text(d => `Lon: ${d.lon}°, Lat: ${d.lat}°\n${d.type === 0 ? 'Water' : 'Land'}`);
+  }
+
+  function switchToProjection(newProjectionId: string) {
+    if (newProjectionId === currentProjectionId) return;
+    
+    currentProjectionId = newProjectionId;
+    
+    // Update button states
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.classList.remove('btn-active');
+    });
+    document.getElementById(`btn-${newProjectionId}`)?.classList.add('btn-active');
+    
+    const svgEl = document.getElementById('globe-svg');
+    const projConfig = getProjectionById(newProjectionId);
+    if (svgEl && projConfig) {
+      svgEl.classList.toggle('projection-mode', !projConfig.isGlobe);
+    }
+
+    // Animate transition
+    animateTransition();
+  }
+
+  function animateTransition() {
+    const oldProjection = projection;
+
+    setupProjection(currentProjectionId);
+
+    const newProjection = projection;
+
+    // Animate points moving to their projected positions
+    svg.selectAll<SVGCircleElement, DataPoint>('.data-point')
+      .transition()
+      .duration(2000)
+      .ease(d3.easeQuadInOut)
+      .tween('position', function(d) {
+        const node = this;
+        const startCoords = oldProjection([d.lon, d.lat]) || [0, 0];
+        const endCoords = newProjection([d.lon, d.lat]) || [0, 0];
+        
+        return function(t: number) {
+          const x = startCoords[0] + (endCoords[0] - startCoords[0]) * t;
+          const y = startCoords[1] + (endCoords[1] - startCoords[1]) * t;
+          
+          d3.select(node)
+            .attr('cx', isFinite(x) ? x : -9999)
+            .attr('cy', isFinite(y) ? y : -9999)
+            .attr('opacity', CONFIG.pointOpacity)
+            .style('display', isFinite(x) && isFinite(y) ? 'block' : 'none');
+        };
+      });
+  }
+
+
+  function setupEventListeners() {
+
+    // Window resize
+    window.addEventListener('resize', () => {
+      const container = document.querySelector('.projection-visualizer');
+      if (!container) return;
+
+      const rect = container.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+
+      setupProjection(currentProjectionId);
+
+      render();
+    });
+
+    // Theme change observer
+    const observer = new MutationObserver(() => {
+      CONFIG = getThemeColors();
+      applyButtonStyles();
+      render();
+    });
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
+
+  function applyButtonStyles() {
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(btn => {
+      (btn as HTMLElement).style.background = CONFIG.buttonBg;
+      (btn as HTMLElement).style.border = `1px solid ${CONFIG.buttonBorder}`;
+      (btn as HTMLElement).style.color = CONFIG.buttonText;
+    });
+  }
+
+  // Initialize when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
+</script>
