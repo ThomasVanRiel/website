@@ -13,6 +13,7 @@ export interface ProjectionConfig {
   label: string;
   category: string;
   isGlobe: boolean;
+  disable?: boolean;
   setup: (
     width: number,
     height: number,
@@ -76,6 +77,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Gnomonic',
     category: 'Globe',
     isGlobe: true,
+    disable: true,
     setup: (width, height, rotation) => {
       return d3.geoGnomonic()
         .scale(Math.min(width, height) / 3.5)
@@ -153,6 +155,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Equirectangular',
     category: 'Cylindrical',
     isGlobe: false,
+    disable: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 5;
       
@@ -185,6 +188,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Albers',
     category: 'Conic',
     isGlobe: false,
+    disable: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 5;
       
@@ -251,6 +255,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Robinson',
     category: 'Compromise',
     isGlobe: false,
+    disable: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 5;
       
@@ -281,6 +286,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Eckert IV',
     category: 'Compromise',
     isGlobe: false,
+    disable: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 5;
       
@@ -343,6 +349,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Spilhaus',
     category: 'Special',
     isGlobe: false,
+    disable: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 5;
       
@@ -389,6 +396,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Boggs Eumorphic',
     category: 'Special',
     isGlobe: false,
+    disable: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 5;
       
@@ -432,12 +440,12 @@ export const projections: ProjectionConfig[] = [
 ];
 
 export function getCategories(): string[] {
-  const categories = new Set(projections.map(p => p.category));
+  const categories = new Set(projections.filter(p => !p.disable).map(p => p.category));
   return Array.from(categories);
 }
 
 export function getProjectionsByCategory(category: string): ProjectionConfig[] {
-  return projections.filter(p => p.category === category);
+  return projections.filter(p => !p.disable && p.category === category);
 }
 
 export function getProjectionById(id: string): ProjectionConfig | undefined {

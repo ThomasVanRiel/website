@@ -5,9 +5,9 @@
 <div class="projection-visualizer">
   <div class="canvas-container">
     <canvas id="globe-canvas"></canvas>
-  </div>
-  <div class="controls" id="projection-controls">
-    <!-- Buttons generated dynamically by category -->
+    <div class="projection-overlay" id="projection-controls">
+      <!-- Projection list generated dynamically by category -->
+    </div>
   </div>
 </div>
 
@@ -41,48 +41,119 @@
     width: 100%;
     height: 100%;
     display: block;
+    position: relative;
+    z-index: 1;
   }
 
   #globe-canvas.projection-mode {
     cursor: default;
   }
 
-  .controls {
-    margin-top: 20px;
-  }
-
-  .category-group {
-    margin-bottom: 15px;
-  }
-
-  .category-label {
-    font-weight: 600;
-    margin-bottom: 8px;
-    font-size: 14px;
-  }
-
-  .category-buttons {
+  .projection-overlay {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
     display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding: 16px 0px;
+    gap: 1px;
+    z-index: 10;
   }
 
-  .btn {
-    padding: 10px 20px;
-    backdrop-filter: blur(10px);
-    border-radius: 6px;
-    cursor: pointer;
+  /* Dynamically generated elements need global styles in Astro */
+  .projection-overlay :global(.category-group) {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .projection-overlay :global(.category-label) {
+    font-weight: 700;
     font-size: 14px;
-    transition: all 0.3s ease;
+    text-align: right;
+    padding-right: 0;
+    color: var(--tw-prose-body);
+    cursor: pointer;
+    user-select: none;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 6px;
   }
 
-  .btn:active {
-    transform: scale(0.95);
+  .projection-overlay :global(.category-label:hover) {
+    opacity: 0.8;
   }
 
-  .btn-active {
-    background: rgba(0, 0, 0, 0.15) !important;
-    font-weight: 600;
+  .projection-overlay :global(.category-arrow) {
+    font-size: 8px;
+    transition: transform 0.2s ease;
+    display: inline-block;
+    opacity: 0.4;
+    font-weight: 400;
+  }
+
+  .projection-overlay :global(.category-arrow.collapsed) {
+    transform: rotate(-90deg);
+  }
+
+  .projection-overlay :global(.category-items) {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    margin-right: 16px;
+    transition: max-height 0.3s ease, opacity 0.2s ease;
+    max-height: 1000px;
+    opacity: 1;
+    overflow: hidden;
+  }
+
+  .projection-overlay :global(.category-items.collapsed) {
+    max-height: 0;
+    opacity: 0;
+  }
+
+  .projection-overlay :global(.proj-item) {
+    padding: 1px 0;
+    cursor: pointer;
+    font-size: 12px;
+    transition: opacity 0.2s ease;
+    opacity: 0.5;
+    background: none;
+    border: none;
+    text-align: right;
+    white-space: nowrap;
+    font-family: inherit;
+    font-weight: 400;
+    color: var(--tw-prose-body);
+  }
+
+  .projection-overlay :global(.proj-item:hover) {
+    opacity: 1;
+  }
+
+  .projection-overlay :global(.proj-item-active) {
+    opacity: 1;
+  }
+
+  @media (max-width: 640px) {
+    .projection-overlay {
+      padding: 0px 0px;
+      gap: 4px;
+    }
+
+    .projection-overlay :global(.category-label) {
+      font-size: 12px;
+    }
+
+    .projection-overlay :global(.proj-item) {
+      font-size: 10px;
+    }
+
+    .projection-overlay :global(.category-items) {
+      margin-right: 10px;
+    }
   }
 </style>
 
@@ -106,11 +177,7 @@
       showWaterPoints: false,
       
       // UI Controls
-      buttonBg: dark ? 'rgba(255, 255, 255, 0.08)' : 'rgba(0, 0, 0, 0.05)',
-      buttonBgHover: dark ? 'rgba(255, 255, 255, 0.12)' : 'rgba(0, 0, 0, 0.1)',
-      buttonBorder: dark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)',
-      buttonBorderHover: dark ? 'rgba(255, 255, 255, 0.25)' : 'rgba(0, 0, 0, 0.25)',
-      buttonText: dark ? '#f3f4f6' : '#333',
+      itemText: dark ? '#f3f4f6' : '#333',
     };
   };
 
@@ -143,21 +210,21 @@
   }
   let projectedPoints: ProjectedPoint[] = [];
 
-  // Generate projection buttons organized by category
+  // Generate projection list organized by category
   function generateButtons() {
     const controlsContainer = document.getElementById('projection-controls');
     if (!controlsContainer) return;
 
-    // Group projections by category
+    // Group projections by category (excluding disabled ones)
     const categories = new Map<string, ProjectionConfig[]>();
-    projections.forEach(proj => {
+    projections.filter(proj => !proj.disable).forEach(proj => {
       if (!categories.has(proj.category)) {
         categories.set(proj.category, []);
       }
       categories.get(proj.category)!.push(proj);
     });
 
-    let isFirstButton = true;
+    let isFirst = true;
 
     // Create category groups
     categories.forEach((projs, category) => {
@@ -166,23 +233,38 @@
 
       const categoryLabel = document.createElement('div');
       categoryLabel.className = 'category-label';
-      categoryLabel.textContent = category;
+      
+      const arrow = document.createElement('span');
+      arrow.className = 'category-arrow';
+      arrow.textContent = '▼';
+      
+      const labelText = document.createElement('span');
+      labelText.textContent = category;
+      
+      categoryLabel.appendChild(labelText);
+      categoryLabel.appendChild(arrow);
       categoryGroup.appendChild(categoryLabel);
 
-      const buttonsContainer = document.createElement('div');
-      buttonsContainer.className = 'category-buttons';
-
-      projs.forEach(proj => {
-        const button = document.createElement('button');
-        button.id = `btn-${proj.id}`;
-        button.className = isFirstButton ? 'btn btn-active' : 'btn';
-        button.textContent = proj.label;
-        button.addEventListener('click', () => switchToProjection(proj.id));
-        buttonsContainer.appendChild(button);
-        isFirstButton = false;
+      const itemsContainer = document.createElement('div');
+      itemsContainer.className = 'category-items';
+      
+      // Toggle category visibility on label click
+      categoryLabel.addEventListener('click', () => {
+        const isCollapsed = itemsContainer.classList.toggle('collapsed');
+        arrow.classList.toggle('collapsed', isCollapsed);
       });
 
-      categoryGroup.appendChild(buttonsContainer);
+      projs.forEach(proj => {
+        const item = document.createElement('button');
+        item.id = `btn-${proj.id}`;
+        item.className = isFirst ? 'proj-item proj-item-active' : 'proj-item';
+        item.textContent = proj.label;
+        item.addEventListener('click', () => switchToProjection(proj.id));
+        itemsContainer.appendChild(item);
+        isFirst = false;
+      });
+
+      categoryGroup.appendChild(itemsContainer);
       controlsContainer.appendChild(categoryGroup);
     });
   }
@@ -209,22 +291,11 @@
     canvas.style.height = `${height}px`;
     ctx.scale(dpr, dpr);
 
-    // Generate projection buttons
+    // Generate projection list
     generateButtons();
 
-    // Apply button styles and hover handlers
-    applyButtonStyles();
-    const buttons = document.querySelectorAll('.btn');
-    buttons.forEach(btn => {
-      btn.addEventListener('mouseenter', () => {
-        (btn as HTMLElement).style.background = CONFIG.buttonBgHover;
-        (btn as HTMLElement).style.borderColor = CONFIG.buttonBorderHover;
-      });
-      btn.addEventListener('mouseleave', () => {
-        (btn as HTMLElement).style.background = CONFIG.buttonBg;
-        (btn as HTMLElement).style.borderColor = CONFIG.buttonBorder;
-      });
-    });
+    // Apply text colors
+    applyItemStyles();
 
     // Load data
     await loadGridData();
@@ -377,11 +448,11 @@
     
     currentProjectionId = newProjectionId;
     
-    // Update button states
-    document.querySelectorAll('.btn').forEach(btn => {
-      btn.classList.remove('btn-active');
+    // Update active states
+    document.querySelectorAll('.proj-item').forEach(item => {
+      item.classList.remove('proj-item-active');
     });
-    document.getElementById(`btn-${newProjectionId}`)?.classList.add('btn-active');
+    document.getElementById(`btn-${newProjectionId}`)?.classList.add('proj-item-active');
     
     const canvasEl = document.getElementById('globe-canvas');
     const projConfig = getProjectionById(newProjectionId);
@@ -556,7 +627,7 @@
     // Theme change observer
     const observer = new MutationObserver(() => {
       CONFIG = getThemeColors();
-      applyButtonStyles();
+      applyItemStyles();
       render();
     });
     observer.observe(document.documentElement, {
@@ -565,12 +636,14 @@
     });
   }
 
-  function applyButtonStyles() {
-    const buttons = document.querySelectorAll('.btn');
-    buttons.forEach(btn => {
-      (btn as HTMLElement).style.background = CONFIG.buttonBg;
-      (btn as HTMLElement).style.border = `1px solid ${CONFIG.buttonBorder}`;
-      (btn as HTMLElement).style.color = CONFIG.buttonText;
+  function applyItemStyles() {
+    const items = document.querySelectorAll('.proj-item');
+    items.forEach(item => {
+      (item as HTMLElement).style.color = CONFIG.itemText;
+    });
+    const labels = document.querySelectorAll('.category-label');
+    labels.forEach(label => {
+      (label as HTMLElement).style.color = CONFIG.itemText;
     });
   }
 
