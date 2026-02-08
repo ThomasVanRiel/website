@@ -4,7 +4,7 @@
 
 <div class="projection-visualizer">
   <div class="canvas-container">
-    <svg id="globe-svg"></svg>
+    <canvas id="globe-canvas"></canvas>
   </div>
   <div class="controls" id="projection-controls">
     <!-- Buttons generated dynamically by category -->
@@ -19,17 +19,31 @@
   .canvas-container {
     width: 100%;
     height: 600px;
+    max-height: 80vh;
     position: relative;
     border-radius: 8px;
     overflow: hidden;
   }
 
-  #globe-svg {
-    width: 100%;
-    height: 100%;
+  @media (max-width: 768px) {
+    .canvas-container {
+      height: 400px;
+    }
   }
 
-  #globe-svg.projection-mode {
+  @media (max-width: 480px) {
+    .canvas-container {
+      height: 300px;
+    }
+  }
+
+  #globe-canvas {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+
+  #globe-canvas.projection-mode {
     cursor: default;
   }
 
@@ -70,14 +84,6 @@
     background: rgba(0, 0, 0, 0.15) !important;
     font-weight: 600;
   }
-
-  .data-point {
-    transition: r 0.3s ease;
-  }
-
-  .data-point:hover {
-    r: 4;
-  }
 </style>
 
 <script>
@@ -115,12 +121,29 @@
   // State
   let currentProjectionId: string = projections[0].id;
   let gridData: DataPoint[] = [];
-  let svg: d3.Selection<SVGSVGElement, unknown, HTMLElement, any>;
+  let canvas: HTMLCanvasElement;
+  let ctx: CanvasRenderingContext2D;
   let width: number;
   let height: number;
   let projection: d3.GeoProjection;
   let path: d3.GeoPath;
   let rotation: [number, number, number] = [0, -30, 0]; // Greenwich, tilted up 50° latitude
+  let animationFrameId: number | null = null;
+  let graticuleOpacity: number = 0;
+  let graticule: d3.GeoGeometryObjects;
+  let oldGraticule: d3.GeoGeometryObjects | null = null;
+  let oldPath: d3.GeoPath | null = null;
+  let oldGraticuleOpacity: number = 0;
+  
+  // Cache projected coordinates for performance
+  interface ProjectedPoint {
+    x: number;
+    y: number;
+    visible: boolean;
+    type: number;
+    color?: string;
+  }
+  let projectedPoints: ProjectedPoint[] = [];
 
   // Generate projection buttons organized by category
   function generateButtons() {
@@ -168,14 +191,25 @@
 
   // Initialize
   async function init() {
-    const container = document.querySelector('.projection-visualizer');
+    const container = document.querySelector('.canvas-container');
     if (!container) return;
+
+    canvas = document.getElementById('globe-canvas') as HTMLCanvasElement;
+    if (!canvas) return;
+    
+    ctx = canvas.getContext('2d', { alpha: true })!;
 
     const rect = container.getBoundingClientRect();
     width = rect.width;
     height = rect.height;
-
-    svg = d3.select('#globe-svg');
+    
+    // Set canvas size with device pixel ratio for sharp rendering
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.scale(dpr, dpr);
 
     // Generate projection buttons
     generateButtons();
@@ -201,6 +235,7 @@
     setupProjection(currentProjectionId);
 
     // Render initial view
+    graticuleOpacity = 1;
     render();
 
     // Setup event listeners
@@ -209,12 +244,17 @@
 
   async function loadGridData() {
     try {
-      const response = await fetch('/data/land_water_uniform_8000samples.json');
+      const response = await fetch('/data/land_water_uniform_16000samples_ne1_color_land_only.json');
       const data = await response.json();
 
-      gridData = Object.entries(data).map(([key, value]) => {
+      gridData = Object.entries(data).map(([key, value]: [string, any]) => {
         const [lon, lat] = key.split(',').map(Number);
-        return { lon, lat, type: value as number };
+        return { 
+          lon, 
+          lat, 
+          type: value.type as number,
+          color: value.color as [number, number, number] | undefined
+        };
       });
     } catch (error) {
       console.error('Failed to load grid data:', error);
@@ -241,40 +281,96 @@
     );
 
     path = d3.geoPath().projection(projection);
+    graticule = d3.geoGraticule()();
+    projectPoints();
+  }
+
+  function projectPoints() {
+    projectedPoints = gridData.map(d => {
+      const coords = projection([d.lon, d.lat]);
+      const color = d.color 
+        ? `rgb(${Math.round(d.color[0] * 255)}, ${Math.round(d.color[1] * 255)}, ${Math.round(d.color[2] * 255)})`
+        : undefined;
+      return {
+        x: coords?.[0] ?? -9999,
+        y: coords?.[1] ?? -9999,
+        visible: coords ? isFinite(coords[0]) && isFinite(coords[1]) : false,
+        type: d.type,
+        color
+      };
+    });
   }
 
   function render() {
-    svg.selectAll('*').remove();
-
-    // Only render data points - no meshes or spheres
-    const filteredData = CONFIG.showWaterPoints 
-      ? gridData 
-      : gridData.filter(d => d.type !== 0);
+    if (!ctx) return;
     
-    const points = svg.selectAll('circle')
-      .data(filteredData)
-      .enter()
-      .append('circle')
-      .attr('class', 'data-point')
-      .attr('r', CONFIG.pointRadius)
-      .attr('fill', d => d.type === 0 ? CONFIG.water : CONFIG.land)
-      .attr('cx', d => {
-        const coords = projection([d.lon, d.lat]);
-        return coords && isFinite(coords[0]) ? coords[0] : -9999;
-      })
-      .attr('cy', d => {
-        const coords = projection([d.lon, d.lat]);
-        return coords && isFinite(coords[1]) ? coords[1] : -9999;
-      })
-      .style('display', d => {
-        const coords = projection([d.lon, d.lat]);
-        return coords && isFinite(coords[0]) && isFinite(coords[1]) ? 'block' : 'none';
-      })
-      .attr('opacity', CONFIG.pointOpacity);
-
-    // Add tooltips
-    points.append('title')
-      .text(d => `Lon: ${d.lon}°, Lat: ${d.lat}°\n${d.type === 0 ? 'Water' : 'Land'}`);
+    // Clear canvas (transparent)
+    ctx.clearRect(0, 0, width, height);
+    
+    const projConfig = getProjectionById(currentProjectionId);
+    
+    // Draw old graticule/background (fading out)
+    if (oldGraticuleOpacity > 0 && oldPath && oldGraticule) {
+      if (projConfig && !projConfig.isGlobe) {
+        ctx.save();
+        ctx.globalAlpha = oldGraticuleOpacity;
+        ctx.beginPath();
+        oldPath.context(ctx)({type: 'Sphere'});
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+        ctx.fill();
+        ctx.restore();
+      }
+      
+      ctx.save();
+      ctx.globalAlpha = oldGraticuleOpacity;
+      ctx.beginPath();
+      oldPath.context(ctx)(oldGraticule);
+      ctx.strokeStyle = isDarkTheme() ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      ctx.restore();
+    }
+    
+    // Draw new graticule/background (fading in)
+    if (graticuleOpacity > 0) {
+      if (projConfig && !projConfig.isGlobe) {
+        ctx.save();
+        ctx.globalAlpha = graticuleOpacity;
+        ctx.beginPath();
+        path.context(ctx)({type: 'Sphere'});
+        ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+        ctx.fill();
+        ctx.restore();
+      }
+      
+      ctx.save();
+      ctx.globalAlpha = graticuleOpacity;
+      ctx.beginPath();
+      path.context(ctx)(graticule);
+      ctx.strokeStyle = isDarkTheme() ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
+      ctx.lineWidth = 0.5;
+      ctx.stroke();
+      ctx.restore();
+    }
+    
+    // Draw points
+    const filteredIndices = CONFIG.showWaterPoints 
+      ? projectedPoints.map((_, i) => i)
+      : projectedPoints.map((p, i) => p.type !== 0 ? i : -1).filter(i => i >= 0);
+    
+    filteredIndices.forEach(i => {
+      const p = projectedPoints[i];
+      if (!p.visible) return;
+      
+      // Use color if available, otherwise fall back to default colors
+      ctx.fillStyle = p.color || (p.type === 0 ? CONFIG.water : CONFIG.land);
+      ctx.globalAlpha = CONFIG.pointOpacity;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, CONFIG.pointRadius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    
+    ctx.globalAlpha = 1;
   }
 
   function switchToProjection(newProjectionId: string) {
@@ -288,10 +384,10 @@
     });
     document.getElementById(`btn-${newProjectionId}`)?.classList.add('btn-active');
     
-    const svgEl = document.getElementById('globe-svg');
+    const canvasEl = document.getElementById('globe-canvas');
     const projConfig = getProjectionById(newProjectionId);
-    if (svgEl && projConfig) {
-      svgEl.classList.toggle('projection-mode', !projConfig.isGlobe);
+    if (canvasEl && projConfig) {
+      canvasEl.classList.toggle('projection-mode', !projConfig.isGlobe);
     }
 
     // Animate transition
@@ -299,50 +395,116 @@
   }
 
   function animateTransition() {
+    if (animationFrameId) {
+      cancelAnimationFrame(animationFrameId);
+    }
+    
+    // Save old graticule and path for crossfade
+    oldGraticule = graticule;
+    oldPath = path;
+    oldGraticuleOpacity = graticuleOpacity;
+    
+    const oldPoints = [...projectedPoints];
     const oldProjection = projection;
 
     setupProjection(currentProjectionId);
-
     const newProjection = projection;
+    
+    // Calculate new projected points
+    const newPoints = gridData.map(d => {
+      const coords = newProjection([d.lon, d.lat]);
+      const color = d.color 
+        ? `rgb(${Math.round(d.color[0] * 255)}, ${Math.round(d.color[1] * 255)}, ${Math.round(d.color[2] * 255)})`
+        : undefined;
+      return {
+        x: coords?.[0] ?? -9999,
+        y: coords?.[1] ?? -9999,
+        visible: coords ? isFinite(coords[0]) && isFinite(coords[1]) : false,
+        type: d.type,
+        color
+      };
+    });
 
-    // Animate points moving to their projected positions
-    svg.selectAll<SVGCircleElement, DataPoint>('.data-point')
-      .transition()
-      .duration(2000)
-      .ease(d3.easeQuadInOut)
-      .tween('position', function(d) {
-        const node = this;
-        const startCoords = oldProjection([d.lon, d.lat]) || [0, 0];
-        const endCoords = newProjection([d.lon, d.lat]) || [0, 0];
-        
-        return function(t: number) {
-          const x = startCoords[0] + (endCoords[0] - startCoords[0]) * t;
-          const y = startCoords[1] + (endCoords[1] - startCoords[1]) * t;
-          
-          d3.select(node)
-            .attr('cx', isFinite(x) ? x : -9999)
-            .attr('cy', isFinite(y) ? y : -9999)
-            .attr('opacity', CONFIG.pointOpacity)
-            .style('display', isFinite(x) && isFinite(y) ? 'block' : 'none');
+    const duration = 1000;
+    const startTime = performance.now();
+    const fadeInStart = 0.6; // Start fading in at 60% of animation
+    const fadeOutEnd = 0.4; // Complete fade out by 40% of animation
+    
+    function animate() {
+      const elapsed = performance.now() - startTime;
+      const t = Math.min(elapsed / duration, 1);
+      const eased = d3.easeQuadInOut(t);
+      
+      // Fade out old graticule (first 40%)
+      if (t <= fadeOutEnd) {
+        oldGraticuleOpacity = oldGraticuleOpacity * (1 - t / fadeOutEnd);
+      } else {
+        oldGraticuleOpacity = 0;
+      }
+      
+      // Fade in new graticule (last 40%)
+      if (t >= fadeInStart) {
+        graticuleOpacity = (t - fadeInStart) / (1 - fadeInStart);
+      } else {
+        graticuleOpacity = 0;
+      }
+      
+      // Interpolate positions
+      projectedPoints = oldPoints.map((old, i) => {
+        const target = newPoints[i];
+        return {
+          x: old.x + (target.x - old.x) * eased,
+          y: old.y + (target.y - old.y) * eased,
+          visible: old.visible || target.visible,
+          type: target.type,
+          color: target.color
         };
       });
+      
+      render();
+      
+      if (t < 1) {
+        animationFrameId = requestAnimationFrame(animate);
+      } else {
+        projectedPoints = newPoints;
+        animationFrameId = null;
+        graticuleOpacity = 1;
+        oldGraticuleOpacity = 0;
+        oldGraticule = null;
+        oldPath = null;
+        render(); // Final render
+      }
+    }
+    
+    animate();
   }
 
 
   function setupEventListeners() {
 
     // Window resize
+    let resizeTimer: number;
     window.addEventListener('resize', () => {
-      const container = document.querySelector('.projection-visualizer');
-      if (!container) return;
+      clearTimeout(resizeTimer);
+      resizeTimer = window.setTimeout(() => {
+        const container = document.querySelector('.canvas-container');
+        if (!container) return;
 
-      const rect = container.getBoundingClientRect();
-      width = rect.width;
-      height = rect.height;
+        const rect = container.getBoundingClientRect();
+        width = rect.width;
+        height = rect.height;
+        
+        // Update canvas size with device pixel ratio
+        const dpr = window.devicePixelRatio || 1;
+        canvas.width = width * dpr;
+        canvas.height = height * dpr;
+        canvas.style.width = `${width}px`;
+        canvas.style.height = `${height}px`;
+        ctx.scale(dpr, dpr);
 
-      setupProjection(currentProjectionId);
-
-      render();
+        setupProjection(currentProjectionId);
+        render();
+      }, 150);
     });
 
     // Theme change observer

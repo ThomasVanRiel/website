@@ -5,6 +5,7 @@ export interface DataPoint {
   lon: number;
   lat: number;
   type: number;
+  color?: [number, number, number];
 }
 
 export interface ProjectionConfig {
@@ -36,6 +37,11 @@ function createFeatureCollection(data: DataPoint[]) {
       }
     ]
   };
+}
+
+// Helper to create sphere feature for centering projections
+function createSphere() {
+  return {type: 'Sphere'} as const;
 }
 
 export const projections: ProjectionConfig[] = [
@@ -87,13 +93,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3.geoAzimuthalEqualArea()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -104,13 +108,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3.geoAzimuthalEquidistant()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -123,14 +125,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3.geoMercator()
-        .center([0, 0])
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -141,13 +140,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3.geoTransverseMercator()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -158,13 +155,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3.geoEquirectangular()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -174,14 +169,12 @@ export const projections: ProjectionConfig[] = [
     category: 'Cylindrical',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
+      const padding = 60;
       
       return d3.geoNaturalEarth1()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -194,16 +187,12 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3.geoAlbers()
-        .center([0, 0])
-        .rotate([0, 0])
         .parallels([20, 50])
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -214,15 +203,12 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3.geoConicConformal()
         .parallels([20, 50])
-        .rotate([0, 0])
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -233,15 +219,12 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3.geoConicEqualArea()
         .parallels([20, 50])
-        .rotate([0, 0])
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -252,15 +235,12 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3.geoConicEquidistant()
         .parallels([20, 50])
-        .rotate([0, 0])
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -273,13 +253,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3.geoEqualEarth()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -290,13 +268,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3GeoProjection.geoRobinson()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -307,13 +283,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3GeoProjection.geoWinkel3()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -324,13 +298,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3GeoProjection.geoEckert4()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -341,13 +313,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3GeoProjection.geoMollweide()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -358,13 +328,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3GeoProjection.geoHammer()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -375,13 +343,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3GeoProjection.geoWagner6()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -394,14 +360,12 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3.geoAzimuthalEquidistant()
         .rotate([66, 90])
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -412,13 +376,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3GeoProjection.geoPolyhedralWaterman()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   },
@@ -429,13 +391,11 @@ export const projections: ProjectionConfig[] = [
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 40;
-      const filteredData = showWaterPoints ? gridData : gridData.filter(d => d.type !== 0);
       
       return d3GeoProjection.geoInterruptedMollweideHemispheres()
-        .translate([width / 2, height / 2])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
-          createFeatureCollection(filteredData)
+          createSphere()
         );
     }
   }
