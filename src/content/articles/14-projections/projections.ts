@@ -92,7 +92,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Azimuthal',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3.geoAzimuthalEqualArea()
         .fitExtent(
@@ -107,7 +107,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Azimuthal',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3.geoAzimuthalEquidistant()
         .fitExtent(
@@ -124,7 +124,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Cylindrical',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3.geoMercator()
         .fitExtent(
@@ -139,7 +139,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Cylindrical',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3.geoTransverseMercator()
         .fitExtent(
@@ -154,7 +154,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Cylindrical',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3.geoEquirectangular()
         .fitExtent(
@@ -169,7 +169,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Cylindrical',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 60;
+      const padding = 30;
       
       return d3.geoNaturalEarth1()
         .fitExtent(
@@ -186,7 +186,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Conic',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3.geoAlbers()
         .parallels([20, 50])
@@ -196,29 +196,14 @@ export const projections: ProjectionConfig[] = [
         );
     }
   },
-  {
-    id: 'conicConformal',
-    label: 'Conformal',
-    category: 'Conic',
-    isGlobe: false,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
-      
-      return d3.geoConicConformal()
-        .parallels([20, 50])
-        .fitExtent(
-          [[padding, padding], [width - padding, height - padding]],
-          createSphere()
-        );
-    }
-  },
+
   {
     id: 'conicEqualArea',
     label: 'Equal Area',
     category: 'Conic',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3.geoConicEqualArea()
         .parallels([20, 50])
@@ -234,7 +219,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Conic',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3.geoConicEquidistant()
         .parallels([20, 50])
@@ -252,7 +237,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Compromise',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3.geoEqualEarth()
         .fitExtent(
@@ -267,7 +252,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Compromise',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3GeoProjection.geoRobinson()
         .fitExtent(
@@ -282,7 +267,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Compromise',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3GeoProjection.geoWinkel3()
         .fitExtent(
@@ -297,7 +282,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Compromise',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3GeoProjection.geoEckert4()
         .fitExtent(
@@ -312,7 +297,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Compromise',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3GeoProjection.geoMollweide()
         .fitExtent(
@@ -327,7 +312,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Compromise',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3GeoProjection.geoHammer()
         .fitExtent(
@@ -342,7 +327,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Compromise',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3GeoProjection.geoWagner6()
         .fitExtent(
@@ -359,10 +344,10 @@ export const projections: ProjectionConfig[] = [
     category: 'Special',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3.geoAzimuthalEquidistant()
-        .rotate([66, 90])
+        .rotate([95, 45, 0])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
           createSphere()
@@ -375,7 +360,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Special',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3GeoProjection.geoPolyhedralWaterman()
         .fitExtent(
@@ -390,9 +375,54 @@ export const projections: ProjectionConfig[] = [
     category: 'Special',
     isGlobe: false,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
-      const padding = 40;
+      const padding = 5;
       
       return d3GeoProjection.geoInterruptedMollweideHemispheres()
+        .fitExtent(
+          [[padding, padding], [width - padding, height - padding]],
+          createSphere()
+        );
+    }
+  },
+  {
+    id: 'boggs',
+    label: 'Boggs Eumorphic',
+    category: 'Special',
+    isGlobe: false,
+    setup: (width, height, rotation, gridData, showWaterPoints) => {
+      const padding = 5;
+      
+      return d3GeoProjection.geoInterruptedBoggs()
+        .fitExtent(
+          [[padding, padding], [width - padding, height - padding]],
+          createSphere()
+        );
+    }
+  },
+  {
+    id: 'interruptedMollweide',
+    label: 'Interrupted Mollweide',
+    category: 'Special',
+    isGlobe: false,
+    setup: (width, height, rotation, gridData, showWaterPoints) => {
+      const padding = 5;
+      
+      return d3GeoProjection.geoInterruptedMollweide()
+        .fitExtent(
+          [[padding, padding], [width - padding, height - padding]],
+          createSphere()
+        );
+    }
+  },
+  {
+    id: 'interruptedHomolosine',
+    label: 'Interrupted Homolosine',
+    category: 'Special',
+    isGlobe: false,
+    setup: (width, height, rotation, gridData, showWaterPoints) => {
+      const padding = 5;
+      
+      return d3GeoProjection.geoInterruptedHomolosine()
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
           createSphere()

@@ -41,6 +41,9 @@ declare module 'd3-geo-projection' {
   export function geoHomolosine(): GeoProjection;
   export function geoHufnagel(): GeoProjection;
   export function geoHyperelliptical(): GeoProjection;
+  export function geoInterruptedBoggs(): GeoProjection;
+  export function geoInterruptedHomolosine(): GeoProjection;
+  export function geoInterruptedMollweide(): GeoProjection;
   export function geoInterruptedMollweideHemispheres(): GeoProjection;
   export function geoKavrayskiy7(): GeoProjection;
   export function geoLagrange(): GeoProjection;

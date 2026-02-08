@@ -131,15 +131,13 @@
   let animationFrameId: number | null = null;
   let graticuleOpacity: number = 0;
   let graticule: d3.GeoGeometryObjects;
-  let oldGraticule: d3.GeoGeometryObjects | null = null;
-  let oldPath: d3.GeoPath | null = null;
-  let oldGraticuleOpacity: number = 0;
   
   // Cache projected coordinates for performance
   interface ProjectedPoint {
     x: number;
     y: number;
     visible: boolean;
+    alpha: number;
     type: number;
     color?: string;
   }
@@ -244,7 +242,7 @@
 
   async function loadGridData() {
     try {
-      const response = await fetch('/data/land_water_uniform_16000samples_ne1_color_land_only.json');
+      const response = await fetch('/data/land_water_uniform_24000samples_ne1_color_land_only.json');
       const data = await response.json();
 
       gridData = Object.entries(data).map(([key, value]: [string, any]) => {
@@ -285,16 +283,39 @@
     projectPoints();
   }
 
+  // Returns 0–1 alpha based on angular distance from clip edge (for globe projections)
+  function getClipAlpha(lon: number, lat: number, proj: d3.GeoProjection): number {
+    const clipAngle = (proj as any).clipAngle?.();
+    if (clipAngle == null) return 1;
+
+    const rot = proj.rotate();
+    const cLon = -rot[0];
+    const cLat = -rot[1];
+    const toRad = Math.PI / 180;
+    const cosD =
+      Math.sin(cLat * toRad) * Math.sin(lat * toRad) +
+      Math.cos(cLat * toRad) * Math.cos(lat * toRad) * Math.cos((lon - cLon) * toRad);
+    const distance = Math.acos(Math.min(1, Math.max(-1, cosD))) / toRad;
+
+    const fadeMargin = 10;
+    if (distance <= clipAngle - fadeMargin) return 1;
+    if (distance >= clipAngle) return 0;
+    return (clipAngle - distance) / fadeMargin;
+  }
+
   function projectPoints() {
+    const isGlobe = getProjectionById(currentProjectionId)?.isGlobe ?? false;
     projectedPoints = gridData.map(d => {
       const coords = projection([d.lon, d.lat]);
-      const color = d.color 
+      const alpha = isGlobe ? getClipAlpha(d.lon, d.lat, projection) : 1;
+      const color = d.color
         ? `rgb(${Math.round(d.color[0] * 255)}, ${Math.round(d.color[1] * 255)}, ${Math.round(d.color[2] * 255)})`
         : undefined;
       return {
         x: coords?.[0] ?? -9999,
         y: coords?.[1] ?? -9999,
-        visible: coords ? isFinite(coords[0]) && isFinite(coords[1]) : false,
+        visible: alpha > 0 && coords != null && isFinite(coords[0]) && isFinite(coords[1]),
+        alpha,
         type: d.type,
         color
       };
@@ -308,30 +329,8 @@
     ctx.clearRect(0, 0, width, height);
     
     const projConfig = getProjectionById(currentProjectionId);
-    
-    // Draw old graticule/background (fading out)
-    if (oldGraticuleOpacity > 0 && oldPath && oldGraticule) {
-      if (projConfig && !projConfig.isGlobe) {
-        ctx.save();
-        ctx.globalAlpha = oldGraticuleOpacity;
-        ctx.beginPath();
-        oldPath.context(ctx)({type: 'Sphere'});
-        ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
-        ctx.fill();
-        ctx.restore();
-      }
-      
-      ctx.save();
-      ctx.globalAlpha = oldGraticuleOpacity;
-      ctx.beginPath();
-      oldPath.context(ctx)(oldGraticule);
-      ctx.strokeStyle = isDarkTheme() ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
-      ctx.lineWidth = 0.5;
-      ctx.stroke();
-      ctx.restore();
-    }
-    
-    // Draw new graticule/background (fading in)
+
+    // Draw graticule/background
     if (graticuleOpacity > 0) {
       if (projConfig && !projConfig.isGlobe) {
         ctx.save();
@@ -364,12 +363,12 @@
       
       // Use color if available, otherwise fall back to default colors
       ctx.fillStyle = p.color || (p.type === 0 ? CONFIG.water : CONFIG.land);
-      ctx.globalAlpha = CONFIG.pointOpacity;
+      ctx.globalAlpha = CONFIG.pointOpacity * p.alpha;
       ctx.beginPath();
       ctx.arc(p.x, p.y, CONFIG.pointRadius, 0, Math.PI * 2);
       ctx.fill();
     });
-    
+
     ctx.globalAlpha = 1;
   }
 
@@ -398,28 +397,30 @@
     if (animationFrameId) {
       cancelAnimationFrame(animationFrameId);
     }
-    
-    // Save old graticule and path for crossfade
-    oldGraticule = graticule;
-    oldPath = path;
-    oldGraticuleOpacity = graticuleOpacity;
-    
-    const oldPoints = [...projectedPoints];
-    const oldProjection = projection;
 
+    // Save old state
+    const oldPath = path;
+    const oldPoints = [...projectedPoints];
+
+    // Setup new projection
     setupProjection(currentProjectionId);
     const newProjection = projection;
-    
+    const newPath = path;
+    const projConfig = getProjectionById(currentProjectionId);
+
     // Calculate new projected points
+    const isGlobe = projConfig?.isGlobe ?? false;
     const newPoints = gridData.map(d => {
       const coords = newProjection([d.lon, d.lat]);
-      const color = d.color 
+      const alpha = isGlobe ? getClipAlpha(d.lon, d.lat, newProjection) : 1;
+      const color = d.color
         ? `rgb(${Math.round(d.color[0] * 255)}, ${Math.round(d.color[1] * 255)}, ${Math.round(d.color[2] * 255)})`
         : undefined;
       return {
         x: coords?.[0] ?? -9999,
         y: coords?.[1] ?? -9999,
-        visible: coords ? isFinite(coords[0]) && isFinite(coords[1]) : false,
+        visible: alpha > 0 && coords != null && isFinite(coords[0]) && isFinite(coords[1]),
+        alpha,
         type: d.type,
         color
       };
@@ -427,55 +428,100 @@
 
     const duration = 1000;
     const startTime = performance.now();
-    const fadeInStart = 0.6; // Start fading in at 60% of animation
-    const fadeOutEnd = 0.4; // Complete fade out by 40% of animation
-    
+
     function animate() {
       const elapsed = performance.now() - startTime;
       const t = Math.min(elapsed / duration, 1);
       const eased = d3.easeQuadInOut(t);
-      
-      // Fade out old graticule (first 40%)
-      if (t <= fadeOutEnd) {
-        oldGraticuleOpacity = oldGraticuleOpacity * (1 - t / fadeOutEnd);
-      } else {
-        oldGraticuleOpacity = 0;
+
+      ctx.clearRect(0, 0, width, height);
+
+      // Sphere fill: crossfade between old and new outlines
+      if (projConfig && !projConfig.isGlobe) {
+        if (eased < 1) {
+          ctx.save();
+          ctx.globalAlpha = 1 - eased;
+          ctx.beginPath();
+          oldPath.context(ctx)({type: 'Sphere'});
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+          ctx.fill();
+          ctx.restore();
+        }
+        if (eased > 0) {
+          ctx.save();
+          ctx.globalAlpha = eased;
+          ctx.beginPath();
+          newPath.context(ctx)({type: 'Sphere'});
+          ctx.fillStyle = 'rgba(59, 130, 246, 0.1)';
+          ctx.fill();
+          ctx.restore();
+        }
       }
-      
-      // Fade in new graticule (last 40%)
-      if (t >= fadeInStart) {
-        graticuleOpacity = (t - fadeInStart) / (1 - fadeInStart);
-      } else {
-        graticuleOpacity = 0;
+
+      // Graticule: crossfade
+      const gratStroke = isDarkTheme() ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
+      if (eased < 1) {
+        ctx.save();
+        ctx.globalAlpha = 1 - eased;
+        ctx.beginPath();
+        oldPath.context(ctx)(graticule);
+        ctx.strokeStyle = gratStroke;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        ctx.restore();
       }
-      
-      // Interpolate positions
+      if (eased > 0) {
+        ctx.save();
+        ctx.globalAlpha = eased;
+        ctx.beginPath();
+        newPath.context(ctx)(graticule);
+        ctx.strokeStyle = gratStroke;
+        ctx.lineWidth = 0.5;
+        ctx.stroke();
+        ctx.restore();
+      }
+
+      // Points: interpolate positions and alpha
       projectedPoints = oldPoints.map((old, i) => {
         const target = newPoints[i];
+        const alpha = old.alpha + (target.alpha - old.alpha) * eased;
         return {
           x: old.x + (target.x - old.x) * eased,
           y: old.y + (target.y - old.y) * eased,
-          visible: old.visible || target.visible,
+          visible: alpha > 0 && (old.visible || target.visible),
+          alpha,
           type: target.type,
           color: target.color
         };
       });
-      
-      render();
-      
+
+      // Draw points
+      const filteredIndices = CONFIG.showWaterPoints
+        ? projectedPoints.map((_: any, i: number) => i)
+        : projectedPoints.map((p: any, i: number) => p.type !== 0 ? i : -1).filter((i: number) => i >= 0);
+
+      filteredIndices.forEach((i: number) => {
+        const p = projectedPoints[i];
+        if (!p.visible) return;
+        ctx.fillStyle = p.color || (p.type === 0 ? CONFIG.water : CONFIG.land);
+        ctx.globalAlpha = CONFIG.pointOpacity * p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, CONFIG.pointRadius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+
+      ctx.globalAlpha = 1;
+
       if (t < 1) {
         animationFrameId = requestAnimationFrame(animate);
       } else {
         projectedPoints = newPoints;
-        animationFrameId = null;
         graticuleOpacity = 1;
-        oldGraticuleOpacity = 0;
-        oldGraticule = null;
-        oldPath = null;
-        render(); // Final render
+        animationFrameId = null;
+        render(); // Final clean render
       }
     }
-    
+
     animate();
   }
 
