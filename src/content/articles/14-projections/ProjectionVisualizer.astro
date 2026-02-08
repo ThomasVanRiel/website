@@ -332,7 +332,7 @@
 
     // Draw graticule/background
     if (graticuleOpacity > 0) {
-      if (projConfig && !projConfig.isGlobe) {
+      if (projConfig) {
         ctx.save();
         ctx.globalAlpha = graticuleOpacity;
         ctx.beginPath();
@@ -437,7 +437,7 @@
       ctx.clearRect(0, 0, width, height);
 
       // Sphere fill: crossfade between old and new outlines
-      if (projConfig && !projConfig.isGlobe) {
+      if (projConfig) {
         if (eased < 1) {
           ctx.save();
           ctx.globalAlpha = 1 - eased;
