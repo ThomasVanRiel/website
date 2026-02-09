@@ -12,12 +12,20 @@ tags:
 import ProjectionVisualizer from './ProjectionVisualizer.astro';
 import Breakout from '@components/Breakout.astro';
 
+## Rationale
+
+There are a lot of lists with nice figures showing the difference between cartographical projections. What's still lacking is a tool to intuitively compare the projections to see the differences in reproduction of the world. Some projections maintain distances between points while others favour an intuitive view of the world as we know it.
+
+## The tool
+Select a projection on the right of the globe and observe the change in projection. Some projections can be reoriented to change the viewing angle.
+
+
 <Breakout size="xl">
   <ProjectionVisualizer />
 </Breakout>
 
 
-# references
+## references
 https://en.wikipedia.org/wiki/List_of_map_projections
 https://docs1.w3cub.com/d3~4/d3-geo-projection/#geoSinuMollweide
 https://blog.map-projections.net/spilhaus-projections-a-quintet-of-world-ocean-maps

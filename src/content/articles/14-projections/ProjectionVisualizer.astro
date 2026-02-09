@@ -5,6 +5,25 @@
 <div class="projection-visualizer">
   <div class="canvas-container">
     <canvas id="globe-canvas"></canvas>
+    <div class="drag-indicator" id="drag-indicator">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <!-- Vertical arrows -->
+        <path d="M12 4 L12 9" stroke="currentColor" stroke-width="1.0" stroke-linecap="round"/>
+        <path d="M10 5.5 L12 4 L14 5.5" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M12 20 L12 15" stroke="currentColor" stroke-width="1.0" stroke-linecap="round"/>
+        <path d="M10 18.5 L12 20 L14 18.5" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        
+        <!-- Horizontal curved arrows -->
+        <path d="M4 10 Q6 12.5 9 12" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" fill="none"/>
+        <path d="M4 12 L4 10 L6 9.5" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        <path d="M20 10 Q18 12.5 15 12" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" fill="none"/>
+        <path d="M20 12 L20 10 L18 9.5" stroke="currentColor" stroke-width="1.0" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+        
+        <!-- Center dot -->
+        <circle cx="12" cy="12" r="1" fill="currentColor" opacity="0.5"/>
+      </svg>
+      <span>Drag to rotate</span>
+    </div>
   </div>
   <div class="projection-controls" id="projection-controls">
     <!-- Projection list generated dynamically by category -->
@@ -17,8 +36,9 @@
     display: flex;
     gap: 20px;
     align-items: flex-start;
+    /* background-color: rgba(0, 0, 0, 0.02); */
   }
-
+  
   .canvas-container {
     flex: 1;
     min-width: 0;
@@ -56,15 +76,81 @@
     display: block;
     position: relative;
     z-index: 1;
+    border-radius: 1rem;
   }
 
   #globe-canvas.projection-mode {
     cursor: default;
   }
 
+  .drag-indicator {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    color: white;
+    font-size: 11px;
+    font-weight: 500;
+    pointer-events: none;
+    user-select: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  :global(.dark) .drag-indicator {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .drag-indicator.visible {
+    opacity: 0.7;
+  }
+
+  .drag-indicator:hover {
+    opacity: 0.9;
+  }
+
+  .drag-indicator svg {
+    flex-shrink: 0;
+  }
+
+  .drag-indicator span {
+    white-space: nowrap;
+  }
+
+  @media (max-width: 768px) {
+    .drag-indicator {
+      bottom: 8px;
+      right: 8px;
+      padding: 4px 8px;
+      font-size: 10px;
+    }
+
+    .drag-indicator svg {
+      width: 20px;
+      height: 20px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .drag-indicator span {
+      display: none;
+    }
+
+    .drag-indicator {
+      padding: 4px;
+    }
+  }
+
   .projection-controls {
     flex-shrink: 0;
-    width: 200px;
+    width: 150px;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -91,9 +177,7 @@
     scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
   }
 
-  :global(.dark) .projection-controls {
-    background-color: rgba(255, 255, 255, 0.03);
-  }
+
 
   .projection-controls::-webkit-scrollbar {
     width: 6px;
@@ -235,18 +319,74 @@
     return {
       // Data point colors
       water: '#3b82f6',      // Blue for water points (same in both themes)
-      land: dark ? '#fff' : '#000',  // Lighter green in dark mode
-      pointOpacity: 0.7,
+      land: dark ? '#fff' : '#000',  // White in dark mode, black in light mode
+      pointOpacity: 0.9,  // Lower opacity in dark mode
+      
+      // City lights simulation
+      cityLightsFraction: 0.03,  // 0.3% of land points become city lights
+      cityLightsColors: ['#ffaa00', '#ffdd00', '#ff8800'],  // Orange and yellow
       
       // Display options
       showWaterPoints: false,
     };
   };
 
+  // City lights: randomly determine if a point should be a city light
+  const isCityLight = (lon: number, lat: number, type: number): boolean => {
+    if (type === 0) return false; // Only land points can be city lights
+    
+    // Exclude equatorial regions (low urbanization in rainforests)
+    if (Math.abs(lat) < 20) return false;
+    
+    // Exclude polar regions (minimal population)
+    if (Math.abs(lat) > 65) return false;
+    
+    // Apply population density weighting based on latitude
+    let densityMultiplier = 1.0;
+    const absLat = Math.abs(lat);
+    
+    if (lat >= 30 && lat <= 60) {
+      // Northern temperate zone (Europe, US, China, Japan) - highest density
+      densityMultiplier = 5.0;
+    } else if (lat >= 20 && lat < 30) {
+      // Subtropical northern (Mexico, Middle East, North Africa)
+      densityMultiplier = 2.5;
+    } else if (lat > 60 && lat <= 65) {
+      // Sub-polar northern (Scandinavia, Alaska, Russia)
+      densityMultiplier = 0.8;
+    } else if (lat <= -30 && lat >= -45) {
+      // Southern temperate (Australia, South Africa, Argentina)
+      densityMultiplier = 1.5;
+    } else if (lat < -20 && lat > -30) {
+      // Subtropical southern (Southern Brazil, Southern Africa)
+      densityMultiplier = 1.2;
+    }
+    
+    // Use coordinates as seed for consistent random selection
+    const seed = Math.abs(Math.sin(lon * 12.9898 + lat * 78.233) * 43758.5453);
+    return (seed % 1) < (CONFIG.cityLightsFraction * densityMultiplier);
+  };
+
+  // Get a random city light color
+  const getCityLightColor = (lon: number, lat: number): string => {
+    const seed = Math.abs(Math.sin(lon * 45.678 + lat * 23.456) * 87654.321);
+    const index = Math.floor((seed % 1) * CONFIG.cityLightsColors.length);
+    return CONFIG.cityLightsColors[index];
+  };
+
   // Calculate point radius based on canvas size
   const getPointRadius = (canvasWidth: number): number => {
     // Scale radius: ~2.5px at 600px width, ~4px at 1000px width
-    return Math.max(1, Math.min(4, canvasWidth / 200));
+    return Math.max(1, Math.min(5, canvasWidth / 200));
+  };
+
+  // Convert color from JSON to RGB string, darkening in dark mode
+  const colorToRgb = (color: [number, number, number]): string => {
+    const darkModeFactor = isDarkTheme() ? 0.6 : 1.0; // Darken by 40% in dark mode
+    const r = Math.round(color[0] * 255 * darkModeFactor);
+    const g = Math.round(color[1] * 255 * darkModeFactor);
+    const b = Math.round(color[2] * 255 * darkModeFactor);
+    return `rgb(${r}, ${g}, ${b})`;
   };
 
   // ===== CONFIGURATION =====
@@ -281,6 +421,7 @@
     alpha: number;
     type: number;
     color?: string;
+    isCityLight?: boolean;
   }
   let projectedPoints: ProjectedPoint[] = [];
 
@@ -384,6 +525,15 @@
     // Sync controls height with canvas
     syncControlsHeight();
 
+    // Set initial drag indicator visibility
+    const dragIndicator = document.getElementById('drag-indicator');
+    const initialProjConfig = getProjectionById(currentProjectionId);
+    if (dragIndicator && initialProjConfig) {
+      dragIndicator.classList.toggle('visible', initialProjConfig.isGlobe);
+      // Set initial cursor
+      canvas.style.cursor = initialProjConfig.isGlobe ? 'grab' : 'default';
+    }
+
     // Setup event listeners
     setupEventListeners();
   }
@@ -395,11 +545,18 @@
 
       gridData = Object.entries(data).map(([key, value]: [string, any]) => {
         const [lon, lat] = key.split(',').map(Number);
+        const type = value.type as number;
+        
+        // Calculate city lights once during data load
+        const cityLight = isCityLight(lon, lat, type);
+        
         return { 
           lon, 
           lat, 
-          type: value.type as number,
-          color: value.color as [number, number, number] | undefined
+          type,
+          color: value.color as [number, number, number] | undefined,
+          isCityLight: cityLight,
+          cityLightColor: cityLight ? getCityLightColor(lon, lat) : undefined
         };
       });
     } catch (error) {
@@ -408,7 +565,15 @@
       gridData = [];
       for (let lon = -180; lon < 180; lon += 5) {
         for (let lat = -90; lat < 90; lat += 5) {
-          gridData.push({ lon, lat, type: Math.random() > 0.5 ? 1 : 0 });
+          const type = Math.random() > 0.5 ? 1 : 0;
+          const cityLight = isCityLight(lon, lat, type);
+          gridData.push({ 
+            lon, 
+            lat, 
+            type,
+            isCityLight: cityLight,
+            cityLightColor: cityLight ? getCityLightColor(lon, lat) : undefined
+          });
         }
       }
     }
@@ -456,16 +621,23 @@
     projectedPoints = gridData.map(d => {
       const coords = projection([d.lon, d.lat]);
       const alpha = isGlobe ? getClipAlpha(d.lon, d.lat, projection) : 1;
-      const color = d.color
-        ? `rgb(${Math.round(d.color[0] * 255)}, ${Math.round(d.color[1] * 255)}, ${Math.round(d.color[2] * 255)})`
-        : undefined;
+      
+      // Use pre-calculated city light color or convert JSON color
+      let color: string | undefined;
+      if (d.isCityLight && d.cityLightColor) {
+        color = d.cityLightColor;
+      } else if (d.color) {
+        color = colorToRgb(d.color);
+      }
+      
       return {
         x: coords?.[0] ?? -9999,
         y: coords?.[1] ?? -9999,
         visible: alpha > 0 && coords != null && isFinite(coords[0]) && isFinite(coords[1]),
         alpha,
         type: d.type,
-        color
+        color,
+        isCityLight: d.isCityLight
       };
     });
   }
@@ -511,7 +683,8 @@
       
       // Use color if available, otherwise fall back to default colors
       ctx.fillStyle = p.color || (p.type === 0 ? CONFIG.water : CONFIG.land);
-      ctx.globalAlpha = CONFIG.pointOpacity * p.alpha;
+      // City lights have full opacity, others use config opacity
+      ctx.globalAlpha = (p.isCityLight ? 1.0 : CONFIG.pointOpacity) * p.alpha;
       ctx.beginPath();
       ctx.arc(p.x, p.y, pointRadius, 0, Math.PI * 2);
       ctx.fill();
@@ -532,11 +705,17 @@
     document.getElementById(`btn-${newProjectionId}`)?.classList.add('proj-item-active');
     
     const canvasEl = document.getElementById('globe-canvas');
+    const dragIndicator = document.getElementById('drag-indicator');
     const projConfig = getProjectionById(newProjectionId);
     if (canvasEl && projConfig) {
       canvasEl.classList.toggle('projection-mode', !projConfig.isGlobe);
       // Update cursor based on projection type
       canvasEl.style.cursor = projConfig.isGlobe ? 'grab' : 'default';
+      
+      // Show/hide drag indicator
+      if (dragIndicator) {
+        dragIndicator.classList.toggle('visible', projConfig.isGlobe);
+      }
     }
 
     // Animate transition
@@ -563,16 +742,23 @@
     const newPoints = gridData.map(d => {
       const coords = newProjection([d.lon, d.lat]);
       const alpha = isGlobe ? getClipAlpha(d.lon, d.lat, newProjection) : 1;
-      const color = d.color
-        ? `rgb(${Math.round(d.color[0] * 255)}, ${Math.round(d.color[1] * 255)}, ${Math.round(d.color[2] * 255)})`
-        : undefined;
+      
+      // Use pre-calculated city light color or convert JSON color
+      let color: string | undefined;
+      if (d.isCityLight && d.cityLightColor) {
+        color = d.cityLightColor;
+      } else if (d.color) {
+        color = colorToRgb(d.color);
+      }
+      
       return {
         x: coords?.[0] ?? -9999,
         y: coords?.[1] ?? -9999,
         visible: alpha > 0 && coords != null && isFinite(coords[0]) && isFinite(coords[1]),
         alpha,
         type: d.type,
-        color
+        color,
+        isCityLight: d.isCityLight
       };
     });
 
@@ -641,7 +827,8 @@
           visible: alpha > 0 && (old.visible || target.visible),
           alpha,
           type: target.type,
-          color: target.color
+          color: target.color,
+          isCityLight: target.isCityLight
         };
       });
 
@@ -654,7 +841,8 @@
         const p = projectedPoints[i];
         if (!p.visible) return;
         ctx.fillStyle = p.color || (p.type === 0 ? CONFIG.water : CONFIG.land);
-        ctx.globalAlpha = CONFIG.pointOpacity * p.alpha;
+        // City lights have full opacity, others use config opacity
+        ctx.globalAlpha = (p.isCityLight ? 1.0 : CONFIG.pointOpacity) * p.alpha;
         ctx.beginPath();
         ctx.arc(p.x, p.y, pointRadius, 0, Math.PI * 2);
         ctx.fill();
@@ -816,6 +1004,7 @@
     // Theme change observer
     const observer = new MutationObserver(() => {
       CONFIG = getThemeColors();
+      projectPoints(); // Recalculate colors for new theme
       render();
     });
     observer.observe(document.documentElement, {
