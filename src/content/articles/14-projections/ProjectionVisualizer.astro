@@ -382,7 +382,7 @@
 
   // Convert color from JSON to RGB string, darkening in dark mode
   const colorToRgb = (color: [number, number, number]): string => {
-    const darkModeFactor = isDarkTheme() ? 0.6 : 1.0; // Darken by 40% in dark mode
+    const darkModeFactor = cachedIsDark ? 0.6 : 1.0; // Darken by 40% in dark mode
     const r = Math.round(color[0] * 255 * darkModeFactor);
     const g = Math.round(color[1] * 255 * darkModeFactor);
     const b = Math.round(color[2] * 255 * darkModeFactor);
@@ -392,6 +392,7 @@
   // ===== CONFIGURATION =====
   let CONFIG = getThemeColors();
   let pointRadius: number = 2.5; // Will be updated based on canvas size
+  let cachedIsDark: boolean = isDarkTheme(); // Cache to avoid repeated calls during render
   // ========================
 
   // State
@@ -622,9 +623,9 @@
       const coords = projection([d.lon, d.lat]);
       const alpha = isGlobe ? getClipAlpha(d.lon, d.lat, projection) : 1;
       
-      // Use pre-calculated city light color or convert JSON color
+      // Use pre-calculated city light color in dark mode only, otherwise use regular colors
       let color: string | undefined;
-      if (d.isCityLight && d.cityLightColor) {
+      if (cachedIsDark && d.isCityLight && d.cityLightColor) {
         color = d.cityLightColor;
       } else if (d.color) {
         color = colorToRgb(d.color);
@@ -637,7 +638,7 @@
         alpha,
         type: d.type,
         color,
-        isCityLight: d.isCityLight
+        isCityLight: cachedIsDark ? d.isCityLight : false
       };
     });
   }
@@ -666,7 +667,7 @@
       ctx.globalAlpha = graticuleOpacity;
       ctx.beginPath();
       path.context(ctx)(graticule);
-      ctx.strokeStyle = isDarkTheme() ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
+      ctx.strokeStyle = cachedIsDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
       ctx.lineWidth = 0.5;
       ctx.stroke();
       ctx.restore();
@@ -743,9 +744,9 @@
       const coords = newProjection([d.lon, d.lat]);
       const alpha = isGlobe ? getClipAlpha(d.lon, d.lat, newProjection) : 1;
       
-      // Use pre-calculated city light color or convert JSON color
+      // Use pre-calculated city light color in dark mode only, otherwise use regular colors
       let color: string | undefined;
-      if (d.isCityLight && d.cityLightColor) {
+      if (cachedIsDark && d.isCityLight && d.cityLightColor) {
         color = d.cityLightColor;
       } else if (d.color) {
         color = colorToRgb(d.color);
@@ -758,7 +759,7 @@
         alpha,
         type: d.type,
         color,
-        isCityLight: d.isCityLight
+        isCityLight: cachedIsDark ? d.isCityLight : false
       };
     });
 
@@ -795,7 +796,7 @@
       }
 
       // Graticule: crossfade
-      const gratStroke = isDarkTheme() ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
+      const gratStroke = cachedIsDark ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)';
       if (eased < 1) {
         ctx.save();
         ctx.globalAlpha = 1 - eased;
@@ -1003,6 +1004,7 @@
 
     // Theme change observer
     const observer = new MutationObserver(() => {
+      cachedIsDark = isDarkTheme();
       CONFIG = getThemeColors();
       projectPoints(); // Recalculate colors for new theme
       render();
