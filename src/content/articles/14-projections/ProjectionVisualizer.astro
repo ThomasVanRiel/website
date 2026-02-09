@@ -49,8 +49,6 @@
     position: relative;
     border-radius: 8px;
     overflow: hidden;
-    contain: layout style paint;
-    content-visibility: auto;
   }
 
   @media (max-width: 768px) {
@@ -717,21 +715,6 @@
   function switchToProjection(newProjectionId: string) {
     if (newProjectionId === currentProjectionId) return;
     
-    // Scroll to canvas with 10vh offset (only on larger screens)
-    if (window.innerWidth > 768) {
-      const canvasContainer = document.querySelector('.canvas-container');
-      if (canvasContainer) {
-        const offsetVh = window.innerHeight * 0.15; // 15vh
-        const elementPosition = canvasContainer.getBoundingClientRect().top + window.pageYOffset;
-        const offsetPosition = elementPosition - offsetVh;
-        
-        window.scrollTo({
-          top: offsetPosition,
-          behavior: 'smooth'
-        });
-      }
-    }
-    
     // Check if switching from non-globe to globe
     const oldProjConfig = getProjectionById(currentProjectionId);
     const newProjConfig = getProjectionById(newProjectionId);
@@ -1086,10 +1069,5 @@
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
-  }
-
-  // Prevent any scroll restoration on page load
-  if ('scrollRestoration' in history) {
-    history.scrollRestoration = 'manual';
   }
 </script>
