@@ -49,6 +49,8 @@
     position: relative;
     border-radius: 8px;
     overflow: hidden;
+    contain: layout style paint;
+    content-visibility: auto;
   }
 
   @media (max-width: 768px) {
@@ -1084,5 +1086,10 @@
     document.addEventListener('DOMContentLoaded', init);
   } else {
     init();
+  }
+
+  // Prevent any scroll restoration on page load
+  if ('scrollRestoration' in history) {
+    history.scrollRestoration = 'manual';
   }
 </script>
