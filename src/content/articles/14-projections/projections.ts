@@ -466,6 +466,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Adams Hemisphere',
     category: 'Special',
     isGlobe: true,
+    disable: true,
     setup: (width, height, rotation) => {
       const padding = 5;
       const K = ellipticF(Math.PI / 2, 0.5);
