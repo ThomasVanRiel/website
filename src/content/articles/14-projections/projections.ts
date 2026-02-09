@@ -77,7 +77,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Gnomonic',
     category: 'Globe',
     isGlobe: true,
-    disable: true,
+    disable: false,
     setup: (width, height, rotation) => {
       return d3.geoGnomonic()
         .scale(Math.min(width, height) / 3.5)

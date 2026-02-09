@@ -57,9 +57,45 @@
     display: flex;
     flex-direction: column;
     justify-content: flex-start;
-    padding: 16px 0px;
+    padding: 16px 10px;
     gap: 1px;
     z-index: 10;
+    overflow-y: auto;
+    overflow-x: visible;
+    max-height: 100%;
+    
+    /* Fade effect for overflowing content */
+    mask-image: linear-gradient(to bottom, 
+      transparent 0%, 
+      black 5%, 
+      black 95%, 
+      transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, 
+      transparent 0%, 
+      black 5%, 
+      black 95%, 
+      transparent 100%);
+    
+    /* Visible scrollbar styling */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
+  }
+
+  .projection-overlay::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .projection-overlay::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .projection-overlay::-webkit-scrollbar-thumb {
+    background-color: rgba(156, 163, 175, 0.5);
+    border-radius: 3px;
+  }
+
+  .projection-overlay::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(156, 163, 175, 0.7);
   }
 
   /* Dynamically generated elements need global styles in Astro */
@@ -102,7 +138,7 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
-    margin-right: 16px;
+    margin-right: 8px;
     transition: max-height 0.3s ease, opacity 0.2s ease;
     max-height: 1000px;
     opacity: 1;
@@ -198,6 +234,11 @@
   let animationFrameId: number | null = null;
   let graticuleOpacity: number = 0;
   let graticule: d3.GeoGeometryObjects;
+  
+  // Mouse interaction state
+  let isDragging: boolean = false;
+  let lastMouseX: number = 0;
+  let lastMouseY: number = 0;
   
   // Cache projected coordinates for performance
   interface ProjectedPoint {
@@ -458,6 +499,8 @@
     const projConfig = getProjectionById(newProjectionId);
     if (canvasEl && projConfig) {
       canvasEl.classList.toggle('projection-mode', !projConfig.isGlobe);
+      // Update cursor based on projection type
+      canvasEl.style.cursor = projConfig.isGlobe ? 'grab' : 'default';
     }
 
     // Animate transition
@@ -598,6 +641,60 @@
 
 
   function setupEventListeners() {
+    // Mouse rotation controls for globe projections
+    canvas.addEventListener('mousedown', (e: MouseEvent) => {
+      const projConfig = getProjectionById(currentProjectionId);
+      if (!projConfig?.isGlobe) return;
+      
+      isDragging = true;
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      canvas.style.cursor = 'grabbing';
+    });
+
+    canvas.addEventListener('mousemove', (e: MouseEvent) => {
+      const projConfig = getProjectionById(currentProjectionId);
+      if (!projConfig?.isGlobe) return;
+      
+      // Update cursor based on hover state
+      if (!isDragging) {
+        canvas.style.cursor = 'grab';
+      }
+      
+      if (!isDragging) return;
+      
+      const deltaX = e.clientX - lastMouseX;
+      const deltaY = e.clientY - lastMouseY;
+      
+      lastMouseX = e.clientX;
+      lastMouseY = e.clientY;
+      
+      // Update rotation (sensitivity scaled by 0.5 for subtle movement)
+      rotation[0] += deltaX * 0.5;
+      rotation[1] -= deltaY * 0.5;
+      
+      // Clamp latitude rotation to prevent flipping
+      rotation[1] = Math.max(-90, Math.min(90, rotation[1]));
+      
+      // Update projection with new rotation
+      setupProjection(currentProjectionId);
+      render();
+    });
+
+    canvas.addEventListener('mouseup', () => {
+      if (isDragging) {
+        isDragging = false;
+        const projConfig = getProjectionById(currentProjectionId);
+        canvas.style.cursor = projConfig?.isGlobe ? 'grab' : 'default';
+      }
+    });
+
+    canvas.addEventListener('mouseleave', () => {
+      if (isDragging) {
+        isDragging = false;
+        canvas.style.cursor = 'default';
+      }
+    });
 
     // Window resize
     let resizeTimer: number;
