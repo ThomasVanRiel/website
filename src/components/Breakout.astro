@@ -1,0 +1,28 @@
+---
+import { cn } from "@lib/utils"
+
+type Props = {
+  size?: "lg" | "xl" | "2xl" | "full"
+}
+
+const { size = "xl" } = Astro.props;
+---
+
+<div class={cn(
+  "breakout",
+  size === "lg" && "max-w-screen-lg",
+  size === "xl" && "max-w-screen-xl",
+  size === "2xl" && "max-w-screen-2xl",
+)}>
+  <slot/>
+</div>
+
+<style>
+  .breakout {
+    width: 100vw;
+    position: relative;
+    left: 50%;
+    transform: translateX(-50%);
+    padding-inline: 20px;
+  }
+</style>

@@ -5,35 +5,48 @@
 <div class="projection-visualizer">
   <div class="canvas-container">
     <canvas id="globe-canvas"></canvas>
-    <div class="projection-overlay" id="projection-controls">
-      <!-- Projection list generated dynamically by category -->
-    </div>
+  </div>
+  <div class="projection-controls" id="projection-controls">
+    <!-- Projection list generated dynamically by category -->
   </div>
 </div>
 
 <style>
   .projection-visualizer {
     width: 100%;
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
   }
 
   .canvas-container {
-    width: 100%;
-    height: 600px;
+    flex: 1;
+    min-width: 0;
+    aspect-ratio: 1;
     max-height: 80vh;
+    max-width: 80vh;
     position: relative;
     border-radius: 8px;
     overflow: hidden;
   }
 
   @media (max-width: 768px) {
+    .projection-visualizer {
+      gap: 12px;
+    }
+    
     .canvas-container {
-      height: 400px;
+      max-width: calc(100% - 150px);
     }
   }
 
   @media (max-width: 480px) {
+    .projection-visualizer {
+      gap: 8px;
+    }
+    
     .canvas-container {
-      height: 300px;
+      max-width: calc(100% - 120px);
     }
   }
 
@@ -49,31 +62,28 @@
     cursor: default;
   }
 
-  .projection-overlay {
-    position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
+  .projection-controls {
+    flex-shrink: 0;
+    width: 200px;
     display: flex;
     flex-direction: column;
-    justify-content: flex-start;
-    padding: 16px 10px;
-    gap: 1px;
-    z-index: 10;
+    gap: 4px;
     overflow-y: auto;
     overflow-x: visible;
-    max-height: 100%;
+    padding: 8px 12px;
+    border-radius: 8px;
+    /* background-color: rgba(0, 0, 0, 0.02); */
     
     /* Fade effect for overflowing content */
     mask-image: linear-gradient(to bottom, 
       transparent 0%, 
-      black 5%, 
-      black 95%, 
+      black 3%, 
+      black 97%, 
       transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, 
       transparent 0%, 
-      black 5%, 
-      black 95%, 
+      black 3%, 
+      black 97%, 
       transparent 100%);
     
     /* Visible scrollbar styling */
@@ -81,48 +91,66 @@
     scrollbar-color: rgba(156, 163, 175, 0.5) transparent;
   }
 
-  .projection-overlay::-webkit-scrollbar {
+  :global(.dark) .projection-controls {
+    background-color: rgba(255, 255, 255, 0.03);
+  }
+
+  .projection-controls::-webkit-scrollbar {
     width: 6px;
   }
 
-  .projection-overlay::-webkit-scrollbar-track {
+  .projection-controls::-webkit-scrollbar-track {
     background: transparent;
   }
 
-  .projection-overlay::-webkit-scrollbar-thumb {
+  .projection-controls::-webkit-scrollbar-thumb {
     background-color: rgba(156, 163, 175, 0.5);
     border-radius: 3px;
   }
 
-  .projection-overlay::-webkit-scrollbar-thumb:hover {
+  .projection-controls::-webkit-scrollbar-thumb:hover {
     background-color: rgba(156, 163, 175, 0.7);
   }
 
+  @media (max-width: 768px) {
+    .projection-controls {
+      width: 140px;
+      padding: 6px 8px;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .projection-controls {
+      width: 110px;
+      padding: 4px 6px;
+    }
+  }
+
   /* Dynamically generated elements need global styles in Astro */
-  .projection-overlay :global(.category-group) {
+  .projection-controls :global(.category-group) {
     display: flex;
     flex-direction: column;
   }
 
-  .projection-overlay :global(.category-label) {
+  .projection-controls :global(.category-label) {
     font-weight: 700;
-    font-size: 14px;
-    text-align: right;
-    padding-right: 0;
+    font-size: 13px;
+    text-align: left;
+    padding: 4px 0;
     color: var(--tw-prose-body);
     cursor: pointer;
     user-select: none;
     display: flex;
     align-items: center;
-    justify-content: flex-end;
+    justify-content: space-between;
     gap: 6px;
   }
 
-  .projection-overlay :global(.category-label:hover) {
+  .projection-controls :global(.category-label:hover) {
     opacity: 0.8;
   }
 
-  .projection-overlay :global(.category-arrow) {
+  .projection-controls :global(.category-arrow) {
     font-size: 8px;
     transition: transform 0.2s ease;
     display: inline-block;
@@ -130,65 +158,67 @@
     font-weight: 400;
   }
 
-  .projection-overlay :global(.category-arrow.collapsed) {
+  .projection-controls :global(.category-arrow.collapsed) {
     transform: rotate(-90deg);
   }
 
-  .projection-overlay :global(.category-items) {
+  .projection-controls :global(.category-items) {
     display: flex;
     flex-direction: column;
-    align-items: flex-end;
-    margin-right: 8px;
+    align-items: flex-start;
+    margin-left: 12px;
     transition: max-height 0.3s ease, opacity 0.2s ease;
     max-height: 1000px;
     opacity: 1;
     overflow: hidden;
   }
 
-  .projection-overlay :global(.category-items.collapsed) {
+  .projection-controls :global(.category-items.collapsed) {
     max-height: 0;
     opacity: 0;
   }
 
-  .projection-overlay :global(.proj-item) {
-    padding: 1px 0;
+  .projection-controls :global(.proj-item) {
+    padding: 2px 0;
     cursor: pointer;
     font-size: 12px;
     transition: opacity 0.2s ease;
     opacity: 0.5;
     background: none;
     border: none;
-    text-align: right;
+    text-align: left;
     white-space: nowrap;
     font-family: inherit;
     font-weight: 400;
     color: var(--tw-prose-body);
   }
 
-  .projection-overlay :global(.proj-item:hover) {
+  .projection-controls :global(.proj-item:hover) {
     opacity: 1;
   }
 
-  .projection-overlay :global(.proj-item-active) {
+  .projection-controls :global(.proj-item-active) {
     opacity: 1;
+    font-weight: 500;
   }
 
-  @media (max-width: 640px) {
-    .projection-overlay {
-      padding: 0px 0px;
-      gap: 4px;
+  @media (max-width: 768px) {
+    .projection-controls :global(.category-label) {
+      font-size: 11px;
     }
 
-    .projection-overlay :global(.category-label) {
-      font-size: 12px;
+    .projection-controls :global(.proj-item) {
+      font-size: 10px;
     }
+  }
 
-    .projection-overlay :global(.proj-item) {
+  @media (max-width: 480px) {
+    .projection-controls :global(.category-label) {
       font-size: 10px;
     }
 
-    .projection-overlay :global(.category-items) {
-      margin-right: 10px;
+    .projection-controls :global(.proj-item) {
+      font-size: 9px;
     }
   }
 </style>
@@ -207,18 +237,21 @@
       water: '#3b82f6',      // Blue for water points (same in both themes)
       land: dark ? '#fff' : '#000',  // Lighter green in dark mode
       pointOpacity: 0.7,
-      pointRadius: 2.5,
       
       // Display options
       showWaterPoints: false,
-      
-      // UI Controls
-      itemText: dark ? '#f3f4f6' : '#333',
     };
+  };
+
+  // Calculate point radius based on canvas size
+  const getPointRadius = (canvasWidth: number): number => {
+    // Scale radius: ~2.5px at 600px width, ~4px at 1000px width
+    return Math.max(1, Math.min(4, canvasWidth / 200));
   };
 
   // ===== CONFIGURATION =====
   let CONFIG = getThemeColors();
+  let pointRadius: number = 2.5; // Will be updated based on canvas size
   // ========================
 
   // State
@@ -324,6 +357,9 @@
     width = rect.width;
     height = rect.height;
     
+    // Calculate point radius based on canvas size
+    pointRadius = getPointRadius(width);
+    
     // Set canvas size with device pixel ratio for sharp rendering
     const dpr = window.devicePixelRatio || 1;
     canvas.width = width * dpr;
@@ -335,9 +371,6 @@
     // Generate projection list
     generateButtons();
 
-    // Apply text colors
-    applyItemStyles();
-
     // Load data
     await loadGridData();
 
@@ -347,6 +380,9 @@
     // Render initial view
     graticuleOpacity = 1;
     render();
+
+    // Sync controls height with canvas
+    syncControlsHeight();
 
     // Setup event listeners
     setupEventListeners();
@@ -477,7 +513,7 @@
       ctx.fillStyle = p.color || (p.type === 0 ? CONFIG.water : CONFIG.land);
       ctx.globalAlpha = CONFIG.pointOpacity * p.alpha;
       ctx.beginPath();
-      ctx.arc(p.x, p.y, CONFIG.pointRadius, 0, Math.PI * 2);
+      ctx.arc(p.x, p.y, pointRadius, 0, Math.PI * 2);
       ctx.fill();
     });
 
@@ -620,7 +656,7 @@
         ctx.fillStyle = p.color || (p.type === 0 ? CONFIG.water : CONFIG.land);
         ctx.globalAlpha = CONFIG.pointOpacity * p.alpha;
         ctx.beginPath();
-        ctx.arc(p.x, p.y, CONFIG.pointRadius, 0, Math.PI * 2);
+        ctx.arc(p.x, p.y, pointRadius, 0, Math.PI * 2);
         ctx.fill();
       });
 
@@ -696,6 +732,58 @@
       }
     });
 
+    // Touch rotation controls for mobile
+    canvas.addEventListener('touchstart', (e: TouchEvent) => {
+      const projConfig = getProjectionById(currentProjectionId);
+      if (!projConfig?.isGlobe) return;
+      
+      // Prevent default to avoid scrolling while rotating
+      if (e.touches.length === 1) {
+        e.preventDefault();
+        isDragging = true;
+        lastMouseX = e.touches[0].clientX;
+        lastMouseY = e.touches[0].clientY;
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchmove', (e: TouchEvent) => {
+      const projConfig = getProjectionById(currentProjectionId);
+      if (!projConfig?.isGlobe || !isDragging) return;
+      
+      if (e.touches.length === 1) {
+        e.preventDefault();
+        
+        const deltaX = e.touches[0].clientX - lastMouseX;
+        const deltaY = e.touches[0].clientY - lastMouseY;
+        
+        lastMouseX = e.touches[0].clientX;
+        lastMouseY = e.touches[0].clientY;
+        
+        // Update rotation (sensitivity scaled by 0.5 for subtle movement)
+        rotation[0] += deltaX * 0.5;
+        rotation[1] -= deltaY * 0.5;
+        
+        // Clamp latitude rotation to prevent flipping
+        rotation[1] = Math.max(-90, Math.min(90, rotation[1]));
+        
+        // Update projection with new rotation
+        setupProjection(currentProjectionId);
+        render();
+      }
+    }, { passive: false });
+
+    canvas.addEventListener('touchend', () => {
+      if (isDragging) {
+        isDragging = false;
+      }
+    });
+
+    canvas.addEventListener('touchcancel', () => {
+      if (isDragging) {
+        isDragging = false;
+      }
+    });
+
     // Window resize
     let resizeTimer: number;
     window.addEventListener('resize', () => {
@@ -708,6 +796,9 @@
         width = rect.width;
         height = rect.height;
         
+        // Update point radius based on new canvas size
+        pointRadius = getPointRadius(width);
+        
         // Update canvas size with device pixel ratio
         const dpr = window.devicePixelRatio || 1;
         canvas.width = width * dpr;
@@ -718,13 +809,13 @@
 
         setupProjection(currentProjectionId);
         render();
+        syncControlsHeight();
       }, 150);
     });
 
     // Theme change observer
     const observer = new MutationObserver(() => {
       CONFIG = getThemeColors();
-      applyItemStyles();
       render();
     });
     observer.observe(document.documentElement, {
@@ -733,15 +824,14 @@
     });
   }
 
-  function applyItemStyles() {
-    const items = document.querySelectorAll('.proj-item');
-    items.forEach(item => {
-      (item as HTMLElement).style.color = CONFIG.itemText;
-    });
-    const labels = document.querySelectorAll('.category-label');
-    labels.forEach(label => {
-      (label as HTMLElement).style.color = CONFIG.itemText;
-    });
+  function syncControlsHeight() {
+    const container = document.querySelector('.canvas-container') as HTMLElement;
+    const controls = document.getElementById('projection-controls') as HTMLElement;
+    if (!container || !controls) return;
+    
+    // Get the actual rendered height of the canvas container
+    const containerHeight = container.offsetHeight;
+    controls.style.height = `${containerHeight}px`;
   }
 
   // Initialize when DOM is ready

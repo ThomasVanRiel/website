@@ -45,6 +45,123 @@ function createSphere() {
   return {type: 'Sphere'} as const;
 }
 
+// ============================================================
+// Incomplete elliptic integral of the first kind F(phi|m)
+// AGM algorithm. The core only handles phi >= 0; negative phi
+// is handled via the odd-function identity F(-phi,m) = -F(phi,m).
+// ============================================================
+const EPS = 1e-6;
+
+function ellipticF(phi: number, m: number): number {
+  // F is an odd function of phi — handle sign explicitly because
+  // the AGM iteration uses ~~ (truncate toward zero) which breaks
+  // for negative phi values.
+  if (phi < 0) return -ellipticF(-phi, m);
+  if (!m) return phi;
+  if (m === 1) return Math.log(Math.tan(phi / 2 + Math.PI / 4));
+  let a = 1;
+  let b = Math.sqrt(1 - m);
+  let c = Math.sqrt(m);
+  let i = 0;
+  for (; Math.abs(c) > EPS; i++) {
+    if (phi % Math.PI) {
+      let dPhi = Math.atan(b * Math.tan(phi) / a);
+      if (dPhi < 0) dPhi += Math.PI;
+      phi += dPhi + ~~(phi / Math.PI) * Math.PI;
+    } else {
+      phi += phi;
+    }
+    c = (a + b) / 2;
+    b = Math.sqrt(a * b);
+    c = ((a = c) - b) / 2;
+  }
+  return phi / (Math.pow(2, i) * a);
+}
+
+// ============================================================
+// Adams World in a Square I — raw conformal projection
+// Maps the full sphere to a square via elliptic integrals.
+// Poles map to opposite corners; equator/prime meridian cross
+// at center. Based on Torben Jansen's Observable implementation.
+// ============================================================
+interface RawProjection {
+  (lambda: number, phi: number): [number, number];
+  invert(x: number, y: number): [number, number];
+}
+
+const adamsWs1Raw: RawProjection = Object.assign(
+  function(lambda: number, phi: number): [number, number] {
+    const sp = Math.tan(0.5 * phi);
+    let a = Math.cos(Math.asin(sp)) * Math.sin(0.5 * lambda);
+    const sm = (sp + a) < 0;
+    const sn = (sp - a) < 0;
+    const b = Math.acos(Math.max(-1, Math.min(1, sp)));
+    a = Math.acos(Math.max(-1, Math.min(1, a)));
+
+    let m = Math.asin(Math.sqrt(1 + Math.min(0, Math.cos(a + b))));
+    if (sm) m = -m;
+    let n = Math.asin(Math.sqrt(Math.abs(1 - Math.max(0, Math.cos(a - b)))));
+    if (sn) n = -n;
+
+    return [ellipticF(m, 0.5), ellipticF(n, 0.5)];
+  },
+  {
+    invert(x: number, y: number): [number, number] {
+      const K = ellipticF(Math.PI / 2, 0.5);
+      let phi = Math.max(Math.min(y / K, 1), -1) * (Math.PI / 2);
+      let lam = Math.abs(phi) < Math.PI
+        ? Math.max(Math.min(x / K, 1), -1) * Math.PI
+        : 0;
+
+      for (let i = 0; i < 25; i++) {
+        const [xp, yp] = adamsWs1Raw(lam, phi);
+        const dx = xp - x;
+        const dy = yp - y;
+        if (Math.abs(dx) < 1e-12 && Math.abs(dy) < 1e-12) break;
+
+        const h = 1e-6;
+        const [x1, y1] = adamsWs1Raw(lam + h, phi);
+        const [x2, y2] = adamsWs1Raw(lam, phi + h);
+        const dxdl = (x1 - xp) / h;
+        const dydl = (y1 - yp) / h;
+        const dxdp = (x2 - xp) / h;
+        const dydp = (y2 - yp) / h;
+
+        const det = dxdl * dydp - dxdp * dydl;
+        if (Math.abs(det) < 1e-12) break;
+
+        const dl = (dydp * dx - dxdp * dy) / det;
+        const dp = (dxdl * dy - dydl * dx) / det;
+
+        lam -= Math.max(Math.min(dl, 0.3), -0.3);
+        phi -= Math.max(Math.min(dp, 0.3), -0.3);
+
+        lam = Math.max(-Math.PI, Math.min(Math.PI, lam));
+        phi = Math.max(-Math.PI / 2, Math.min(Math.PI / 2, phi));
+      }
+
+      return [lam, phi];
+    }
+  }
+);
+
+// Adams World in a Square II — WS1 with a 45° post-rotation (diamond orientation)
+const SQRT1_2 = Math.SQRT1_2;
+
+const adamsWs2Raw: RawProjection = Object.assign(
+  function(lambda: number, phi: number): [number, number] {
+    const [x, y] = adamsWs1Raw(lambda, phi);
+    return [SQRT1_2 * (x - y), SQRT1_2 * (x + y)];
+  },
+  {
+    invert(x: number, y: number): [number, number] {
+      const x1 = SQRT1_2 * (x + y);
+      const y1 = SQRT1_2 * (y - x);
+      return adamsWs1Raw.invert(x1, y1);
+    }
+  }
+);
+
 export const projections: ProjectionConfig[] = [
   // Globe Views
   {
@@ -345,16 +462,32 @@ export const projections: ProjectionConfig[] = [
   
   // Special Projections
   {
+    id: 'adamsHemisphere',
+    label: 'Adams Hemisphere',
+    category: 'Special',
+    isGlobe: true,
+    setup: (width, height, rotation) => {
+      const padding = 5;
+      const K = ellipticF(Math.PI / 2, 0.5);
+      const halfDiag = K * Math.SQRT2;
+      const scale = (Math.min(width, height) / 2 - padding) / halfDiag;
+      return d3.geoProjection(adamsWs2Raw)
+        .rotate(rotation)
+        .clipAngle(90)
+        .scale(scale)
+        .translate([width / 2, height / 2]);
+    }
+  },
+  {
     id: 'spilhaus',
     label: 'Spilhaus',
     category: 'Special',
     isGlobe: false,
-    disable: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height) => {
       const padding = 5;
-      
-      return d3.geoAzimuthalEquidistant()
-        .rotate([95, 45, 0])
+
+      return d3.geoProjection(adamsWs1Raw)
+        .rotate([-66.94970198, 49.56371678, 40.17823482])
         .fitExtent(
           [[padding, padding], [width - padding, height - padding]],
           createSphere()
