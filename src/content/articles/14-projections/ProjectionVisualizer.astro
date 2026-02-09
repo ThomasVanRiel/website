@@ -715,17 +715,19 @@
   function switchToProjection(newProjectionId: string) {
     if (newProjectionId === currentProjectionId) return;
     
-    // Scroll to canvas with 10vh offset
-    const canvasContainer = document.querySelector('.canvas-container');
-    if (canvasContainer) {
-      const offsetVh = window.innerHeight * 0.15; // 15vh
-      const elementPosition = canvasContainer.getBoundingClientRect().top + window.pageYOffset;
-      const offsetPosition = elementPosition - offsetVh;
-      
-      window.scrollTo({
-        top: offsetPosition,
-        behavior: 'smooth'
-      });
+    // Scroll to canvas with 10vh offset (only on larger screens)
+    if (window.innerWidth > 768) {
+      const canvasContainer = document.querySelector('.canvas-container');
+      if (canvasContainer) {
+        const offsetVh = window.innerHeight * 0.15; // 15vh
+        const elementPosition = canvasContainer.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - offsetVh;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
     }
     
     // Check if switching from non-globe to globe
