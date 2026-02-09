@@ -37,6 +37,9 @@
     gap: 20px;
     align-items: flex-start;
     justify-content: flex-start;
+    /* Prevent creating new stacking context that might affect fixed header */
+    transform: none;
+    will-change: auto;
     /* background-color: rgba(0, 0, 0, 0.02); */
   }
   
@@ -714,6 +717,21 @@
 
   function switchToProjection(newProjectionId: string) {
     if (newProjectionId === currentProjectionId) return;
+    
+    // Scroll to canvas with 10vh offset (only on larger screens)
+    if (window.innerWidth > 768) {
+      const canvasContainer = document.querySelector('.canvas-container');
+      if (canvasContainer) {
+        const offsetVh = window.innerHeight * 0.15; // 15vh
+        const elementPosition = canvasContainer.getBoundingClientRect().top + window.pageYOffset;
+        const offsetPosition = elementPosition - offsetVh;
+        
+        window.scrollTo({
+          top: offsetPosition,
+          behavior: 'smooth'
+        });
+      }
+    }
     
     // Check if switching from non-globe to globe
     const oldProjConfig = getProjectionById(currentProjectionId);
