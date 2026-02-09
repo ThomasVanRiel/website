@@ -36,15 +36,16 @@
     display: flex;
     gap: 20px;
     align-items: flex-start;
+    justify-content: flex-start;
     /* background-color: rgba(0, 0, 0, 0.02); */
   }
   
   .canvas-container {
-    flex: 1;
     min-width: 0;
     aspect-ratio: 1;
     max-height: 80vh;
     max-width: 80vh;
+    width: min(80vh, calc(100% - 220px));
     position: relative;
     border-radius: 8px;
     overflow: hidden;
@@ -56,7 +57,7 @@
     }
     
     .canvas-container {
-      max-width: calc(100% - 150px);
+      width: min(80vh, calc(100% - 162px));
     }
   }
 
@@ -66,7 +67,7 @@
     }
     
     .canvas-container {
-      max-width: calc(100% - 120px);
+      width: min(80vh, calc(100% - 128px));
     }
   }
 
@@ -151,6 +152,7 @@
   .projection-controls {
     flex-shrink: 0;
     width: 150px;
+    margin-left: auto;
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -164,12 +166,12 @@
     mask-image: linear-gradient(to bottom, 
       transparent 0%, 
       black 3%, 
-      black 97%, 
+      black 90%, 
       transparent 100%);
     -webkit-mask-image: linear-gradient(to bottom, 
       transparent 0%, 
       black 3%, 
-      black 97%, 
+      black 90%, 
       transparent 100%);
     
     /* Visible scrollbar styling */
@@ -214,6 +216,10 @@
   .projection-controls :global(.category-group) {
     display: flex;
     flex-direction: column;
+  }
+
+  .projection-controls :global(.category-group:last-child) {
+    padding-bottom: 20px;
   }
 
   .projection-controls :global(.category-label) {
@@ -296,15 +302,6 @@
     }
   }
 
-  @media (max-width: 480px) {
-    .projection-controls :global(.category-label) {
-      font-size: 10px;
-    }
-
-    .projection-controls :global(.proj-item) {
-      font-size: 9px;
-    }
-  }
 </style>
 
 <script>
@@ -324,7 +321,16 @@
       
       // City lights simulation
       cityLightsFraction: 0.03,  // 0.3% of land points become city lights
-      cityLightsColors: ['#ffaa00', '#ffdd00', '#ff8800'],  // Orange and yellow
+      cityLightsColors: [
+        '#ffeecc',  // Soft warm white
+        '#ffe6b3',  // Pale yellow-white
+        '#ffd699',  // Light peach
+        '#ffcc80',  // Warm cream
+        '#ffdd99',  // Soft yellow
+        '#ffc266',  // Light orange
+        '#ffaa55',  // Warm orange
+        '#ffbb66',  // Peach-orange
+      ],
       
       // Display options
       showWaterPoints: false,
@@ -377,12 +383,12 @@
   // Calculate point radius based on canvas size
   const getPointRadius = (canvasWidth: number): number => {
     // Scale radius: ~2.5px at 600px width, ~4px at 1000px width
-    return Math.max(1, Math.min(5, canvasWidth / 200));
+    return Math.max(1, Math.min(4, canvasWidth / 200));
   };
 
   // Convert color from JSON to RGB string, darkening in dark mode
   const colorToRgb = (color: [number, number, number]): string => {
-    const darkModeFactor = cachedIsDark ? 0.6 : 1.0; // Darken by 40% in dark mode
+    const darkModeFactor = cachedIsDark ? 0.4 : 1.0; // Darken by 70% in dark mode
     const r = Math.round(color[0] * 255 * darkModeFactor);
     const g = Math.round(color[1] * 255 * darkModeFactor);
     const b = Math.round(color[2] * 255 * darkModeFactor);
@@ -678,14 +684,26 @@
       ? projectedPoints.map((_, i) => i)
       : projectedPoints.map((p, i) => p.type !== 0 ? i : -1).filter(i => i >= 0);
     
+    // First pass: draw regular points (non-city lights)
     filteredIndices.forEach(i => {
       const p = projectedPoints[i];
-      if (!p.visible) return;
+      if (!p.visible || p.isCityLight) return;
       
       // Use color if available, otherwise fall back to default colors
       ctx.fillStyle = p.color || (p.type === 0 ? CONFIG.water : CONFIG.land);
-      // City lights have full opacity, others use config opacity
-      ctx.globalAlpha = (p.isCityLight ? 1.0 : CONFIG.pointOpacity) * p.alpha;
+      ctx.globalAlpha = CONFIG.pointOpacity * p.alpha;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, pointRadius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    
+    // Second pass: draw city lights on top
+    filteredIndices.forEach(i => {
+      const p = projectedPoints[i];
+      if (!p.visible || !p.isCityLight) return;
+      
+      ctx.fillStyle = p.color || CONFIG.land;
+      ctx.globalAlpha = 1.0 * p.alpha; // City lights at full opacity
       ctx.beginPath();
       ctx.arc(p.x, p.y, pointRadius, 0, Math.PI * 2);
       ctx.fill();
@@ -696,6 +714,29 @@
 
   function switchToProjection(newProjectionId: string) {
     if (newProjectionId === currentProjectionId) return;
+    
+    // Scroll to canvas with 10vh offset
+    const canvasContainer = document.querySelector('.canvas-container');
+    if (canvasContainer) {
+      const offsetVh = window.innerHeight * 0.15; // 15vh
+      const elementPosition = canvasContainer.getBoundingClientRect().top + window.pageYOffset;
+      const offsetPosition = elementPosition - offsetVh;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+    
+    // Check if switching from non-globe to globe
+    const oldProjConfig = getProjectionById(currentProjectionId);
+    const newProjConfig = getProjectionById(newProjectionId);
+    const switchingToGlobe = oldProjConfig && newProjConfig && !oldProjConfig.isGlobe && newProjConfig.isGlobe;
+    
+    // Reset rotation when switching to a globe from a projection
+    if (switchingToGlobe) {
+      rotation = [0, -30, 0];
+    }
     
     currentProjectionId = newProjectionId;
     
@@ -838,12 +879,23 @@
         ? projectedPoints.map((_: any, i: number) => i)
         : projectedPoints.map((p: any, i: number) => p.type !== 0 ? i : -1).filter((i: number) => i >= 0);
 
+      // First pass: draw regular points (non-city lights)
       filteredIndices.forEach((i: number) => {
         const p = projectedPoints[i];
-        if (!p.visible) return;
+        if (!p.visible || p.isCityLight) return;
         ctx.fillStyle = p.color || (p.type === 0 ? CONFIG.water : CONFIG.land);
-        // City lights have full opacity, others use config opacity
-        ctx.globalAlpha = (p.isCityLight ? 1.0 : CONFIG.pointOpacity) * p.alpha;
+        ctx.globalAlpha = CONFIG.pointOpacity * p.alpha;
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, pointRadius, 0, Math.PI * 2);
+        ctx.fill();
+      });
+      
+      // Second pass: draw city lights on top
+      filteredIndices.forEach((i: number) => {
+        const p = projectedPoints[i];
+        if (!p.visible || !p.isCityLight) return;
+        ctx.fillStyle = p.color || CONFIG.land;
+        ctx.globalAlpha = 1.0 * p.alpha; // City lights at full opacity
         ctx.beginPath();
         ctx.arc(p.x, p.y, pointRadius, 0, Math.PI * 2);
         ctx.fill();
