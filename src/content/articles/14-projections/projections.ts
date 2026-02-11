@@ -214,6 +214,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Equal Area',
     category: 'Azimuthal',
     isGlobe: false,
+    favorite: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 0;
       
