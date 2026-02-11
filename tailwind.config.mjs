@@ -6,6 +6,10 @@ export default {
   darkMode: ["class"],
   content: ["./src/**/*.{astro,html,js,jsx,md,mdx,svelte,ts,tsx,vue}"],
   theme: {
+    screens: {
+      ...defaultTheme.screens,
+      'xxl': '1400px',
+    },
     extend: {
       colors:{
         "brand-dk":  colors.slate['800'],
