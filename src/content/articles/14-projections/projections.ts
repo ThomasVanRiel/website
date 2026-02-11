@@ -16,6 +16,7 @@ export interface ProjectionConfig {
   category: string;
   isGlobe: boolean;
   disable?: boolean;
+  favorite?: boolean;
   setup: (
     width: number,
     height: number,
@@ -171,6 +172,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Orthographic',
     category: 'Globe',
     isGlobe: true,
+    favorite: true,
     setup: (width, height, rotation) => {
       return d3.geoOrthographic()
         .scale(Math.min(width, height) / 2.2)
@@ -244,6 +246,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Mercator',
     category: 'Cylindrical',
     isGlobe: false,
+    favorite: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 0;
       
@@ -290,6 +293,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Natural Earth',
     category: 'Cylindrical',
     isGlobe: false,
+    favorite: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 0;
       
@@ -359,6 +363,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Equal Earth',
     category: 'Compromise',
     isGlobe: false,
+    favorite: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 0;
       
@@ -421,6 +426,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Mollweide',
     category: 'Compromise',
     isGlobe: false,
+    favorite: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 0;
       
@@ -486,6 +492,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Spilhaus',
     category: 'Special',
     isGlobe: false,
+    favorite: true,
     setup: (width, height) => {
       const padding = 0;
 
@@ -548,6 +555,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Interrupted Mollweide',
     category: 'Special',
     isGlobe: false,
+    favorite: true,
     setup: (width, height, rotation, gridData, showWaterPoints) => {
       const padding = 0;
       
