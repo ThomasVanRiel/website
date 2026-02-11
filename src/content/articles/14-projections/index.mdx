@@ -4,24 +4,34 @@ summary: "Visualizing projection methods"
 date: "02/08/2026"
 draft: True
 tags:
-- Digital
-- Interactive
-- Cartography
+  - Digital
+  - Interactive
+  - Cartography
 ---
 
-import ProjectionVisualizer from './ProjectionVisualizer.astro';
-import Breakout from '@components/Breakout.astro';
+import ProjectionVisualizer from "./ProjectionVisualizer.astro";
+import Breakout from "@components/Breakout.astro";
 
 ## Rationale
 
-There are a lot of lists with nice figures showing the difference between cartographical projections. What's still lacking is a tool to intuitively compare the projections to see the differences in reproduction of the world. Some projections maintain distances between points while others favour an intuitive view of the world as we know it.
+There are a lot of lists with nice figures showing the difference between
+cartographical projections. What's still lacking is a tool to intuitively
+compare the projections to see the differences in reproduction of the world.
+Some projections maintain distances between points while others favour angle
+intuitive view of the world as we know it.
 
 ## Interactive projections
-Select a projection on the right of the globe and observe the change in projection. Some projections can be reoriented to change the viewing angle.  
-The dots are generated _uniform_ on the globe, sparsely dotted areas are misrepresented by the projection and are shown larger than they are. Greenland is a well known example of size misrepresentation in maps. The _'ideal'_ projection has equal spacing as the areas are represented equally.  Notice the difference between 'equal area' and 'equidistant' projections.  
 
-_This project benefits hugely from wider monitors, mobile screens don't do it justice! (check out dark/light mode!)_
+Select a projection on the right of the globe and observe the change in
+projection. Some projections can be reoriented to change the viewing angle.  
+The dots are generated _uniform_ on the globe, sparsely dotted areas are
+misrepresented by the projection and are shown larger than they are. Greenland
+is a well known example of size misrepresentation in maps. The _'ideal'_
+projection has equal spacing as the areas are represented equally.
+Notice the difference between 'equal area' and 'equidistant' projections.
 
+_This project benefits hugely from wider monitors,
+mobile screens don't do it justice! (check out dark/light mode!)_
 
 <Breakout size="xl">
   <ProjectionVisualizer />
@@ -29,15 +39,21 @@ _This project benefits hugely from wider monitors, mobile screens don't do it ju
 
 ## Some explanation
 
-Qui dolorem adipisci temporibus id. Maiores voluptatem odit in voluptatibus ea nulla enim. Ipsum soluta tempore aspernatur aut nihil. Sapiente esse soluta enim dolorem autem facilis.
+Qui dolorem adipisci temporibus id. Maiores voluptatem odit in voluptatibus ea
+nulla enim. Ipsum soluta tempore aspernatur aut nihil. Sapiente esse soluta.
 
-Rerum aperiam quia quo esse impedit. Est quis sit laborum quidem quidem delectus et molestiae. Placeat consectetur perferendis id suscipit.
+Rerum aperiam quia quo esse impedit. Est quis sit laborum quidem quidem
+delectus et molestiae. Placeat consectetur perferendis id suscipit.
 
-Eius ex eius vero in quam reprehenderit quia similique. Qui sit totam vitae. Qui illo deleniti quia voluptatum consectetur cumque sed. Dolor rerum aliquid doloribus inventore. Voluptate ratione dolor ipsam fugit magnam modi ipsum voluptates. Illum doloremque aut eos sit in sunt.
+Eius ex eius vero in quam reprehenderit quia similique. Qui sit totam vitae.
+Qui illo deleniti quia voluptatum consectetur cumque sed. Dolor rerum aliquid
+doloribus inventore. Voluptate ratione dolor ipsam fugit magnam modi Ipsum
+voluptates. Illum doloremque aut eos sit in sunt.
 
 ## references
-https://en.wikipedia.org/wiki/List_of_map_projections
-https://docs1.w3cub.com/d3~4/d3-geo-projection/#geoSinuMollweide
-https://blog.map-projections.net/spilhaus-projections-a-quintet-of-world-ocean-maps
-https://courses.ems.psu.edu/geog486/node/856
-https://storymaps.arcgis.com/stories/756bcae18d304a1eac140f19f4d5cb3d
+
+[ https://en.wikipedia.org/wiki/List_of_map_projections ]
+[ https://docs1.w3cub.com/d3~4/d3-geo-projection/#geoSinuMollweide ]
+[ https://blog.map-projections.net/spilhaus-projections-a-quintet-of-world-ocean-maps ]
+[ https://courses.ems.psu.edu/geog486/node/856 ]
+[ https://storymaps.arcgis.com/stories/756bcae18d304a1eac140f19f4d5cb3d ]
