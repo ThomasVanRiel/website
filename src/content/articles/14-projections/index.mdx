@@ -14,6 +14,17 @@ import Breakout from "@components/Breakout.astro";
 
 ## Rationale
 
+Representing the world on a 2D plane like maps is a difficult task as
+Representing a sphere on a 2D plane is a difficult task because the
+circumference does not easily relate to the enclosed area. A volume
+does not have a circumference and needs to be cut somewhere to _unwrap_
+the surface to a 2D plane.  
+Unwrapping volumes with flat surfaces is easy as the surface can be converted
+to a flat plane without stretching (just like flattening cardboard boxes when
+putting out trash.)  
+Volumes that are not flat are not as easy to flatten as they need to be stretched
+somewhere in the process.
+
 There are a lot of lists with nice figures showing the difference between
 cartographical projections. What's still lacking is a tool to intuitively
 compare the projections to see the differences in reproduction of the world.
