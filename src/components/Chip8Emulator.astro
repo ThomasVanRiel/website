@@ -18,7 +18,7 @@ const RAW_BASE = `https://raw.githubusercontent.com/${ROMS_REPO}/master`;
 const TREE_API = `https://api.github.com/repos/${ROMS_REPO}/git/trees/master?recursive=1`;
 ---
 
-<div class="chip8-wrapper not-prose my-6 flex flex-col items-center gap-4">
+<div class="chip8-wrapper not-prose my-6 flex flex-col items-center gap-4 rounded">
   <canvas
     id="chip8-canvas"
     width="64"
@@ -26,7 +26,7 @@ const TREE_API = `https://api.github.com/repos/${ROMS_REPO}/git/trees/master?rec
     data-chip8-pkg={pkgPath}
     data-raw-base={RAW_BASE}
     data-tree-api={TREE_API}
-    class="block border border-black/20 bg-black dark:border-white/20"
+    class="block bg-black rounded"
     style="width:640px;height:320px;image-rendering:pixelated;max-width:100%"
   ></canvas>
 
