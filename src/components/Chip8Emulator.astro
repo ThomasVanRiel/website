@@ -1,0 +1,193 @@
+---
+/**
+ * CHIP-8 emulator powered by a Rust/WASM core.
+ *
+ * SETUP: Copy the `pkg/` directory from the article folder to `public/`:
+ *   cp -r src/content/articles/15-LLM-tutor/pkg public/chip8/pkg
+ *
+ * Then use: <Chip8Emulator /> (uses default pkgPath="/chip8/pkg")
+ * Or:       <Chip8Emulator pkgPath="/some/other/pkg" />
+ */
+interface Props {
+  pkgPath?: string;
+}
+const { pkgPath = "/chip8/pkg" } = Astro.props;
+
+const ROMS_REPO = "kripod/chip8-roms";
+const RAW_BASE = `https://raw.githubusercontent.com/${ROMS_REPO}/master`;
+const TREE_API = `https://api.github.com/repos/${ROMS_REPO}/git/trees/master?recursive=1`;
+---
+
+<div class="chip8-wrapper not-prose my-6 flex flex-col items-center gap-4">
+  <canvas
+    id="chip8-canvas"
+    width="64"
+    height="32"
+    data-chip8-pkg={pkgPath}
+    data-raw-base={RAW_BASE}
+    data-tree-api={TREE_API}
+    class="block border border-black/20 bg-black dark:border-white/20"
+    style="width:640px;height:320px;image-rendering:pixelated;max-width:100%"
+  ></canvas>
+
+  <div class="flex w-full max-w-[640px] flex-col gap-2">
+    <!-- ROM picker from GitHub -->
+    <div class="flex gap-2">
+      <select
+        id="chip8-rom-select"
+        disabled
+        class="min-w-0 flex-1 rounded border border-black/20 bg-transparent px-2 py-1 text-sm disabled:opacity-40 dark:border-white/20"
+      >
+        <option value="">Loading ROMs…</option>
+      </select>
+      <button
+        id="chip8-load-btn"
+        disabled
+        class="rounded border border-black/20 px-3 py-1 text-sm hover:bg-black/5 disabled:opacity-40 dark:border-white/20 dark:hover:bg-white/5"
+      >
+        Load
+      </button>
+    </div>
+
+    <!-- File upload fallback -->
+    <label class="flex cursor-pointer items-center gap-2 self-start text-sm text-black/50 dark:text-white/50">
+      <span class="underline underline-offset-2 hover:text-black dark:hover:text-white">
+        or load a local ROM file
+      </span>
+      <input id="chip8-rom-file" type="file" accept=".ch8,.rom" class="sr-only" />
+    </label>
+  </div>
+
+  <p id="chip8-status" class="text-xs text-black/40 dark:text-white/40">
+    Select a ROM above or upload a .ch8 file.
+  </p>
+</div>
+
+<script is:inline type="module">
+  const canvas = document.getElementById("chip8-canvas");
+  const pkgPath = canvas.dataset.chip8Pkg;
+  const rawBase = canvas.dataset.rawBase;
+  const treeApi = canvas.dataset.treeApi;
+
+  const select = document.getElementById("chip8-rom-select");
+  const loadBtn = document.getElementById("chip8-load-btn");
+  const fileInput = document.getElementById("chip8-rom-file");
+  const status = document.getElementById("chip8-status");
+
+  // ── Load WASM ────────────────────────────────────────────────────────────
+  const { default: init, Chip8 } = await import(pkgPath + "/chip8.js");
+  await init();
+
+  // ── Keyboard ─────────────────────────────────────────────────────────────
+  const KEY_MAP = {
+    x: 0x0, "1": 0x1, "2": 0x2, "3": 0x3,
+    q: 0x4, w: 0x5, e: 0x6, a: 0x7,
+    s: 0x8, d: 0x9, z: 0xa, c: 0xb,
+    "4": 0xc, r: 0xd, f: 0xe, v: 0xf,
+  };
+  const pressed = new Set();
+  document.addEventListener("keydown", (e) => {
+    if (KEY_MAP[e.key] !== undefined) pressed.add(KEY_MAP[e.key]);
+  });
+  document.addEventListener("keyup", (e) => {
+    if (KEY_MAP[e.key] !== undefined) pressed.delete(KEY_MAP[e.key]);
+  });
+
+  // ── Emulator loop ─────────────────────────────────────────────────────────
+  let animFrame = null;
+
+  function startEmulator(rom, name) {
+    if (animFrame) cancelAnimationFrame(animFrame);
+
+    const chip8 = Chip8.new(rom);
+    const ctx = canvas.getContext("2d");
+    status.textContent = `Running: ${name}`;
+
+    function loop() {
+      const keys = new Uint8Array(pressed);
+      for (let i = 0; i < 10; i++) chip8.step(keys);
+      chip8.tick_timers();
+
+      const pixels = chip8.get_display();
+      const img = ctx.createImageData(64, 32);
+      for (let i = 0; i < 2048; i++) {
+        img.data[i * 4] = img.data[i * 4 + 1] = img.data[i * 4 + 2] = pixels[i];
+        img.data[i * 4 + 3] = 255;
+      }
+      ctx.putImageData(img, 0, 0);
+      animFrame = requestAnimationFrame(loop);
+    }
+    animFrame = requestAnimationFrame(loop);
+  }
+
+  // ── Fetch ROM from GitHub raw ─────────────────────────────────────────────
+  async function loadFromUrl(url, name) {
+    status.textContent = `Fetching ${name}…`;
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const rom = new Uint8Array(await res.arrayBuffer());
+      startEmulator(rom, name);
+    } catch (err) {
+      status.textContent = `Error loading ROM: ${err.message}`;
+    }
+  }
+
+  // ── Populate ROM select from GitHub tree API ──────────────────────────────
+  const CATEGORIES = ["games", "demos", "programs"];
+
+  try {
+    const res = await fetch(treeApi);
+    const data = await res.json();
+
+    const files = data.tree
+      .filter((f) => f.type === "blob" && f.path.endsWith(".ch8"))
+      .filter((f) => CATEGORIES.some((cat) => f.path.startsWith(cat + "/")));
+
+    // Group by directory
+    const groups = {};
+    for (const file of files) {
+      const slash = file.path.indexOf("/");
+      const dir = file.path.slice(0, slash);
+      const name = file.path.slice(slash + 1).replace(/\.ch8$/, "");
+      (groups[dir] ??= []).push({ name, path: file.path });
+    }
+
+    select.innerHTML = '<option value="">— choose a ROM —</option>';
+    for (const cat of CATEGORIES) {
+      if (!groups[cat]) continue;
+      const og = document.createElement("optgroup");
+      og.label = cat.charAt(0).toUpperCase() + cat.slice(1);
+      for (const { name, path } of groups[cat]) {
+        const opt = document.createElement("option");
+        opt.value = path;
+        opt.textContent = name;
+        og.appendChild(opt);
+      }
+      select.appendChild(og);
+    }
+
+    select.disabled = false;
+    loadBtn.disabled = false;
+    status.textContent = "Select a ROM above or upload a .ch8 file.";
+  } catch (err) {
+    select.innerHTML = '<option value="">Failed to load ROM list</option>';
+    status.textContent = `Could not reach GitHub: ${err.message}`;
+  }
+
+  // ── Load button ───────────────────────────────────────────────────────────
+  loadBtn.addEventListener("click", () => {
+    const path = select.value;
+    if (!path) return;
+    const name = select.options[select.selectedIndex].textContent;
+    loadFromUrl(`${rawBase}/${encodeURIComponent(path).replace(/%2F/g, "/")}`, name);
+  });
+
+  // ── Local file fallback ───────────────────────────────────────────────────
+  fileInput.addEventListener("change", async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    const rom = new Uint8Array(await file.arrayBuffer());
+    startEmulator(rom, file.name);
+  });
+</script>
