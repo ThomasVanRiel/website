@@ -56,6 +56,25 @@ Out"
       </div>
       <div class="flex gap-2 justify-center items-center">
         <button
+          id="undo-btn"
+          class="button px-1.5 opacity-30 cursor-not-allowed"
+          title="Undo (Ctrl+Z)"
+          disabled
+        >
+          Undo
+        </button>
+        <button
+          id="redo-btn"
+          class="button px-1.5 opacity-30 cursor-not-allowed"
+          title="Redo (Ctrl+Shift+Z)"
+          disabled
+        >
+          Redo
+        </button>
+        <span class="text-xs text-gray-400 dark:text-gray-500 hidden sm:inline">Hold Shift to snap to grid while dragging</span>
+      </div>
+      <div class="flex gap-2 justify-center items-center">
+        <button
           id="save-svg"
           class="button  px-1.5"
         >
@@ -219,6 +238,82 @@ Out"
 
   // Keep last ingredients so toggle can re-render legend without reparsing
   let lastIngredients: Ingredient[] = [];
+
+  // --- Undo/redo position history ---
+  type PositionSnapshot = Map<string, { x: number; y: number }>;
+  const undoStack: PositionSnapshot[] = [];
+  const redoStack: PositionSnapshot[] = [];
+  const MAX_HISTORY = 50;
+
+  function capturePositionSnapshot(): PositionSnapshot {
+    const snap = new Map<string, { x: number; y: number }>();
+    if (currentData && currentData.nodes) {
+      for (const n of currentData.nodes) {
+        if (typeof n.x === 'number' && typeof n.y === 'number') {
+          snap.set(n.id, { x: n.x, y: n.y });
+        }
+      }
+    }
+    return snap;
+  }
+
+  function pushUndo(snapshot: PositionSnapshot) {
+    undoStack.push(snapshot);
+    if (undoStack.length > MAX_HISTORY) undoStack.shift();
+    // Any new action clears the redo stack
+    redoStack.length = 0;
+    updateUndoRedoButtons();
+  }
+
+  function applySnapshot(snap: PositionSnapshot) {
+    if (!currentData || !currentData.nodes) return;
+    for (const n of currentData.nodes) {
+      const p = snap.get(n.id);
+      if (p) {
+        n.x = p.x;
+        n.y = p.y;
+        n.fx = null;
+        n.fy = null;
+      }
+    }
+    // Briefly restart simulation to update link positions
+    if (simulation) {
+      simulation.alpha(0.05).restart();
+    }
+  }
+
+  function performUndo() {
+    if (undoStack.length === 0) return;
+    // Save current state to redo before restoring
+    redoStack.push(capturePositionSnapshot());
+    const snap = undoStack.pop()!;
+    applySnapshot(snap);
+    updateUndoRedoButtons();
+  }
+
+  function performRedo() {
+    if (redoStack.length === 0) return;
+    // Save current state to undo before restoring
+    undoStack.push(capturePositionSnapshot());
+    const snap = redoStack.pop()!;
+    applySnapshot(snap);
+    updateUndoRedoButtons();
+  }
+
+  function updateUndoRedoButtons() {
+    const undoBtn = document.getElementById('undo-btn') as HTMLButtonElement | null;
+    const redoBtn = document.getElementById('redo-btn') as HTMLButtonElement | null;
+    if (undoBtn) {
+      undoBtn.disabled = undoStack.length === 0;
+      undoBtn.classList.toggle('opacity-30', undoStack.length === 0);
+      undoBtn.classList.toggle('cursor-not-allowed', undoStack.length === 0);
+    }
+    if (redoBtn) {
+      redoBtn.disabled = redoStack.length === 0;
+      redoBtn.classList.toggle('opacity-30', redoStack.length === 0);
+      redoBtn.classList.toggle('cursor-not-allowed', redoStack.length === 0);
+    }
+  }
 
   // Cache for the embedded font data URL
   let cachedFontDataUrl: string | null = null;
@@ -975,15 +1070,25 @@ Out"
   }
 
   // Drag functions
+  let preDragSnapshot: PositionSnapshot | null = null;
+
   function dragstarted(event: any) {
+    // Capture positions before the drag begins (for undo)
+    preDragSnapshot = capturePositionSnapshot();
     if (!event.active) simulation.alphaTarget(0.3).restart();
     event.subject.fx = event.subject.x;
     event.subject.fy = event.subject.y;
   }
 
   function dragged(event: any) {
-    event.subject.fx = event.x;
-    event.subject.fy = event.y;
+    // Snap-to-grid when Shift is held
+    if (event.sourceEvent && event.sourceEvent.shiftKey) {
+      event.subject.fx = Math.round(event.x / gridX) * gridX;
+      event.subject.fy = Math.round(event.y / gridY) * gridY;
+    } else {
+      event.subject.fx = event.x;
+      event.subject.fy = event.y;
+    }
   }
 
   function dragended(event: any) {
@@ -991,6 +1096,16 @@ Out"
     // Release the node so it can participate normally in the simulation
     event.subject.fx = null;
     event.subject.fy = null;
+
+    // Push undo state if the node actually moved
+    if (preDragSnapshot) {
+      const prev = preDragSnapshot.get(event.subject.id);
+      const moved = !prev || Math.abs(prev.x - event.subject.x) > 1 || Math.abs(prev.y - event.subject.y) > 1;
+      if (moved) {
+        pushUndo(preDragSnapshot);
+      }
+      preDragSnapshot = null;
+    }
 
     // Persist the new position for this node using its hash
     try {
@@ -2222,6 +2337,28 @@ Out `;
     }
   });
   
+  // Undo/Redo button handlers
+  document.getElementById('undo-btn')!.addEventListener('click', performUndo);
+  document.getElementById('redo-btn')!.addEventListener('click', performRedo);
+
+// Keyboard shortcuts for undo/redo
+  document.addEventListener('keydown', (e) => {
+    // Only handle when not typing in an input/textarea
+    const tag = (e.target as HTMLElement)?.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT') return;
+
+    if ((e.ctrlKey || e.metaKey) && e.key === 'z' && !e.shiftKey) {
+      e.preventDefault();
+      performUndo();
+    } else if ((e.ctrlKey || e.metaKey) && e.key === 'z' && e.shiftKey) {
+      e.preventDefault();
+      performRedo();
+    } else if ((e.ctrlKey || e.metaKey) && e.key === 'y') {
+      e.preventDefault();
+      performRedo();
+    }
+  });
+
   // Pots toggle: hide/show voronoi background and legend
   const togglePotsEl = document.getElementById('toggle-pots') as HTMLInputElement | null;
   if (togglePotsEl) {
