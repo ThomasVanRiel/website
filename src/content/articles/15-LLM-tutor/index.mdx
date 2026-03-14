@@ -66,3 +66,21 @@ The file is fully authored by Claude and is structured in several sections:
   The key in this section is in my opinion the instruction: "Let Thomas struggle productively", as reading compiler messages and exploring documentation is a key programming skill that needs to be acquired.
 
 The complete contents of `CLAUDE.md` can be read in my [`learnrust` repository](https://github.com/ThomasVanRiel/learnrust/blob/main/CLAUDE.md).
+
+## How Claude defines their assignments. Giving a snippet to define the problem/solution and prompting me to write the rest. Who's the agent now?
+
+```bash
+Now cpu.rs. Define the Cpu struct:
+
+  pub struct Cpu {
+      pub v: [u8; 16],      // general purpose registers V0-VF
+      pub i: u16,            // index register
+      pub pc: u16,           // program counter
+      pub stack: Vec<u16>,   // call stack
+  }
+
+  Add new() that initialises everything to zero and sets pc to 0x200 (where ROMs start).
+
+  Don't wire up Memory, Display, or Renderer yet — just the CPU registers for now. Get it compiling
+  then we'll add the fetch/decode/execute loop.
+```
