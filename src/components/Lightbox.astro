@@ -1,4 +1,9 @@
 ---
+interface Props {
+  license?: string
+  licenseUrl?: string
+}
+const { license, licenseUrl } = Astro.props
 ---
 
 <dialog id="lightbox" class="lightbox" aria-label="Photo viewer">
@@ -15,7 +20,22 @@
   </button>
   <figure class="lightbox-stage">
     <img class="lightbox-img" alt="" />
-    <img class="lightbox-qr" src="/qr.svg" alt="" aria-hidden="true" />
+    <div class="lightbox-meta">
+      <span class="lightbox-alt"></span>
+      <a class="lightbox-download" href="#" download hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+          <polyline points="7 10 12 15 17 10" />
+          <line x1="12" y1="15" x2="12" y2="3" />
+        </svg>
+        <span>Download original</span>
+      </a>
+      <span class="lightbox-license">
+        {license && licenseUrl ? (
+          <a rel="license" href={licenseUrl} target="_blank">{license}</a>
+        ) : license ?? ""}
+      </span>
+    </div>
   </figure>
   <button class="lightbox-btn lightbox-next" aria-label="Next" data-action="next">
     <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -46,28 +66,52 @@
     justify-content: center;
   }
   .lightbox-stage {
-    position: relative;
-    display: inline-block;
+    display: inline-flex;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.6rem;
     margin: 0;
-    line-height: 0;
+    max-width: 95vw;
   }
   .lightbox-img {
-    display: block;
+    align-self: center;
     max-width: 95vw;
-    max-height: 95vh;
+    max-height: calc(95vh - 56px);
     object-fit: contain;
+    border-radius: 6px;
     user-select: none;
-  }
-  .lightbox-qr {
-    position: absolute;
-    bottom: 1rem;
-    right: 1rem;
-    width: 10%;
-    min-width: 80px;
-    max-width: 140px;
-    aspect-ratio: 1 / 1;
     display: block;
-    pointer-events: none;
+  }
+  .lightbox-meta {
+    display: grid;
+    grid-template-columns: 1fr auto 1fr;
+    align-items: center;
+    gap: 1rem;
+    width: 100%;
+    font-size: 0.875rem;
+    color: rgba(255, 255, 255, 0.85);
+  }
+  .lightbox-alt {
+    text-align: left;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .lightbox-license {
+    text-align: right;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    min-width: 0;
+  }
+  .lightbox-license a {
+    color: inherit;
+    text-decoration: underline;
+    text-decoration-color: rgba(255, 255, 255, 0.4);
+  }
+  .lightbox-license a:hover {
+    text-decoration-color: rgba(255, 255, 255, 1);
   }
   .lightbox-btn {
     position: absolute;
@@ -99,6 +143,23 @@
     top: 50%;
     transform: translateY(-50%);
   }
+  .lightbox-download {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.75rem;
+    border-radius: 9999px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    text-decoration: none;
+    transition: background 150ms ease;
+  }
+  .lightbox-download:hover {
+    background: rgba(255, 255, 255, 0.2);
+  }
+  .lightbox-download[hidden] {
+    display: none;
+  }
 </style>
 
 <script>
@@ -112,6 +173,8 @@
     const dialog = document.getElementById("lightbox") as HTMLDialogElement | null
     if (!dialog) return
     const img = dialog.querySelector(".lightbox-img") as HTMLImageElement
+    const download = dialog.querySelector(".lightbox-download") as HTMLAnchorElement
+    const altLabel = dialog.querySelector(".lightbox-alt") as HTMLElement
     let index = 0
 
     const cells = () => Array.from(document.querySelectorAll<HTMLAnchorElement>("a.photo-cell"))
@@ -123,7 +186,17 @@
       const cell = list[index]
       img.src = cell.href
       const inner = cell.querySelector("img")
-      img.alt = inner?.alt ?? ""
+      const altText = inner?.alt ?? ""
+      img.alt = altText
+      altLabel.textContent = altText
+      const full = cell.dataset.full
+      if (full) {
+        download.href = full
+        download.hidden = false
+      } else {
+        download.removeAttribute("href")
+        download.hidden = true
+      }
     }
 
     if (state.docClick) document.removeEventListener("click", state.docClick)

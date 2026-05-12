@@ -19,3 +19,7 @@ pnpm-debug.log*
 
 # macOS-specific files
 .DS_Store
+/.claude
+
+# generated photography thumbnails (rebuilt by scripts/make-thumbs.mjs)
+public/photography/**/thumbs/

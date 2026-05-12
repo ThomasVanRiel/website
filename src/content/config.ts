@@ -36,20 +36,20 @@ const projects = defineCollection({
 
 const photography = defineCollection({
   type: "content",
-  schema: ({ image }) =>
-    z.object({
-      title: z.string(),
-      summary: z.string(),
-      date: z.coerce.date(),
-      tags: z.array(z.string()),
-      draft: z.boolean().optional(),
-      photos: z.array(
-        z.object({
-          src: image(),
-          alt: z.string(),
-        })
-      ),
-    }),
+  schema: z.object({
+    title: z.string(),
+    summary: z.string(),
+    date: z.coerce.date(),
+    tags: z.array(z.string()),
+    draft: z.boolean().optional(),
+    license: z.string().default("CC BY 4.0"),
+    photos: z.array(
+      z.object({
+        src: z.string(),
+        alt: z.string(),
+      })
+    ),
+  }),
 })
 
 const legal = defineCollection({

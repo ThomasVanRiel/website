@@ -1,12 +1,20 @@
 ---
+import { join } from "node:path"
+import { fileURLToPath } from "node:url"
 import { type CollectionEntry, getCollection } from "astro:content"
-import { Image, getImage } from "astro:assets"
+import sharp from "sharp"
 import PageLayout from "@layouts/PageLayout.astro"
 import TopLayout from "@layouts/TopLayout.astro"
 import BottomLayout from "@layouts/BottomLayout.astro"
 import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
 import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
 import Lightbox from "@components/Lightbox.astro"
+import { SITE } from "@consts"
+
+const publicDir = fileURLToPath(new URL("../../../public", import.meta.url))
+
+const THUMB_WIDTHS = [480, 720, 1080, 1440]
+const LIGHTBOX_WIDTH = 1800
 
 export async function getStaticPaths() {
 	const photos = await getCollection("photography")
@@ -18,17 +26,75 @@ export async function getStaticPaths() {
 
 type Props = CollectionEntry<"photography">
 const photo = Astro.props
-const { title, summary, photos } = photo.data
+const { title, summary, photos, license, date } = photo.data
+
+function thumbUrl(slug: string, src: string, width: number) {
+  const stem = src.replace(/\.[^.]+$/, "")
+  return `/photography/${slug}/thumbs/${width}/${stem}.webp`
+}
 
 const gallery = await Promise.all(
   photos.map(async ({ src, alt }) => {
-    const large = await getImage({ src, width: 1800, format: "webp" })
-    return { src, alt, largeSrc: large.src }
+    const originalPath = join(publicDir, "photography", photo.slug, src)
+    const meta = await sharp(originalPath).metadata()
+    const swap = (meta.orientation ?? 1) >= 5
+    const width = (swap ? meta.height : meta.width) ?? 1
+    const height = (swap ? meta.width : meta.height) ?? 1
+    const largeWidth = Math.min(width, LIGHTBOX_WIDTH)
+    const largeHeight = Math.round((largeWidth * height) / width)
+    const fullSrc = `/photography/${photo.slug}/${src}`
+    const largeSrc = thumbUrl(photo.slug, src, LIGHTBOX_WIDTH)
+    const defaultSrc = thumbUrl(photo.slug, src, THUMB_WIDTHS[THUMB_WIDTHS.length - 1])
+    const srcset = THUMB_WIDTHS.map((w) => `${thumbUrl(photo.slug, src, w)} ${w}w`).join(", ")
+    return { alt, width, height, largeWidth, largeHeight, largeSrc, fullSrc, defaultSrc, srcset }
   })
 )
+
+const LICENSE_URLS: Record<string, string> = {
+  "CC BY 4.0": "https://creativecommons.org/licenses/by/4.0/",
+  "CC BY-SA 4.0": "https://creativecommons.org/licenses/by-sa/4.0/",
+  "CC BY-NC 4.0": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "CC BY-ND 4.0": "https://creativecommons.org/licenses/by-nd/4.0/",
+  "CC BY-NC-SA 4.0": "https://creativecommons.org/licenses/by-nc-sa/4.0/",
+  "CC BY-NC-ND 4.0": "https://creativecommons.org/licenses/by-nc-nd/4.0/",
+  "CC0 1.0": "https://creativecommons.org/publicdomain/zero/1.0/",
+}
+const licenseUrl = LICENSE_URLS[license]
+
+const author = { "@type": "Person", name: SITE.AUTHOR }
+const copyrightNotice = `© ${date.getFullYear()} ${SITE.AUTHOR}`
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ImageGallery",
+  name: title,
+  description: summary,
+  url: new URL(Astro.url.pathname, Astro.site).href,
+  datePublished: date.toISOString(),
+  author,
+  creator: author,
+  copyrightHolder: author,
+  copyrightNotice,
+  ...(licenseUrl ? { license: licenseUrl } : {}),
+  image: gallery.map(({ alt, largeSrc, largeWidth, largeHeight }) => ({
+    "@type": "ImageObject",
+    contentUrl: new URL(largeSrc, Astro.site).href,
+    width: largeWidth,
+    height: largeHeight,
+    name: alt,
+    description: alt,
+    creditText: SITE.AUTHOR,
+    creator: author,
+    copyrightHolder: author,
+    copyrightNotice,
+    ...(licenseUrl
+      ? { license: licenseUrl, acquireLicensePage: licenseUrl }
+      : {}),
+  })),
+}
 ---
 
 <PageLayout title={title} description={summary}>
+  <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
   <TopLayout size="2xl">
     <div class="animate">
       <ArticleTopLayout entry={photo} />
@@ -37,24 +103,27 @@ const gallery = await Promise.all(
   <BottomLayout size="2xl">
     <div class="animate">
       {gallery.length > 0 && (
-        <div class="photo-grid mb-8">
-          {gallery.map(({ src, alt, largeSrc }) => {
-            const ar = src.width / src.height
+        <div class="photo-grid mb-4">
+          {gallery.map(({ alt, width, height, defaultSrc, srcset, largeSrc, fullSrc }) => {
+            const ar = width / height
             const span = Math.max(1, Math.round(30 / ar))
             return (
               <a
                 href={largeSrc}
                 class="photo-cell"
                 style={`grid-row: span ${span}`}
-                data-w={src.width}
-                data-h={src.height}
+                data-w={width}
+                data-h={height}
+                data-full={fullSrc}
                 aria-label={`Open ${alt}`}
               >
-                <Image
-                  src={src}
-                  alt={alt}
-                  widths={[480, 720, 1080, 1440]}
+                <img
+                  src={defaultSrc}
+                  srcset={srcset}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 700px"
+                  alt={alt}
+                  width={width}
+                  height={height}
                   loading="lazy"
                   decoding="async"
                 />
@@ -63,12 +132,20 @@ const gallery = await Promise.all(
           })}
         </div>
       )}
+      <p class="text-sm opacity-75 mb-8">
+        © {date.getFullYear()} {SITE.AUTHOR} ·
+        {licenseUrl ? (
+          <> Licensed under <a rel="license" href={licenseUrl} target="_blank" class="underline hover:opacity-100">{license}</a></>
+        ) : (
+          <> {license}</>
+        )}
+      </p>
       <ArticleBottomLayout entry={photo} />
     </div>
   </BottomLayout>
 </PageLayout>
 
-<Lightbox />
+<Lightbox license={license} licenseUrl={licenseUrl} />
 
 <style>
   .photo-grid {
@@ -125,7 +202,6 @@ const gallery = await Promise.all(
 
   function init() {
     tightenGrid()
-    // Re-tighten once images report their natural size in case fonts/layout shifted
     document.querySelectorAll<HTMLImageElement>(".photo-cell img").forEach((img) => {
       if (img.complete) return
       img.addEventListener("load", schedule, { once: true })

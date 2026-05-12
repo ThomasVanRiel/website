@@ -3,6 +3,9 @@
   "type": "module",
   "version": "1.0.0",
   "scripts": {
+    "thumbs": "node scripts/make-thumbs.mjs",
+    "predev": "npm run thumbs",
+    "prebuild": "npm run thumbs",
     "dev": "astro dev",
     "dev:network": "astro dev --host",
     "start": "astro dev",
