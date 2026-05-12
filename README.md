@@ -62,6 +62,19 @@ src/content/photography/<slug>/index.md   # frontmatter only
 
 The frontmatter order = display order in the mosaic. The lightbox shows the 1800 px variant; the "Original" pill downloads the original from `public/photography/<slug>/<file>`. The licence line (e.g. CC BY 4.0) is the asks-nicely contract — viewers are expected to respect it.
 
+### Netlify build cache
+
+`public/photography/**/thumbs/` is gitignored, and Netlify starts each build from a clean git checkout — so every deploy currently regenerates every thumbnail. Fine while the collection is small (a few seconds). When it grows, persist thumbs across builds with [`netlify-plugin-cache`](https://github.com/munter/netlify-plugin-cache) in a `netlify.toml`:
+
+```toml
+[[plugins]]
+  package = "netlify-plugin-cache"
+  [plugins.inputs]
+    paths = ["public/photography"]
+```
+
+The script's mtime-based skip will then only rebuild new/changed photos.
+
 ### SEO / licensing
 
 Each entry page emits a JSON-LD `ImageGallery` block with per-image `ImageObject` entries that carry `license`, `acquireLicensePage`, `creditText`, and copyright metadata — verifiable in [Google's Rich Results Test](https://search.google.com/test/rich-results).
