@@ -12,7 +12,7 @@ npm run preview      # serve the production build locally
 npm run lint         # ESLint
 ```
 
-Requires Node 22+ and ImageMagick 7 on `PATH` (`magick --version`).
+Requires Node 22+. No external binaries — Sharp (a dep) handles image processing.
 
 ## Content
 
@@ -58,7 +58,7 @@ src/content/photography/<slug>/index.md   # frontmatter only
        alt: Another description
    ---
    ```
-3. **Run `npm run dev`** (or `npm run thumbs` directly). The build script invokes ImageMagick to generate WebP thumbnails at 480/720/1080/1440/1800 px under `public/photography/<slug>/thumbs/`, applying EXIF orientation so portraits stay portrait. mtime-based skip avoids re-encoding files that are up to date.
+3. **Run `npm run dev`** (or `npm run thumbs` directly). The build script uses Sharp to generate WebP thumbnails at 480/720/1080/1440/1800 px under `public/photography/<slug>/thumbs/`, applying EXIF orientation so portraits stay portrait. mtime-based skip avoids re-encoding files that are up to date.
 
 The frontmatter order = display order in the mosaic. The lightbox shows the 1800 px variant; the "Original" pill downloads the original from `public/photography/<slug>/<file>`. The licence line (e.g. CC BY 4.0) is the asks-nicely contract — viewers are expected to respect it.
 

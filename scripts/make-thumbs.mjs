@@ -2,17 +2,13 @@
 import { existsSync, mkdirSync, statSync } from "node:fs"
 import { readdir } from "node:fs/promises"
 import { basename, dirname, extname, join } from "node:path"
-import { execFileSync } from "node:child_process"
+import sharp from "sharp"
 
 const ROOT = process.cwd()
 const ALBUMS_ROOT = join(ROOT, "public", "photography")
 const WIDTHS = [480, 720, 1080, 1440, 1800]
 const QUALITY = 85
 const SOURCE_EXT = /\.(jpe?g|png|tif?f)$/i
-
-function magick(...args) {
-  execFileSync("magick", args, { stdio: ["ignore", "ignore", "inherit"] })
-}
 
 async function processAlbum(albumName) {
   const dir = join(ALBUMS_ROOT, albumName)
@@ -29,13 +25,12 @@ async function processAlbum(albumName) {
       if (existsSync(out) && statSync(out).mtimeMs >= srcStat.mtimeMs) continue
       mkdirSync(dirname(out), { recursive: true })
 
-      magick(
-        src,
-        "-auto-orient",
-        "-resize", `${w}x`,
-        "-quality", String(QUALITY),
-        out
-      )
+      await sharp(src)
+        .rotate()
+        .resize({ width: w, withoutEnlargement: true })
+        .webp({ quality: QUALITY })
+        .toFile(out)
+
       console.log(`[thumbs] ${albumName}/${entry.name} → ${w}px`)
       made++
     }
