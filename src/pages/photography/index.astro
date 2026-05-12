@@ -1,0 +1,28 @@
+---
+import { getCollection } from "astro:content"
+import PageLayout from "@layouts/PageLayout.astro"
+import TopLayout from "@layouts/TopLayout.astro"
+import BottomLayout from "@layouts/BottomLayout.astro"
+import Photography from "@components/Photography"
+import { PHOTOGRAPHY } from "@consts"
+
+const photos = (await getCollection("photography"))
+  .filter(photo => !photo.data.draft)
+  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
+
+const tags = [...new Set(photos.flatMap(photo => photo.data.tags))]
+  .sort((a, b) => a.localeCompare(b))
+---
+
+<PageLayout title={PHOTOGRAPHY.TITLE} description={PHOTOGRAPHY.DESCRIPTION}>
+  <TopLayout>
+    <div class="animate page-heading">
+      {PHOTOGRAPHY.TITLE}
+    </div>
+  </TopLayout>
+  <BottomLayout>
+    <div class="animate">
+      <Photography client:load tags={tags} data={photos} />
+    </div>
+  </BottomLayout>
+</PageLayout>
