@@ -1,0 +1,73 @@
+---
+title: "The math of a good train track"
+summary: "Turning a kid's question \"is this a good train track?\" into something we can actually measure, with a little graph theory and a random walk."
+date: "05/28/2026"
+draft: true
+tags:
+  - Math
+---
+
+## Rationale
+
+Anyone who has snapped together a wooden or plastic train track has, at some point, stepped back and wondered whether the layout they just built is any *good*. There's a real instinct behind that question — some tracks feel satisfying to run a train on, others feel broken. This article turns that instinct into something we can measure, using two small bits of math hiding inside the toy.
+
+## Can the train reach everywhere?
+
+The first question a builder asks, even without naming it that way: if I set the train down and let it run, will it eventually visit every piece of track? And — the stricter version — can it do that while only ever going *forward*, never reversing? Finding disconnected pieces of track is easy, but it takes a bit more effort to figure out the latter.
+
+### Drawing the track as a graph
+
+A track is a collection of straight pieces, curves, and switches connecting them. Switches are the interesting part: they're the points where the train has a *choice*. Once we draw each segment as an edge and each junction as a node, the question becomes a question about a graph.
+
+There's a subtlety the graph alone hides: every real piece has a "male" end and a "female" end, so a valid track has to alternate M → F → M → F at every joint. Two male ends or two female ends bumping into each other simply won't connect. That's a *parity* constraint sitting on top of the graph — and it's exactly what adapter pieces are for.
+
+### Do adapter-heavy layouts score better?
+
+There's a tempting hypothesis: a track that *requires* adapters to be built must be doing something topologically more interesting — somewhere along the layout, the orientation of pieces is reversing without the train itself reversing direction. If the math worked out cleanly, we could use adapter count as a quick "layout complexity" proxy.
+
+It doesn't, quite. The number of adapters around any loop is always *even*, so there's no parity invariant forcing a track to need any — and a plain oval (zero adapters) already scores fine on reachability and section scoring. What adapter count actually measures is the number of orientation transitions in the layout: how often pieces flip direction relative to their neighbours. That's a real quantity, and it might correlate with the scoring metrics, but proving the link is an open question worth investigating with the interactive tool from Article 17.
+
+### Going in one direction
+
+A single-direction train cannot back up out of a dead end, so reaching every segment imposes a real constraint on the layout. The relevant graph property here is strong connectivity, and — if we want every *segment* covered rather than every junction — we drift into Eulerian-circuit territory.
+
+## Which sections see the most action?
+
+Even on a track where the train *can* reach everything, some sections will see a lot more traffic than others. If we flip the switches randomly each time the train passes, where does it spend its time?
+
+### A random walk on the track
+
+Random switch settings turn the train's path into a random walk on the graph of segments. Each segment then has a long-run probability of being occupied — the stationary distribution of a Markov chain — and that probability is a natural "score" for the section. Busy junctions score high; isolated spurs score low.
+
+The same idea shows up all over the place. The closest cousin to our train problem is Monopoly: which square gets landed on the most? It's a Markov chain on the board, and the answer (the orange properties) comes out of exactly the calculation we're about to do here. Google's original PageRank ranked the entire web by modelling a random surfer clicking from page to page. Predictive text on your phone guesses the next word the same way. Markov chains are how you ask "where does this end up, on average, if you let it run forever?"
+
+### Estimating with Monte Carlo
+
+The stationary distribution has a closed form, but a Monte Carlo simulation — just running a virtual train for a few thousand steps and counting visits — is far more intuitive, and gives us a useful sanity check against the analytical answer.
+
+The technique is named after the casino in Monaco, and was invented in the 1940s at Los Alamos when physicists working on nuclear reactions realised some problems were easier to *simulate* than to solve with pen and paper. The same trick is everywhere today: weather services run hundreds of slightly-different simulations to get probability forecasts, banks estimate the risk of a portfolio by rolling thousands of imaginary futures, animated films render realistic lighting by shooting millions of virtual rays of light, and AlphaGo picked its moves by playing out millions of random games in its head. The toy version anyone can try: estimate π by throwing virtual darts at a square and counting how many land inside an inscribed circle.
+
+### Drawing the score
+
+The natural way to surface these per-segment probabilities on the track itself is to draw a shape that grows alongside each segment in proportion to its traffic. Splitting that shape into a *left* half and a *right* half — one bulge per direction of travel — turns out to reveal more than the totals alone.
+
+A *symmetric* bulge means the segment is a two-way street: the train passes through it about as often in each direction. A *lopsided* bulge means the segment is effectively one-directional — the layout funnels traffic through it in only one orientation. A plain oval shows up as 100% one-sided everywhere; a balloon track shows up as a symmetric trunk feeding a one-sided loop. So the visualisation isn't just an aesthetic display of the score — the symmetry pattern surfaces the directional structure of the layout for free.
+
+## Quick tips
+
+If you don't want to read the math, here's what falls out of it:
+
+- **Switches are where the magic happens.** Every switch is a decision point that mixes the train across the track. As a rule of thumb, more switches → more even coverage and a more interesting layout.
+- **Spread switches around.** Two switches sitting next to each other only give the train one *meaningful* choice — the second one is usually wasted. Distribute them across the layout instead.
+- **Watch out for switches that funnel back to the same place.** If both branches rejoin within a few segments, the choice doesn't really matter; you're paying for a switch and getting a straight piece.
+- **Adapters (male-male, female-female) fix polarity mismatches.** When two sections approach each other with the same connector type — two male ends, or two female ends — they can't join. Adapters flip the polarity so the joint works. In the math they're pass-through pieces (they don't change which sections see the most action on a given graph), but in practice they're what lets you build the graph at all when the natural piece flow doesn't line up.
+- **A loop with a spur beats a long straight line.** Even one switch off a loop already creates the kind of branching behaviour the scoring rewards.
+- **Avoid dead ends if you want one-direction running.** A spur with no way out forces the train to either reverse or get stuck.
+
+## Future work
+
+The fun part comes next: making all of this tangible. A companion piece (Article 17) will turn the math above into something you can play with — draw a track, watch the scoring light up, and let the computer suggest layouts of its own.
+
+- An interactive editor where you draw a track and watch the per-direction scoring fill in live — including the diagnostic left/right asymmetry that tells you which segments are one-way loops versus two-way trunks.
+- A constraint that the layout uses every piece in a fixed inventory — turning "good track" into a concrete optimisation problem.
+- A stochastic generator that builds valid random layouts from a given box of pieces, so kids can compare their own designs against what the computer comes up with.
