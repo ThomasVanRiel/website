@@ -47,8 +47,8 @@ const isDesktop = variant === 'desktop';
 
     {/* Desktop floating sidebar */}
     {isDesktop && (
-      <aside class="hidden xxl:block fixed right-8 top-32 w-64 max-h-[calc(100vh-10rem)] overflow-y-auto">
-        <details class="toc-desktop-details" open>
+      <aside class="hidden xxl:block absolute top-0 bottom-0 left-full ml-8 w-64">
+        <details class="toc-desktop-details sticky top-32 max-h-[calc(100vh-10rem)] overflow-y-auto" open>
           <summary class="cursor-pointer text-sm font-semibold uppercase text-black dark:text-white flex items-center justify-between mb-4">
             <span>On This Page</span>
             <svg class="w-4 h-4 transition-transform toc-arrow" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">

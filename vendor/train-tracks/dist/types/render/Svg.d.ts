@@ -1,0 +1,20 @@
+import type { JSX } from "solid-js";
+import type { Track } from "../track/types";
+import type { ScoreMap } from "../scoring/types";
+import { type BBox } from "./bounds";
+type Props = {
+    track: Track;
+    bbox?: BBox;
+    scores?: ScoreMap;
+    bulgeScale?: number;
+    selectedPieceId?: string | null;
+    onSelectPiece?: (id: string | null) => void;
+    onHoverPiece?: (id: string | null) => void;
+    showPolarity?: boolean;
+    showAdapters?: boolean;
+    class?: string;
+    children?: JSX.Element;
+    svgRef?: (el: SVGSVGElement) => void;
+};
+export default function Svg(props: Props): JSX.Element;
+export {};
