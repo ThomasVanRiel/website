@@ -10,11 +10,12 @@ tags:
 
 import TrackOval from "./TrackOval.astro";
 import TrackOvalDiagonal from "./TrackOvalDiagonal.astro";
+import TrackOval2Diagonal from "./TrackOval2Diagonal.astro";
 import TrackReal1 from "./TrackReal1.astro";
 
 Note for LLM secretary: this article is just a scaffold for future writing. The current state collects ideas.
 
-The editor is live [here](https://brio-simulator.netlify.app/).
+The editor is live (but work in progress) [on this webpage](https://brio-simulator.netlify.app/).
 
 ## Ideas
 
@@ -22,8 +23,9 @@ State that the math should be doable using graph theory, but that it is too diff
 State the simplifications I made to the brio tracks to solve constraints (magic connectors to replace real-life play in connections, and to simplify adapters.)
 Give definitions of mathematical/scientific terminology when they come into play. We can use this article as a teaching tool for a general audience.
 What is ergodic?
-Set ground rules at front
+Set ground rules at front.
 Stress that the figures are random (monte carlo). They start from a known state to show what I want to show, but the relavant point can be instant or after several passes of the train. This needs to be clear to the reader.
+Is linking the concept to a digital twin a stretch?
 
 ## Rationale
 
@@ -54,6 +56,10 @@ A single-direction train cannot back up out of a dead end, so reaching every seg
 If a diagonal interconnect is added to the track, that segment is reachable in one direction only. As soon as the train passed the segment, the direction is fixed and the diagonal segment can never be reached again.
 
 <TrackOvalDiagonal />
+
+Adding a second diagonal interconnect allows the train to change directions once again. Every segment of track gets visited the same amount, on average.
+
+<TrackOval2Diagonal />
 
 We can apply this on a real track as well:
 

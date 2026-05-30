@@ -11,7 +11,8 @@
     "preview:network": "astro dev --host",
     "astro": "astro",
     "lint": "eslint .",
-    "lint:fix": "eslint . --fix"
+    "lint:fix": "eslint . --fix",
+    "sync:train-tracks": "npm --prefix ../train-tracks run build:lib && rm -rf vendor/train-tracks/dist && cp -r ../train-tracks/dist vendor/train-tracks/dist"
   },
   "dependencies": {
     "@astrojs/check": "^0.5.10",
@@ -41,7 +42,7 @@
     "three": "^0.180.0",
     "three-csg-ts": "^3.2.0",
     "typescript": "^5.8.2",
-    "train-tracks": "file:../train-tracks/"
+    "train-tracks": "file:vendor/train-tracks"
   },
   "devDependencies": {
     "@eslint/css": "^0.14.1",

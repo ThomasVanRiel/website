@@ -32,9 +32,7 @@ const { headings } = await post.render()
   <BottomLayout>
     <div class="animate">
       <TableOfContents headings={headings} />
-      <ArticleBottomLayout entry={post} />
+      <ArticleBottomLayout entry={post} headings={headings} />
     </div>
   </BottomLayout>
-  <!-- Floating TOC for desktop -->
-  <TableOfContents headings={headings} variant="desktop" />
 </PageLayout>

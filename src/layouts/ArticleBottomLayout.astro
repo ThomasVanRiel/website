@@ -1,13 +1,17 @@
 ---
 import { type CollectionEntry, getCollection } from "astro:content";
+import type { MarkdownHeading } from "astro";
+import TableOfContents from "@components/TableOfContents.astro";
 
 type Props = {
   entry: CollectionEntry<"articles"> | CollectionEntry<"projects"> | CollectionEntry<"photography">;
+  headings?: MarkdownHeading[];
 };
 
 // Get the requested entry
-const { entry } = Astro.props;
-const { collection } = entry;
+const { entry, headings } = Astro.props;
+const { collection, data } = entry;
+const isDraft = "draft" in data && data.draft;
 const { Content } = await entry.render();
 
 // Get the next and prev entries without wraparound
@@ -20,7 +24,20 @@ const prev = index < items.length - 1 ? items[index + 1] : null;
 const next = index > 0 ? items[index - 1] : null;
 ---
 
-<div>
+<div class="relative">
+  {isDraft && (
+    <div
+      aria-hidden="true"
+      class="hidden lg:block absolute top-0 bottom-0 right-full mr-8 select-none pointer-events-none"
+    >
+      <span
+        class="sticky top-24 block [writing-mode:vertical-rl] rotate-180 text-6xl font-bold uppercase tracking-widest text-black/10 dark:text-white/10"
+      >
+        Draft
+      </span>
+    </div>
+  )}
+  {headings && <TableOfContents headings={headings} variant="desktop" />}
   <article>
     <Content />
   </article>

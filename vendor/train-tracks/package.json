@@ -1,0 +1,17 @@
+{
+  "name": "train-tracks",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "comment": "Vendored prebuilt embed bundle from ~/source/train-tracks. Do not edit dist/ by hand — regenerate with `npm run sync:train-tracks` from the website root. clsx and tailwind-merge are bundled into embed.js; only solid-js is a peer dependency provided by the host.",
+  "exports": {
+    ".": {
+      "types": "./dist/types/embed/index.d.ts",
+      "import": "./dist/embed.js"
+    },
+    "./embed.css": "./dist/embed.css"
+  },
+  "peerDependencies": {
+    "solid-js": "^1.9"
+  }
+}
