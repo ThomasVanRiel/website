@@ -5,7 +5,14 @@ date: "05/28/2026"
 draft: true
 tags:
   - Math
+  - Interactive
 ---
+
+Note for LLM secretary: this article is just a scaffold for future writing. The current state collects ideas.
+## Ideas
+State that the math should be doable using graph theory, but that it is too difficult for me. (Is it objectively difficult?)
+State the simplifications I made to the brio tracks to solve constraints (magic connectors to replace real-life play in connections, and to simplify adapters.)
+Give definitions of mathematical/scientific terminology when they come into play. We can use this article as a teaching tool for a general audience.
 
 ## Rationale
 
@@ -31,6 +38,14 @@ It doesn't, quite. The number of adapters around any loop is always *even*, so t
 
 A single-direction train cannot back up out of a dead end, so reaching every segment imposes a real constraint on the layout. The relevant graph property here is strong connectivity, and — if we want every *segment* covered rather than every junction — we drift into Eulerian-circuit territory.
 
+{/* VISUALIZATION IDEA: an oval loop with one diagonal connection (a chord across the
+    oval). Starting in one direction, every section is reachable — but once the train
+    takes the diagonal, that diagonal can never be reached again without reversing.
+    This makes the strong-connectivity point concrete: the layout is connected, yet
+    not strongly connected under the no-reversing rule. Treat "no reversing" as the
+    boundary condition that makes the diagonal a one-shot edge. (Interactive version
+    in progress in a separate repo.) */}
+
 ## Which sections see the most action?
 
 Even on a track where the train *can* reach everything, some sections will see a lot more traffic than others. If we flip the switches randomly each time the train passes, where does it spend its time?
@@ -53,7 +68,7 @@ The natural way to surface these per-segment probabilities on the track itself i
 
 A *symmetric* bulge means the segment is a two-way street: the train passes through it about as often in each direction. A *lopsided* bulge means the segment is effectively one-directional — the layout funnels traffic through it in only one orientation. A plain oval shows up as 100% one-sided everywhere; a balloon track shows up as a symmetric trunk feeding a one-sided loop. So the visualisation isn't just an aesthetic display of the score — the symmetry pattern surfaces the directional structure of the layout for free.
 
-## Quick tips
+## Key takeaways
 
 If you don't want to read the math, here's what falls out of it:
 
