@@ -40,7 +40,8 @@
     "tailwindcss": "^3.4.17",
     "three": "^0.180.0",
     "three-csg-ts": "^3.2.0",
-    "typescript": "^5.8.2"
+    "typescript": "^5.8.2",
+    "train-tracks": "file:../train-tracks/"
   },
   "devDependencies": {
     "@eslint/css": "^0.14.1",

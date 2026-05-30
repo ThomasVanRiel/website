@@ -1,0 +1,11 @@
+---
+import "train-tracks/embed.css";
+---
+<div id="tt-oval-diagonal"></div>
+<script>
+  import { mountTrackLiveMC } from "train-tracks";
+  mountTrackLiveMC(document.getElementById("tt-oval-diagonal")!, {
+    preset: "oval-diagonal",
+    initialSpeed: 20,
+  });
+</script>

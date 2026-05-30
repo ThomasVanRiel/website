@@ -1,0 +1,12 @@
+---
+import "train-tracks/embed.css";
+---
+<div id="tt-real1"></div>
+<script>
+  import { mountTrackLiveMC } from "train-tracks";
+  import figure from "./TrackReal1.json";
+  mountTrackLiveMC(document.getElementById("tt-real1")!, {
+    track: figure,
+    initialSpeed: 20,
+  });
+</script>
