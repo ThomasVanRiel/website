@@ -12,96 +12,352 @@ import TrackOval from "./TrackOval.astro";
 import TrackOvalDiagonal from "./TrackOvalDiagonal.astro";
 import TrackOval2Diagonal from "./TrackOval2Diagonal.astro";
 import TrackReal1 from "./TrackReal1.astro";
+import ResearchQuestion from "@components/ResearchQuestion.astro";
+import Scaffold from "@components/Scaffold.astro";
 
-Note for LLM secretary: this article is just a scaffold for future writing. The current state collects ideas.
+export const questions = [
+  {
+    number: 1,
+    question: "Can the train reach everywhere?",
+    hypothesis:
+      "SCAFFOLD: One-line framing — e.g. 'A train going forward only may not be able to reach all parts of a layout.'",
+    answer:
+      "SCAFFOLD: Short direct answer to Q1 — e.g. 'Only if the layout is strongly connected. One badly placed diagonal can cut off segments; a second one can restore access.'",
+  },
+  {
+    number: 2,
+    question: "Which part of the track sees the most traffic?",
+    hypothesis:
+      "SCAFFOLD: One-line framing — e.g. 'Some segments will be passed far more often than others depending on how switches are arranged.'",
+    answer:
+      "SCAFFOLD: Short direct answer to Q2 — e.g. 'Switches are the great equalizer. More switches spread across the layout means more even traffic. The score figures show exactly where traffic concentrates.'",
+  },
+  {
+    number: 3,
+    question: "How do I build a better track?",
+    hypothesis:
+      "SCAFFOLD: One-line framing — e.g. 'The answers to the first two questions translate directly into design rules any builder can apply.'",
+    answer:
+      "SCAFFOLD: Short direct answer to Q3 — point to the quick tips below, or write a one-sentence summary.",
+  },
+];
 
-The editor is live (but work in progress) [on this webpage](https://brio-simulator.netlify.app/).
+<Scaffold>
+IDEAS (resolved — kept for reference, delete when done)
 
-## Ideas
+- "State that the math should be doable using graph theory, but that it is too difficult for me."
+  Resolved: the graph theory section introduces the concepts at a high level and outsources the
+  heavy lifting to Numberphile links.
 
-State that the math should be doable using graph theory, but that it is too difficult for me. (Is it objectively difficult?)
-State the simplifications I made to the brio tracks to solve constraints (magic connectors to replace real-life play in connections, and to simplify adapters.)
-Give definitions of mathematical/scientific terminology when they come into play. We can use this article as a teaching tool for a general audience.
-What is ergodic?
-Set ground rules at front.
-Stress that the figures are random (monte carlo). They start from a known state to show what I want to show, but the relavant point can be instant or after several passes of the train. This needs to be clear to the reader.
-Is linking the concept to a digital twin a stretch?
+- "State the simplifications I made to the brio tracks (magic connectors, adapters)."
+  Resolved: covered in "The track as a graph" subsection. Magic connectors get one sentence there.
 
-## Rationale
+- "Give definitions of mathematical/scientific terminology when they come into play."
+  Resolved: terminology is introduced in the two methods sections with plain-language definitions
+  before any formal name is used.
 
-Anyone who has snapped together a wooden or plastic train track has, at some point, stepped back and wondered whether the layout they just built is any _good_. There's a real instinct behind that question — some tracks feel satisfying to run a train on, others feel broken. This article turns that instinct into something we can measure, using two small bits of math hiding inside the toy.
+- "What is ergodic?"
+  Resolved: not needed. The concept is implicit in the stationary distribution discussion but
+  naming it adds nothing for a general audience.
 
-## Can the train reach everywhere?
+- "Set ground rules at front."
+  Resolved: the three research questions in the rationale serve this purpose.
 
-The first question a builder asks, even without naming it that way: if I set the train down and let it run, will it eventually visit every piece of track? And — the stricter version — can it do that while only ever going _forward_, never reversing? Finding disconnected pieces of track is easy, but it takes a bit more effort to figure out the latter.
+- "Stress that the figures are random (Monte Carlo)."
+  Resolved: addressed in "How to read the figures" subsection.
 
-### Drawing the track as a graph
+- "Is linking the concept to a digital twin a stretch?"
+  Resolved: no, use it. One sentence in the Monte Carlo subsection is enough.
+
+</Scaffold>
+
+<Scaffold>
+  RATIONALE — no heading, flows directly from the title. Open with the physical,
+  intuitive moment: a kid steps back from a finished layout and wonders if it's
+  any good. Then pivot: this article turns that instinct into something
+  measurable. Keep it short — two or three sentences at most before the research
+  questions appear.
+</Scaffold>
+
+Anyone who has snapped together a wooden or plastic train track has, at some point, stepped back and wondered whether the layout they just built is any _good_. There's a real instinct behind that question — some tracks feel satisfying to run a train on, others feel broken. This article turns that instinct into something we can measure.
+
+{questions.map(({ answer, ...q }) => <ResearchQuestion {...q} />)}
+
+<Scaffold>
+  TRANSITION TO METHODS — one sentence bridging the questions to the methods
+  sections. Something like: "To answer these, we need two things: a precise way
+  to describe the track, and a way to run it virtually."
+</Scaffold>
+
+## Graph theory, the math behind train tracks
+
+<Scaffold>
+  Open by explaining why graph theory is the right lens. The track has pieces
+  and junctions; graph theory studies exactly that kind of structure. Once you
+  draw the track as a graph, questions about the train become questions
+  mathematicians have been studying for centuries. Keep it visual and friendly;
+  no equations.
+</Scaffold>
+
+### The track as a graph
+
+<Scaffold>
+Explain nodes (junctions / endpoints) and edges (track segments). One simple static diagram here
+would help — not an interactive embed, just a hand-drawn-style illustration showing a few pieces
+becoming a graph. Stress that switches are the interesting nodes: they're the points where the
+train has a choice, and therefore where the math gets interesting.
+
+Then: the parity constraint. Every piece has a male and a female end; the track must alternate
+M -> F -> M -> F at every joint. Two male ends or two female ends can't connect. Adapter pieces
+fix this. In the simulator, magic connectors replace real-life freeform fitting: they define a
+specific path between two endpoints so the program can reason about the layout.
+
+Do NOT go further into adapters (the "do adapter-heavy layouts score better?" question from the
+old draft is cut — it led nowhere useful for the reader).
+
+</Scaffold>
 
 A track is a collection of straight pieces, curves, and switches connecting them. Switches are the interesting part: they're the points where the train has a _choice_. Once we draw each segment as an edge and each junction as a node, the question becomes a question about a graph.
 
 There's a subtlety the graph alone hides: every real piece has a "male" end and a "female" end, so a valid track has to alternate M → F → M → F at every joint. Two male ends or two female ends bumping into each other simply won't connect. That's a _parity_ constraint sitting on top of the graph — and it's exactly what adapter pieces are for.
 
-### Do adapter-heavy layouts score better?
+<Scaffold>
+  OBSOLETE — do not restore: "Do adapter-heavy layouts score better?" The
+  adapter-count-as- complexity-proxy hypothesis doesn't hold. Content is
+  mathematically correct but leads nowhere the reader can use. Cut entirely.
+</Scaffold>
 
-There's a tempting hypothesis: a track that _requires_ adapters to be built must be doing something topologically more interesting — somewhere along the layout, the orientation of pieces is reversing without the train itself reversing direction. If the math worked out cleanly, we could use adapter count as a quick "layout complexity" proxy.
+### Connectivity
 
-It doesn't, quite. The number of adapters around any loop is always _even_, so there's no parity invariant forcing a track to need any — and a plain oval (zero adapters) already scores fine on reachability and section scoring. What adapter count actually measures is the number of orientation transitions in the layout: how often pieces flip direction relative to their neighbours. That's a real quantity, and it might correlate with the scoring metrics, but proving the link is an open question worth investigating with the interactive tool from Article 17.
+<Scaffold>
+Introduce weak vs. strong connectivity with a concrete example before naming the terms.
 
-### Going in one direction
+- Weak connectivity: you can get between any two nodes if you ignore direction. The layout is one
+  connected piece with no isolated sections.
+- Strong connectivity: you can get between any two nodes going forward only — no reversing. The
+  train can reach every segment without ever backing up.
+
+A plain oval is strongly connected. Adding a one-way diagonal can break strong connectivity even
+though the layout is still weakly connected.
+
+This is the formal answer to research question 1. Name the terms after the intuitive explanation,
+not before.
+
+</Scaffold>
 
 A single-direction train cannot back up out of a dead end, so reaching every segment imposes a real constraint on the layout. The relevant graph property here is strong connectivity, and — if we want every _segment_ covered rather than every junction — we drift into Eulerian-circuit territory.
 
-<TrackOval />
+### Eulerian circuits
 
-If a diagonal interconnect is added to the track, that segment is reachable in one direction only. As soon as the train passed the segment, the direction is fixed and the diagonal segment can never be reached again.
+<Scaffold>
+An Eulerian circuit visits every edge exactly once and returns to the start. For a directed graph
+this requires every node to have equal in-degree and out-degree.
 
-<TrackOvalDiagonal />
+Keep this light. The history is the hook: Euler invented graph theory in 1736 to answer a puzzle
+about bridges in Konigsberg. Link to Numberphile for anyone who wants to go deeper:
 
-Adding a second diagonal interconnect allows the train to change directions once again. Every segment of track gets visited the same amount, on average.
+- Seven Bridges of Konigsberg: https://www.youtube.com/watch?v=W18FDEA1jRQ
+- (add any other relevant Numberphile video here)
 
-<TrackOval2Diagonal />
+</Scaffold>
 
-We can apply this on a real track as well:
+## Simplifying the mathematics, running a virtual train
 
-<TrackReal1 />
+<Scaffold>
+  Transition paragraph: graph theory tells us about structure, but not how much
+  traffic each segment gets. For that we simulate. Frame the simulator as a
+  digital twin: a virtual model that mirrors the physical toy, the same way
+  engineers test a bridge in software before building it.
+</Scaffold>
 
-## Which sections see the most action?
+### Markov chains
 
-Even on a track where the train _can_ reach everything, some sections will see a lot more traffic than others. If we flip the switches randomly each time the train passes, where does it spend its time?
+<Scaffold>
+When the train hits a switch, it picks a branch at random. The sequence of segments visited is
+then a Markov chain: the next segment depends only on where the train is now, not how it got
+there. That memorylessness is what makes the math tractable.
 
-### A random walk on the track
+Each segment ends up with a long-run probability of being visited — the stationary distribution.
+That probability is the traffic score for that segment.
+
+The analogies below are already written and should be kept.
+
+</Scaffold>
 
 Random switch settings turn the train's path into a random walk on the graph of segments. Each segment then has a long-run probability of being occupied — the stationary distribution of a Markov chain — and that probability is a natural "score" for the section. Busy junctions score high; isolated spurs score low.
 
 The same idea shows up all over the place. The closest cousin to our train problem is Monopoly: which square gets landed on the most? It's a Markov chain on the board, and the answer (the orange properties) comes out of exactly the calculation we're about to do here. Google's original PageRank ranked the entire web by modelling a random surfer clicking from page to page. Predictive text on your phone guesses the next word the same way. Markov chains are how you ask "where does this end up, on average, if you let it run forever?"
 
-### Estimating with Monte Carlo
+### Monte Carlo, the digital twin
+
+<Scaffold>
+Monte Carlo: run the virtual train for thousands of steps, count visits, divide by total steps.
+The history and analogies below are already written and should be kept.
+
+Add one sentence explicitly naming this a digital twin: "Running thousands of virtual trains this
+way is what engineers call a digital twin — a software model that mirrors a physical system
+closely enough that you can ask questions of the model instead of the object."
+
+</Scaffold>
 
 The stationary distribution has a closed form, but a Monte Carlo simulation — just running a virtual train for a few thousand steps and counting visits — is far more intuitive, and gives us a useful sanity check against the analytical answer.
 
 The technique is named after the casino in Monaco, and was invented in the 1940s at Los Alamos when physicists working on nuclear reactions realised some problems were easier to _simulate_ than to solve with pen and paper. The same trick is everywhere today: weather services run hundreds of slightly-different simulations to get probability forecasts, banks estimate the risk of a portfolio by rolling thousands of imaginary futures, animated films render realistic lighting by shooting millions of virtual rays of light, and AlphaGo picked its moves by playing out millions of random games in its head. The toy version anyone can try: estimate π by throwing virtual darts at a square and counting how many land inside an inscribed circle.
 
-### Drawing the score
+### How to read the figures
+
+<Scaffold>
+This subsection prepares the reader to interpret every figure in the Findings section. Write it
+before the first figure appears — not after.
+
+Key points to cover:
+
+- Each segment has a bulge drawn alongside it, sized in proportion to its traffic score.
+- The bulge is split into a left half and a right half — one per direction of travel.
+- Symmetric bulge (equal halves): the train passes roughly equally in both directions.
+- Lopsided bulge (one half much larger): traffic flows predominantly one way.
+- Missing bulge on one side: that direction is never (or rarely) visited.
+
+Stress that the figures are stochastic: each one is one run of the Monte Carlo simulation. The
+reader should watch for a few seconds before drawing conclusions — the long-run pattern is what
+matters, not the first few steps.
+
+The existing prose below covers the left/right asymmetry well; keep it.
+
+</Scaffold>
 
 The natural way to surface these per-segment probabilities on the track itself is to draw a shape that grows alongside each segment in proportion to its traffic. Splitting that shape into a _left_ half and a _right_ half — one bulge per direction of travel — turns out to reveal more than the totals alone.
 
 A _symmetric_ bulge means the segment is a two-way street: the train passes through it about as often in each direction. A _lopsided_ bulge means the segment is effectively one-directional — the layout funnels traffic through it in only one orientation. A plain oval shows up as 100% one-sided everywhere; a balloon track shows up as a symmetric trunk feeding a one-sided loop. So the visualisation isn't just an aesthetic display of the score — the symmetry pattern surfaces the directional structure of the layout for free.
 
+## Putting the math to work, driving the virtual train
+
+<Scaffold>
+  Brief intro — one or two sentences. Something like: "Let's run the virtual
+  train on a few layouts and see what falls out."
+</Scaffold>
+
+### A plain oval
+
+<Scaffold>
+The simplest closed loop.
+- Strongly connected: yes. Every segment is reachable going forward.
+- Traffic distribution: perfectly uniform — every segment scores identically.
+- Score figures: 100% one-sided everywhere, reflecting that the train always goes the same way.
+- RQ1: yes, the train reaches everywhere. RQ2: all segments equally.
+
+Write 2-3 sentences interpreting what the reader sees. Point out the uniform lopsided bulges
+explicitly so the reader knows what to look for in the next figure.
+
+</Scaffold>
+
+<TrackOval />
+
+### Adding one diagonal
+
+<Scaffold>
+One interconnect cuts across the oval.
+- Strongly connected: no. The diagonal segment is reachable going one way only.
+- Score figures: the diagonal segment shows a heavily lopsided or absent bulge on one side.
+- RQ1: no longer yes for all segments.
+
+Point the reader to the specific segment that becomes unreachable and explain why in plain
+language: the diagonal creates a shortcut that the train takes, bypassing the segment on
+subsequent laps.
+
+</Scaffold>
+
+<TrackOvalDiagonal />
+
+If a diagonal interconnect is added to the track, that segment is reachable in one direction only. As soon as the train passed the segment, the direction is fixed and the diagonal segment can never be reached again.
+
+### Adding a second diagonal
+
+<Scaffold>
+The second interconnect restores balance.
+- Strongly connected: yes again.
+- Traffic distribution: even — the two diagonals give the train a way to travel in both directions.
+- Score figures: bulges become more symmetric across all segments.
+- Key insight: one switch can break reachability; a second, well-placed one can restore it.
+
+Contrast explicitly with the previous figure.
+
+</Scaffold>
+
+<TrackOval2Diagonal />
+
+Adding a second diagonal interconnect allows the train to change directions once again. Every segment of track gets visited the same amount, on average.
+
+### A real track
+
+<Scaffold>
+PLACEHOLDER — replace with a deliberate layout that shows something the simpler ones don't: a
+bottleneck, a quiet spur, or a particularly interesting asymmetry pattern. The current
+TrackReal1.json was not chosen to illustrate a specific point.
+
+Decide what finding to highlight before building the layout:
+
+- A bottleneck (one segment with dramatically higher score than its neighbours)?
+- A quiet spur (a dead-end branch that scores near zero)?
+- An asymmetric junction (one branch of a switch far more used than the other)?
+
+Write 3-4 sentences interpreting the figure once the layout is chosen.
+
+</Scaffold>
+
+<TrackReal1 />
+
 ## Key takeaways
 
-If you don't want to read the math, here's what falls out of it:
+### Answers to our questions
 
-- **Switches are where the magic happens.** Every switch is a decision point that mixes the train across the track. As a rule of thumb, more switches → more even coverage and a more interesting layout.
-- **Spread switches around.** Two switches sitting next to each other only give the train one _meaningful_ choice — the second one is usually wasted. Distribute them across the layout instead.
-- **Watch out for switches that funnel back to the same place.** If both branches rejoin within a few segments, the choice doesn't really matter; you're paying for a switch and getting a straight piece.
-- **Adapters (male-male, female-female) fix polarity mismatches.** When two sections approach each other with the same connector type — two male ends, or two female ends — they can't join. Adapters flip the polarity so the joint works. In the math they're pass-through pieces (they don't change which sections see the most action on a given graph), but in practice they're what lets you build the graph at all when the natural piece flow doesn't line up.
-- **A loop with a spur beats a long straight line.** Even one switch off a loop already creates the kind of branching behaviour the scoring rewards.
-- **Avoid dead ends if you want one-direction running.** A spur with no way out forces the train to either reverse or get stuck.
+<Scaffold>
+  Fill in the hypothesis and answer text in the `questions` export at the top of
+  this file. The component renders automatically from that data — no edits
+  needed here.
+</Scaffold>
 
-## Future work
+{questions.map(q => <ResearchQuestion {...q} />)}
 
-The fun part comes next: making all of this tangible. A companion piece (Article 17) will turn the math above into something you can play with — draw a track, watch the scoring light up, and let the computer suggest layouts of its own.
+### Quick tips for a good track
 
-- An interactive editor where you draw a track and watch the per-direction scoring fill in live — including the diagnostic left/right asymmetry that tells you which segments are one-way loops versus two-way trunks.
-- A constraint that the layout uses every piece in a fixed inventory — turning "good track" into a concrete optimisation problem.
-- A stochastic generator that builds valid random layouts from a given box of pieces, so kids can compare their own designs against what the computer comes up with.
+<Scaffold>
+4-5 short, actionable rules for builders. Suggested starting point (from the old Key takeaways):
+
+- More switches -> more even coverage. Every switch is a decision point that mixes the train.
+- Spread switches around. Two adjacent switches give the train only one meaningful choice.
+- Watch out for switches whose branches rejoin quickly — you're paying for a switch and getting
+  a straight piece.
+- Avoid dead ends if you want one-direction running.
+- A loop with a spur beats a long straight line.
+
+The adapter tip is covered in the graph theory section — do not repeat it here.
+
+</Scaffold>
+
+## Build your own track
+
+<Scaffold>
+  Short intro — warm and inviting. Something like: "Everything above you can now
+  explore yourself." One or two sentences, no more. Then embed the interactive
+  editor.
+</Scaffold>
+
+{/* TODO: mount the interactive editor component here. */}
+
+### Try it yourself
+
+<Scaffold>
+Three-beat structure:
+
+1. Guided example — reproduce a finding from the article. E.g. "Build a plain oval and watch the
+   score. Now add a single diagonal — what happens to that segment's score?"
+
+2. Challenge — a concrete goal. E.g. "Can you build a layout where every segment gets equal
+   traffic?" (Hint: it's harder than it looks on a layout with switches.)
+
+3. Free play — open invitation. "Now build whatever you like and see what the score tells you."
+
+Keep the language light and inviting. This is the kid-on-the-floor moment.
+
+</Scaffold>

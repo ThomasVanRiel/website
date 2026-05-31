@@ -1,0 +1,27 @@
+---
+type Props = {
+  number: number;
+  question: string;
+  hypothesis: string;
+  answer?: string;
+};
+
+const { number, question, hypothesis, answer } = Astro.props;
+---
+
+<div class="my-6 border-l-2 border-neutral-300 dark:border-neutral-400 pl-4">
+  <div class="text-sm italic mb-2">Q{number}</div>
+  <div class="text-lg font-bold mb-3">{question}</div>
+  <ol class="space-y-2 pl-0">
+    <li class="text-sm flex flex-col sm:flex-row gap-1 sm:gap-2">
+      <span class="font-semibold sm:shrink-0 sm:w-20">Hypothesis</span>
+      <div class="flex-1 italic">{hypothesis}</div>
+    </li>
+    {answer && (
+      <li class="text-sm flex flex-col sm:flex-row gap-1 sm:gap-2">
+        <span class="font-semibold sm:shrink-0 sm:w-20">Answer</span>
+        <div class="flex-1">{answer}</div>
+      </li>
+    )}
+  </ol>
+</div>
