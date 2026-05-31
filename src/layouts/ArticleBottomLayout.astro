@@ -1,26 +1,32 @@
 ---
-import { type CollectionEntry, getCollection } from "astro:content";
+import type { CollectionEntry } from "astro:content";
 import type { MarkdownHeading } from "astro";
 import TableOfContents from "@components/TableOfContents.astro";
+import { DEFAULT_LANG, type Lang, useTranslations, localizePath } from "@lib/i18n";
+import { getLocalizedEntries } from "@lib/content";
 
 type Props = {
   entry: CollectionEntry<"articles"> | CollectionEntry<"projects"> | CollectionEntry<"photography">;
   headings?: MarkdownHeading[];
+  lang?: Lang;
+  baseSlug?: string;
+  isFallback?: boolean;
 };
 
 // Get the requested entry
-const { entry, headings } = Astro.props;
+const { entry, headings, lang = DEFAULT_LANG, baseSlug = entry.slug, isFallback = false } = Astro.props;
+const t = useTranslations(lang);
 const { collection, data } = entry;
 const isDraft = "draft" in data && data.draft;
 const { Content } = await entry.render();
 
-// Get the next and prev entries without wraparound
-const items = (await getCollection(collection))
-  .filter((post) => !post.data.draft)
-  .sort((a, b) => b.data.date.getTime() - a.data.date.getTime());
-const index = items.findIndex((x) => x.slug === entry.slug);
+// Get the next and prev entries (localized) without wraparound
+const items = (await getLocalizedEntries(collection, lang))
+  .filter((item) => !item.entry.data.draft)
+  .sort((a, b) => b.entry.data.date.getTime() - a.entry.data.date.getTime());
+const index = items.findIndex((x) => x.baseSlug === baseSlug);
 // For descending sort: older is at index+1, newer at index-1
-const prev = index < items.length - 1 ? items[index + 1] : null;
+const prev = index >= 0 && index < items.length - 1 ? items[index + 1] : null;
 const next = index > 0 ? items[index - 1] : null;
 ---
 
@@ -33,11 +39,16 @@ const next = index > 0 ? items[index - 1] : null;
       <span
         class="sticky top-24 block [writing-mode:vertical-rl] rotate-180 text-6xl font-bold uppercase tracking-widest text-black/10 dark:text-white/10"
       >
-        Draft
+        {t.draft}
       </span>
     </div>
   )}
-  {headings && <TableOfContents headings={headings} variant="desktop" />}
+  {headings && <TableOfContents headings={headings} variant="desktop" lang={lang} />}
+  {isFallback && (
+    <div class="mb-6 rounded-lg border border-black/15 dark:border-white/20 px-4 py-3 text-sm opacity-75">
+      {t.englishOnly}
+    </div>
+  )}
   <article>
     <Content />
   </article>
@@ -46,17 +57,17 @@ const next = index > 0 ? items[index - 1] : null;
   <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-8">
     {prev && (
       <a
-        href={`/${prev.collection}/${prev.slug}`}
+        href={localizePath(`/${prev.entry.collection}/${prev.baseSlug}`, lang)}
         class="button group p-4 gap-3 flex items-center border rounded-lg border-black/15 dark:border-white/20 blend"
       >
         <div
           class="order-2 w-full h-full group-hover:text-black group-hover:dark:text-white blend"
         >
           <div class="flex flex-wrap gap-2">
-            <div class="text-sm uppercase">Prev</div>
+            <div class="text-sm uppercase">{t.prev}</div>
           </div>
           <div class="font-semibold mt-3 text-black dark:text-white">
-            {prev.data.title}
+            {prev.entry.data.title}
           </div>
         </div>
         <svg
@@ -86,16 +97,16 @@ const next = index > 0 ? items[index - 1] : null;
     )}
     {next && (
       <a
-        href={`/${next.collection}/${next.slug}`}
+        href={localizePath(`/${next.entry.collection}/${next.baseSlug}`, lang)}
         class="button group p-4 gap-3 flex items-center border rounded-lg border-black/15 dark:border-white/20 transition-colors duration-100 ease-in-out"
         class:list={{ "sm:col-start-2": !prev }}
       >
         <div
           class="w-full h-full text-right group-hover:text-black group-hover:dark:text-white blend"
         >
-          <div class="text-sm uppercase">Next</div>
+          <div class="text-sm uppercase">{t.next}</div>
           <div class="font-semibold mt-3 text-black dark:text-white">
-            {next.data.title}
+            {next.entry.data.title}
           </div>
         </div>
         <svg

@@ -1,0 +1,45 @@
+---
+import type { CollectionEntry } from "astro:content"
+import PageLayout from "@layouts/PageLayout.astro"
+import TopLayout from "@layouts/TopLayout.astro"
+import BottomLayout from "@layouts/BottomLayout.astro"
+import { formatDate } from "@lib/utils"
+import { LANGS, type Lang, useTranslations } from "@lib/i18n"
+import { getLocalizedEntries } from "@lib/content"
+import { SITE } from "@consts"
+
+export async function getStaticPaths() {
+  const paths = []
+  for (const lang of LANGS) {
+    for (const { entry, baseSlug } of await getLocalizedEntries("legal", lang)) {
+      paths.push({ params: { lang, slug: baseSlug }, props: { entry } })
+    }
+  }
+  return paths
+}
+
+type Props = { entry: CollectionEntry<"legal"> }
+const lang = Astro.params.lang as Lang
+const t = useTranslations(lang)
+const { entry } = Astro.props
+const { title, date } = entry.data
+const { Content } = await entry.render()
+---
+
+<PageLayout lang={lang} title={title} description={`${title} — ${SITE.TITLE}`}>
+  <TopLayout>
+    <div class="animate">
+      <div class="page-heading">
+        {title}
+      </div>
+      <p class="font-normal opacity-75">
+        {t.lastUpdated}: {formatDate(date, lang)}
+      </p>
+    </div>
+  </TopLayout>
+  <BottomLayout>
+    <article class="animate">
+      <Content/>
+    </article>
+  </BottomLayout>
+</PageLayout>

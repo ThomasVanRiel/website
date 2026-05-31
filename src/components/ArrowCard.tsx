@@ -1,29 +1,26 @@
 import { formatDate } from "@lib/utils"
+import { DEFAULT_LANG, type Lang, useTranslations, localizePath } from "@lib/i18n"
 import type { CollectionEntry } from "astro:content"
 
 type Props = {
   entry: CollectionEntry<"articles"> | CollectionEntry<"projects"> | CollectionEntry<"photography">
   pill?: boolean
+  lang?: Lang
 }
 
-const PILL_LABEL: Record<Props["entry"]["collection"], string> = {
-  articles: "post",
-  projects: "project",
-  photography: "photo",
-}
-
-export default function ArrowCard({entry, pill}: Props) {
+export default function ArrowCard({entry, pill, lang = DEFAULT_LANG}: Props) {
+    const t = useTranslations(lang)
     return (
-      <a href={`/${entry.collection}/${entry.slug}`} class="button group p-4 gap-3 flex items-center border rounded-lg border-black/15 dark:border-white/20 transition-colors duration-100 ease-in-out">
+      <a href={localizePath(`/${entry.collection}/${entry.slug}`, lang)} class="button group p-4 gap-3 flex items-center border rounded-lg border-black/15 dark:border-white/20 transition-colors duration-100 ease-in-out">
       <div class="w-full group-hover:text-brand-dk group-hover:dark:text-brand-lt blend ">
         <div class="flex flex-wrap items-center gap-2">
           {pill &&
             <div class="text-sm capitalize px-2 py-0.5 rounded-full border border-black/15 dark:border-white/25">
-              {PILL_LABEL[entry.collection]}
+              {t.pill[entry.collection]}
             </div>
           }
           <div class="text-sm uppercase">
-            {formatDate(entry.data.date)}
+            {formatDate(entry.data.date, lang)}
           </div>
         </div>
         <div class="font-semibold mt-3 text-brand-dk dark:text-brand-lt">
@@ -34,7 +31,7 @@ export default function ArrowCard({entry, pill}: Props) {
           {entry.data.summary}
         </div>
         <ul class="flex flex-wrap mt-2 gap-1">
-          {entry.data.tags.map((tag:string) => ( // this line has an error; Parameter 'tag' implicitly has an 'any' type.ts(7006)
+          {entry.data.tags.map((tag:string) => (
             <li class="text-xs uppercase py-0.5 px-1 rounded text-brand-dk/75 dark:text-brand-lt/75">
               {tag}
             </li>

@@ -1,38 +1,13 @@
 ---
-import { type CollectionEntry, getCollection } from "astro:content"
-import PageLayout from "@layouts/PageLayout.astro"
-import TopLayout from "@layouts/TopLayout.astro"
-import BottomLayout from "@layouts/BottomLayout.astro"
-import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
-import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
-import TableOfContents from "@components/TableOfContents.astro"
+import { getCollection } from "astro:content"
 
-// Create the static article pages
+// Legacy redirect: /articles/<slug> -> /en/articles/<slug>
 export async function getStaticPaths() {
-	const posts = await getCollection("articles")
-	return posts.map((post) => ({
-		params: { slug: post.slug },
-		props: post,
-	}))
+  const items = await getCollection("articles")
+  return items
+    .filter((e) => (e.data.lang ?? "en") === "en")
+    .map((e) => ({ params: { slug: e.slug } }))
 }
 
-// Get the requested post
-type Props = CollectionEntry<"articles">
-const post = Astro.props
-const { title, summary } = post.data
-const { headings } = await post.render()
+return Astro.redirect(`/en/articles/${Astro.params.slug}`, 301)
 ---
-
-<PageLayout title={title} description={summary}>
-  <TopLayout>
-    <div class="animate">
-      <ArticleTopLayout entry={post}/>
-    </div>
-  </TopLayout>
-  <BottomLayout>
-    <div class="animate">
-      <TableOfContents headings={headings} />
-      <ArticleBottomLayout entry={post} headings={headings} />
-    </div>
-  </BottomLayout>
-</PageLayout>

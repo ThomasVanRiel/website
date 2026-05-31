@@ -4,25 +4,32 @@ import PageLayout from "@layouts/PageLayout.astro"
 import TopLayout from "@layouts/TopLayout.astro"
 import BottomLayout from "@layouts/BottomLayout.astro"
 import Photography from "@components/Photography"
-import { PHOTOGRAPHY } from "@consts"
+import { LANGS, type Lang, useTranslations } from "@lib/i18n"
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as Lang
+const t = useTranslations(lang)
 
 const photos = (await getCollection("photography"))
-  .filter(photo => !photo.data.draft)
+  .filter((photo) => !photo.data.draft)
   .sort((a, b) => b.data.date.getTime() - a.data.date.getTime())
 
-const tags = [...new Set(photos.flatMap(photo => photo.data.tags))]
+const tags = [...new Set(photos.flatMap((photo) => photo.data.tags))]
   .sort((a, b) => a.localeCompare(b))
 ---
 
-<PageLayout title={PHOTOGRAPHY.TITLE} description={PHOTOGRAPHY.DESCRIPTION}>
+<PageLayout lang={lang} title={t.pages.photography.title} description={t.pages.photography.description}>
   <TopLayout>
     <div class="animate page-heading">
-      {PHOTOGRAPHY.TITLE}
+      {t.pages.photography.title}
     </div>
   </TopLayout>
   <BottomLayout>
     <div class="animate">
-      <Photography client:load tags={tags} data={photos} />
+      <Photography client:load tags={tags} data={photos} lang={lang} />
     </div>
   </BottomLayout>
 </PageLayout>

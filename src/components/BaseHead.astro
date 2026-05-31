@@ -1,14 +1,24 @@
 ---
+import { LANGS, DEFAULT_LANG, type Lang, stripLang, localizePath } from "@lib/i18n";
 
 interface Props {
   title: string;
   description: string;
   image?: string;
+  lang?: Lang;
 }
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
 
 const { title, description, image = "/open-graph.png" } = Astro.props;
+
+// hreflang alternates for the current page across all locales.
+const barePath = stripLang(Astro.url.pathname);
+const alternates = LANGS.map((l) => ({
+  hreflang: l,
+  href: new URL(localizePath(barePath, l), Astro.site).href,
+}));
+const xDefault = new URL(localizePath(barePath, DEFAULT_LANG), Astro.site).href;
 ---
 
 <!-- Global Metadata -->
@@ -24,6 +34,12 @@ const { title, description, image = "/open-graph.png" } = Astro.props;
 
 <!-- Canonical URL -->
 <link rel="canonical" href={canonicalURL} />
+
+<!-- Language alternates -->
+{alternates.map((alt) => (
+  <link rel="alternate" hreflang={alt.hreflang} href={alt.href} />
+))}
+<link rel="alternate" hreflang="x-default" href={xDefault} />
 
 <!-- Primary Meta Tags -->
 <title>{title}</title>

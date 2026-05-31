@@ -2,13 +2,16 @@ import type { CollectionEntry } from "astro:content"
 import { createEffect, createSignal, For } from "solid-js"
 import ArrowCard from "@components/ArrowCard"
 import { cn } from "@lib/utils"
+import { DEFAULT_LANG, type Lang, useTranslations } from "@lib/i18n"
 
 type Props = {
   tags: string[]
   data: CollectionEntry<"articles">[]
+  lang?: Lang
 }
 
-export default function Articles({ data, tags }: Props) {
+export default function Articles({ data, tags, lang = DEFAULT_LANG }: Props) {
+  const t = useTranslations(lang)
   const [filter, setFilter] = createSignal(new Set<string>())
   const [posts, setPosts] = createSignal<CollectionEntry<"articles">[]>([])
 
@@ -35,7 +38,7 @@ export default function Articles({ data, tags }: Props) {
     <div class="grid grid-cols-1 sm:grid-cols-3 gap-6">
       <div class="col-span-3 sm:col-span-1">
         <div class="sticky top-24">
-          <div class="text-sm font-semibold uppercase mb-2 text-black dark:text-white">Filter</div>
+          <div class="text-sm font-semibold uppercase mb-2 text-black dark:text-white">{t.filter}</div>
           <ul class="flex flex-wrap sm:flex-col gap-1.5">
             <For each={tags}>
               {(tag) => (
@@ -56,12 +59,12 @@ export default function Articles({ data, tags }: Props) {
       <div class="col-span-3 sm:col-span-2">
         <div class="flex flex-col">
           <div class="text-sm uppercase mb-2">
-            SHOWING {posts().length} OF {data.length} ARTICLES
+            {t.showingArticles(posts().length, data.length)}
           </div>
           <ul class="flex flex-col gap-3">
             {posts().map((post) => (
               <li>
-                <ArrowCard entry={post} />
+                <ArrowCard entry={post} lang={lang} />
               </li>
             ))}
           </ul>

@@ -18,6 +18,8 @@ const articles = defineCollection({
     date: z.coerce.date(),
     tags: z.array(z.string()),
     draft: z.boolean().optional(),
+    lang: z.enum(["en", "nl"]).default("en"),
+    translationKey: z.string().optional(),
   }),
 })
 
@@ -31,6 +33,8 @@ const projects = defineCollection({
     draft: z.boolean().optional(),
     demoUrl: z.string().optional(),
     repoUrl: z.string().optional(),
+    lang: z.enum(["en", "nl"]).default("en"),
+    translationKey: z.string().optional(),
   }),
 })
 
@@ -57,6 +61,8 @@ const legal = defineCollection({
   schema: z.object({
     title: z.string(),
     date: z.coerce.date(),
+    lang: z.enum(["en", "nl"]).default("en"),
+    translationKey: z.string().optional(),
   }),
 })
 

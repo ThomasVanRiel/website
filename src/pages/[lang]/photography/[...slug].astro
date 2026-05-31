@@ -9,22 +9,26 @@ import BottomLayout from "@layouts/BottomLayout.astro"
 import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
 import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
 import Lightbox from "@components/Lightbox.astro"
+import { LANGS, type Lang } from "@lib/i18n"
 import { SITE } from "@consts"
 
-const publicDir = fileURLToPath(new URL("../../../public", import.meta.url))
+const publicDir = fileURLToPath(new URL("../../../../public", import.meta.url))
 
 const THUMB_WIDTHS = [480, 720, 1080, 1440]
 const LIGHTBOX_WIDTH = 1800
 
 export async function getStaticPaths() {
-	const photos = await getCollection("photography")
-	return photos.map((photo) => ({
-		params: { slug: photo.slug },
-		props: photo,
-	}))
+  const photos = await getCollection("photography")
+  return LANGS.flatMap((lang) =>
+    photos.map((photo) => ({
+      params: { lang, slug: photo.slug },
+      props: photo,
+    }))
+  )
 }
 
 type Props = CollectionEntry<"photography">
+const lang = Astro.params.lang as Lang
 const photo = Astro.props
 const { title, summary, photos, license, date } = photo.data
 
@@ -93,11 +97,11 @@ const jsonLd = {
 }
 ---
 
-<PageLayout title={title} description={summary}>
+<PageLayout lang={lang} title={title} description={summary}>
   <script type="application/ld+json" is:inline set:html={JSON.stringify(jsonLd)} />
   <TopLayout size="2xl">
     <div class="animate">
-      <ArticleTopLayout entry={photo} />
+      <ArticleTopLayout entry={photo} lang={lang} />
     </div>
   </TopLayout>
   <BottomLayout size="2xl">
@@ -140,7 +144,7 @@ const jsonLd = {
           <> {license}</>
         )}
       </p>
-      <ArticleBottomLayout entry={photo} />
+      <ArticleBottomLayout entry={photo} lang={lang} />
     </div>
   </BottomLayout>
 </PageLayout>

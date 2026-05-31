@@ -3,7 +3,14 @@ import { getCollection } from "astro:content"
 import PageLayout from "@layouts/PageLayout.astro"
 import TopLayout from "@layouts/TopLayout.astro"
 import BottomLayout from "@layouts/BottomLayout.astro"
-import { WORK } from "@consts"
+import { LANGS, type Lang, useTranslations, LOCALE_TAG } from "@lib/i18n"
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as Lang
+const t = useTranslations(lang)
 
 const collection = await getCollection("work")
 
@@ -19,7 +26,7 @@ const work = await Promise.all(
 function formatWorkDate(input: Date | string) {
   if (typeof input === "string") return input
 
-  const month = input.toLocaleDateString("en-US", {
+  const month = input.toLocaleDateString(LOCALE_TAG[lang], {
     month: "short",
   })
 
@@ -28,15 +35,15 @@ function formatWorkDate(input: Date | string) {
 }
 ---
 
-<PageLayout title={WORK.TITLE} description={WORK.DESCRIPTION}>
+<PageLayout lang={lang} title={t.pages.work.title} description={t.pages.work.description}>
   <TopLayout>
     <div class="animate page-heading">
-      {WORK.TITLE}
+      {t.pages.work.title}
     </div>
   </TopLayout>
   <BottomLayout>
     <ul>
-      { 
+      {
         work.map((entry) => (
           <li class="animate border-b border-black/10 dark:border-white/25 mt-4 py-8 first-of-type:mt-0 first-of-type:pt-0 last-of-type:border-none">
             <div class="text-sm uppercase mb-4">

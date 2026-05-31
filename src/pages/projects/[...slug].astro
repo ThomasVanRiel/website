@@ -1,35 +1,13 @@
 ---
-import { type CollectionEntry, getCollection } from "astro:content"
-import PageLayout from "@layouts/PageLayout.astro"
-import TopLayout from "@layouts/TopLayout.astro"
-import BottomLayout from "@layouts/BottomLayout.astro"
-import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
-import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
+import { getCollection } from "astro:content"
 
-// Create the static projects pages
+// Legacy redirect: /projects/<slug> -> /en/projects/<slug>
 export async function getStaticPaths() {
-	const projects = await getCollection("projects")
-	return projects.map((project) => ({
-		params: { slug: project.slug },
-		props: project,
-	}))
+  const items = await getCollection("projects")
+  return items
+    .filter((e) => (e.data.lang ?? "en") === "en")
+    .map((e) => ({ params: { slug: e.slug } }))
 }
 
-// Get the requested project
-type Props = CollectionEntry<"projects">
-const project = Astro.props
-const { title, summary } = project.data
+return Astro.redirect(`/en/projects/${Astro.params.slug}`, 301)
 ---
-
-<PageLayout title={title} description={summary}>
-  <TopLayout>
-    <div class="animate">
-      <ArticleTopLayout entry={project} />
-    </div>
-  </TopLayout>
-  <BottomLayout>
-    <div class="animate">
-      <ArticleBottomLayout entry={project} />
-    </div>
-  </BottomLayout>
-</PageLayout>

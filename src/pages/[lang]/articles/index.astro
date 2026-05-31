@@ -1,0 +1,36 @@
+---
+import PageLayout from "@layouts/PageLayout.astro"
+import TopLayout from "@layouts/TopLayout.astro"
+import BottomLayout from "@layouts/BottomLayout.astro"
+import Articles from "@components/Articles"
+import { LANGS, type Lang, useTranslations } from "@lib/i18n"
+import { getLocalizedEntries, toCardEntry } from "@lib/content"
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as Lang
+const t = useTranslations(lang)
+
+const posts = (await getLocalizedEntries("articles", lang))
+  .filter((p) => !p.entry.data.draft)
+  .sort((a, b) => b.entry.data.date.getTime() - a.entry.data.date.getTime())
+  .map(toCardEntry)
+
+const tags = [...new Set(posts.flatMap((post) => post.data.tags))]
+  .sort((a, b) => a.localeCompare(b))
+---
+
+<PageLayout lang={lang} title={t.pages.articles.title} description={t.pages.articles.description}>
+  <TopLayout>
+    <div class="animate page-heading">
+      {t.pages.articles.title}
+    </div>
+  </TopLayout>
+  <BottomLayout>
+    <div class="animate">
+      <Articles client:load tags={tags} data={posts} lang={lang} />
+    </div>
+  </BottomLayout>
+</PageLayout>

@@ -1,42 +1,13 @@
 ---
-import { type CollectionEntry, getCollection } from "astro:content"
-import PageLayout from "@layouts/PageLayout.astro"
-import TopLayout from "@layouts/TopLayout.astro"
-import BottomLayout from "@layouts/BottomLayout.astro"
-import { formatDate } from "@lib/utils"
-import { SITE } from "@consts"
+import { getCollection } from "astro:content"
 
-// Create the static pages for legal docs
+// Legacy redirect: /legal/<slug> -> /en/legal/<slug>
 export async function getStaticPaths() {
-	const docs = await getCollection("legal")
-	return docs.map((doc) => ({
-		params: { slug: doc.slug },
-		props: doc,
-	}))
+  const items = await getCollection("legal")
+  return items
+    .filter((e) => (e.data.lang ?? "en") === "en")
+    .map((e) => ({ params: { slug: e.slug } }))
 }
 
-// Get the requested legal doc
-type Props = CollectionEntry<"legal">;
-const doc = Astro.props
-const { title, date } = doc.data
-const { Content } = await doc.render();
-
+return Astro.redirect(`/en/legal/${Astro.params.slug}`, 301)
 ---
-
-<PageLayout title={title} description={`${title} for ${SITE.TITLE}`}>
-  <TopLayout>
-    <div class="animate">
-      <div class="page-heading">
-        {title}
-      </div>
-      <p class="font-normal opacity-75">
-        Last updated: {formatDate(date)}
-      </p>
-    </div>
-  </TopLayout>
-  <BottomLayout>
-    <article class="animate">
-      <Content/>
-    </article>
-  </BottomLayout>
-</PageLayout>

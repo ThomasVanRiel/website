@@ -1,62 +1,33 @@
-import type { Site, Page, Links, Socials } from "@types"
+import type { Site, Links, Socials } from "@types"
 
-// Global
+// Global. Page titles and descriptions are localized in src/lib/i18n.ts (ui.pages.*).
 export const SITE: Site = {
   TITLE: "Thomas VAN RIEL",
   DESCRIPTION: "Thomas Van Riel's personal website and articles.",
   AUTHOR: "Thomas Van Riel",
 }
 
-// Work Page
-export const WORK: Page = {
-  TITLE: "Work",
-  DESCRIPTION: "Places I have worked.",
-}
-
-// Articles Page
-export const ARTICLES: Page = {
-  TITLE: "Articles",
-  DESCRIPTION: "Writing on topics I am passionate about.",
-}
-
-// Projects Page
-export const PROJECTS: Page = {
-  TITLE: "Projects",
-  DESCRIPTION: "Recent projects I have worked on.",
-}
-
-// Photography Page
-export const PHOTOGRAPHY: Page = {
-  TITLE: "Photography",
-  DESCRIPTION: "A selection of photographs.",
-}
-
-// Search Page
-export const SEARCH: Page = {
-  TITLE: "Search",
-  DESCRIPTION: "Search all posts and projects by keyword.",
-}
-
-// Links
+// Nav links. HREF is a bare (unprefixed) app path; the locale prefix is added at render
+// time via localizePath(). Labels come from the i18n nav dictionary keyed by KEY.
 export const LINKS: Links = [
-  { 
-    TEXT: "Home", 
-    HREF: "/", 
-  },
-  /*{ 
-    TEXT: "Work", 
-    HREF: "/work", 
-  },*/
-  { 
-    TEXT: "Articles", 
-    HREF: "/articles", 
+  {
+    KEY: "home",
+    HREF: "/",
   },
   /*{
-    TEXT: "Projects",
+    KEY: "work",
+    HREF: "/work",
+  },*/
+  {
+    KEY: "articles",
+    HREF: "/articles",
+  },
+  /*{
+    KEY: "projects",
     HREF: "/projects",
   },*/
   /*{
-    TEXT: "Photography",
+    KEY: "photography",
     HREF: "/photography",
   },*/
 ]

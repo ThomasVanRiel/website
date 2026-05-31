@@ -1,0 +1,112 @@
+---
+import PageLayout from "@layouts/PageLayout.astro"
+import ArrowCard from "@components/ArrowCard"
+import { SOCIALS } from "@consts"
+import { LANGS, type Lang, useTranslations, localizePath } from "@lib/i18n"
+import { getLocalizedEntries, toCardEntry } from "@lib/content"
+
+export function getStaticPaths() {
+  return LANGS.map((lang) => ({ params: { lang } }))
+}
+
+const lang = Astro.params.lang as Lang
+const t = useTranslations(lang)
+
+const posts = (await getLocalizedEntries("articles", lang))
+  .filter((p) => !p.entry.data.draft)
+  .sort((a, b) => b.entry.data.date.getTime() - a.entry.data.date.getTime())
+  .slice(0, 3)
+  .map(toCardEntry)
+---
+
+<PageLayout lang={lang} title={t.nav.home} description={t.pages.home.description}>
+
+  <!-- HERO -->
+  <section class="relative h-screen w-full">
+    <div class="animate absolute h-full w-full flex items-center justify-center">
+      <div class='relative w-full h-full flex items-center justify-center'>
+        <div class='p-5 text-center'>
+          <p class='animated text-lg md:text-xl lg:text-2xl'>
+            {t.home.greeting}
+          </p>
+          <p class='animated text-4xl md:text-5xl lg:text-6xl font-serif my-2'>
+            Thomas <span class='uppercase'>Van Riel</span>
+          </p>
+          <p class='animated text-sm md:text-base lg:text-lg'>
+            {t.home.subtitle}
+          </p>
+          <div id="ctaButtons" class='animated flex flex-wrap gap-4 justify-center mt-5'>
+            <a href={localizePath("/articles", lang)} class='button-invert py-2 px-4 rounded truncate text-xs md:text-sm lg:text-base text-white dark:text-brand-dk hover:opacity-75 blend'>
+              {t.home.readArticles}
+            </a>
+            <a href={localizePath("/articles/10-recipe-to-flowchart", lang)} class='button py-2 px-4 truncate rounded text-xs md:text-sm lg:text-base border border-black/25 dark:border-white/25 blend'>
+              {t.home.tryFlowchart}
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="relative">
+    <div class="mx-auto max-w-screen-sm p-5 space-y-24 pb-16">
+
+      <!-- About Section -->
+      <section class="animate">
+        <article>
+          {t.home.aboutHtml.map((p) => <p set:html={p} />)}
+        </article>
+      </section>
+
+      <!-- Articles Preview Section -->
+      <section class="animate">
+        <div class="space-y-4">
+          <div class="flex justify-between">
+            <p class="font-semibold text-brand-dk dark:text-white">
+              {t.home.recentArticles}
+            </p>
+            <a href={localizePath("/articles", lang)} class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-brand-dk dark:text-white underline-offset-2 blend">
+              <span class="text-brand-dk/75 dark:text-white/75 group-hover:text-brand-dk group-hover:dark:text-white blend">
+                {t.home.allArticles}
+              </span>
+            </a>
+          </div>
+          <ul class="space-y-4">
+            {posts.map((post) => (
+              <li>
+                <ArrowCard entry={post} lang={lang} />
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      <!-- Contact Section -->
+      <section class="animate">
+        <div>
+          <p class="font-semibold text-brand-dk dark:text-white">
+            {t.home.letsConnect}
+          </p>
+          <p>
+            {t.home.connectText}
+          </p>
+          <div class="grid grid-cols-4 gap-y-2 mt-4 auto-cols-min">
+            {SOCIALS.map(social => (
+              <div class="col-span-1 flex items-center gap-1">
+                <span class="whitespace-nowrap truncate">
+                  {social.NAME}
+                </span>
+              </div>
+              <div class="col-span-3 truncate">
+                <a href={social.HREF} target="_blank" rel="noopener noreferrer" class="w-fit col-span-3 group flex gap-1 items-center underline decoration-[.5px] decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white text-brand-dk dark:text-white underline-offset-2 blend">
+                  <span class="text-brand-dk/75 dark:text-white/75 group-hover:text-brand-dk group-hover:dark:text-white blend">
+                    {social.TEXT}
+                  </span>
+                </a>
+              </div>
+            ))}
+        </div>
+      </section>
+    </div>
+  </div>
+</PageLayout>

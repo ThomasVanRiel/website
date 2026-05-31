@@ -8,7 +8,7 @@ export interface Site extends Page {
 }
 
 export type Links = {
-  TEXT: string
+  KEY: "home" | "work" | "articles" | "projects" | "photography"
   HREF: string
 }[]
 

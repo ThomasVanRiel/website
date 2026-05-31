@@ -1,0 +1,41 @@
+---
+import type { CollectionEntry } from "astro:content"
+import PageLayout from "@layouts/PageLayout.astro"
+import TopLayout from "@layouts/TopLayout.astro"
+import BottomLayout from "@layouts/BottomLayout.astro"
+import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
+import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
+import TableOfContents from "@components/TableOfContents.astro"
+import { LANGS, type Lang } from "@lib/i18n"
+import { getLocalizedEntries } from "@lib/content"
+
+export async function getStaticPaths() {
+  const paths = []
+  for (const lang of LANGS) {
+    for (const { entry, baseSlug, isFallback } of await getLocalizedEntries("articles", lang)) {
+      paths.push({ params: { lang, slug: baseSlug }, props: { entry, baseSlug, isFallback } })
+    }
+  }
+  return paths
+}
+
+type Props = { entry: CollectionEntry<"articles">; baseSlug: string; isFallback: boolean }
+const lang = Astro.params.lang as Lang
+const { entry, baseSlug, isFallback } = Astro.props
+const { title, summary } = entry.data
+const { headings } = await entry.render()
+---
+
+<PageLayout lang={lang} title={title} description={summary}>
+  <TopLayout>
+    <div class="animate">
+      <ArticleTopLayout entry={entry} lang={lang} />
+    </div>
+  </TopLayout>
+  <BottomLayout>
+    <div class="animate">
+      <TableOfContents headings={headings} lang={lang} />
+      <ArticleBottomLayout entry={entry} headings={headings} lang={lang} baseSlug={baseSlug} isFallback={isFallback} />
+    </div>
+  </BottomLayout>
+</PageLayout>
