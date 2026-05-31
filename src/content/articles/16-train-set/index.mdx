@@ -228,36 +228,25 @@ A _symmetric_ bulge means the segment is a two-way street: the train passes thro
 ### Statistics
 
 <Scaffold>
-  Every piece of track gets a share of the train's visits in the long run.
-  **Entropy** measures how evenly those shares are distributed — a score of 1
-  means every piece of track is visited equally often, like a perfectly fair
-  circuit; a lower score means some sections see much more traffic than others.
-  **Gini** measures the same thing from the opposite angle: borrowed from
-  economics, where it quantifies income inequality, here it measures _traffic_
-  inequality — 0 means perfectly equal shares, 1 means all traffic funnelled
-  through a single arm. The two statistics are complementary: entropy tells you
-  how close the layout is to the ideal of perfect equity, while Gini tells you
-  how far it is from it. On a simple oval they agree — entropy 1, Gini 0, every
-  piece used equally. Add a switch with an unequal split, and both move: entropy
-  falls, Gini rises. Keep in mind that the stats shown in the figures is never
-  final due to the monte carlo method. They tend toward the true stat, but
-  approach it asymptotically.
-</Scaffold>
+  The key statistic for a layout is **utilization**: what fraction of pieces are
+  actually visited by the train in the long run? A piece that is never visited is
+  dead weight — it takes up space on the floor but the train ignores it. A layout
+  with 20 pieces where only 14 are visited has 70% utilization.
 
-<Scaffold>
-  A figure-eight with two equal-length loops and fair switches scores entropy 1,
-  Gini 0 — perfectly uniform. This might seem surprising: the outer arms of each
-  loop are on every path, while the inner crossing arms are only on half the
-  paths. But the switch compensates exactly: the arms that are always visited are
-  part of longer circuits, and the arms visited half the time belong to shorter
-  detours. The long-run time averages cancel out and every segment ends up equally
-  busy.
+  Each piece also has a directional sub-stat: is it used in both directions, or
+  only one? A piece used in both directions shows a symmetric bulge; a piece used
+  in one direction only shows a lopsided one. A piece with no bulge at all is not
+  utilized.
 
-  The fragility of that balance is the interesting part. Make the two loops even
-  slightly different in length and the symmetry breaks: the train completes more
-  laps on the shorter loop, those segments accumulate more visits, and entropy
-  drops below 1. The statistics are sensitive to geometry, not just topology — a
-  layout that _looks_ balanced may not be, and the figures will show it.
+  A plain oval is 100% utilized — every piece is visited — but entirely
+  one-directional: the train always goes the same way. A layout with switches can
+  be 100% utilized and bidirectional, meaning every piece is visited and in both
+  directions. That is the ideal.
+
+  Keep in mind that the stats shown in the figures are never final due to the
+  Monte Carlo method. They tend toward the true value but approach it
+  asymptotically — watch the figures run for a few seconds before drawing
+  conclusions.
 </Scaffold>
 
 ## Putting the math to work with a virtual train
@@ -307,13 +296,11 @@ If a diagonal interconnect is added to the track, that segment is reachable in o
 <Scaffold>
   The diagonal connector is only ever crossed once — after that, the train is
   locked into a smaller loop and can never reach it again. This means a portion
-  of the track sits permanently idle. Entropy 0.8 reflects that: a perfectly
-  fair layout would score 1, and the gap from that ideal measures how much track
-  is going to waste. Gini 0.6 says the same thing from the inequality side —
-  traffic is noticeably concentrated on the active sub-loop, while the
-  unreachable arms receive none. Together they diagnose a layout with a hidden
-  dead end: not a stub you can see, but a structural trap that reveals itself
-  only once the train starts moving.
+  of the track sits permanently idle. Utilization drops below 100%: the diagonal
+  itself and the outer bypass are never visited in the long run. The figures show
+  this directly — those pieces have no bulge. Together they diagnose a layout
+  with a hidden dead end: not a stub you can see, but a structural trap that
+  reveals itself only once the train starts moving.
 </Scaffold>
 
 ### Adding a second diagonal
@@ -336,13 +323,10 @@ Adding a second diagonal interconnect allows the train to change directions once
 <Scaffold>
   Adding a second diagonal restores access to the whole layout — the train can
   now reach every section from every other section, so no track sits permanently
-  idle. Entropy 0.99 is nearly perfect equity, just a hair below 1: almost every
-  arm is visited equally often. Gini 0.18 reflects a small but real inequality —
-  the arms at the junctions carry slightly more traffic than average, since
-  every route passes through them, while the arms between junctions share that
-  traffic more thinly. The contrast with the single-diagonal case is stark: one
-  connector created a structural trap; two create a well-connected network where
-  the train explores the whole layout, and the statistics confirm it.
+  idle. Utilization is back to 100%, and every piece now shows traffic in both
+  directions. The contrast with the single-diagonal case is stark: one connector
+  created a structural trap; two create a well-connected network. One piece of
+  track made all the difference.
 </Scaffold>
 
 ### A real track
@@ -418,6 +402,29 @@ Three-beat structure:
 
 Keep the language light and inviting. This is the kid-on-the-floor moment.
 
+</Scaffold>
+
+## Future work
+
+<Scaffold>
+  Two natural extensions to pick up in a follow-up article:
+
+  **Irreducibility.** The diagonal examples show that a layout can look connected
+  while hiding a structural trap — a segment reachable in one direction only,
+  which the train crosses once and never returns to. The formal property is
+  irreducibility: a chain is irreducible if every state is reachable from every
+  other state. An irreducible layout wastes no track. The interesting question is
+  then: what is the minimal set of pieces you would need to add (or reroute) to
+  make a given layout irreducible? That is a graph theory problem with a concrete,
+  hands-on answer.
+
+  **Richer traffic statistics.** Utilization tells you which pieces are used, but
+  not how unevenly the traffic is distributed among the ones that are. Two layouts
+  can both be 100% utilized while one has one wildly overloaded junction and
+  another has perfectly even traffic. A follow-up could introduce entropy (how
+  spread out is the distribution?) and the Gini coefficient (borrowed from
+  economics, where it measures income inequality — here it measures traffic
+  inequality) as complementary lenses on the same question.
 </Scaffold>
 
 ## Further reading

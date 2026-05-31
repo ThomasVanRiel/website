@@ -9,6 +9,12 @@ export declare function aggregatePieceStats(track: Track, scores: ScoreMap): Map
 export declare function trackEntropy(scores: ScoreMap): number;
 export declare function trackGini(scores: ScoreMap): number;
 export declare function totalTrackLength(track: Track): number;
+export type UtilizationStats = {
+    utilizedLength: number;
+    bidirectionalLength: number;
+    totalLength: number;
+};
+export declare function trackUtilization(track: Track, scores: ScoreMap): UtilizationStats;
 export type SwitchBias = {
     arm0: number;
     arm1: number;

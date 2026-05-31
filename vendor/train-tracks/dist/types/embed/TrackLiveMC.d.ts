@@ -5,6 +5,7 @@ export type TrackLiveMCProps = TrackInput & {
     bulgeScale?: number;
     padding?: number;
     showAdapters?: boolean;
+    advancedStats?: boolean;
     class?: string;
 };
 export default function TrackLiveMC(props: TrackLiveMCProps): import("solid-js").JSX.Element;

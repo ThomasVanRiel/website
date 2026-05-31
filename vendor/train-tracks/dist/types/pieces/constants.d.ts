@@ -10,5 +10,5 @@ export declare const CROSSING_GAP_HALF = 12;
 export declare const SWITCH_PARALLEL_OFFSET = 22;
 export declare const MAX_BULGE_HALF_WIDTH = 50;
 export declare const JUNCTION_EPSILON = 0.000001;
-export declare const MC_STEPS = 500000;
+export declare const MC_STEPS = 1000000;
 export declare const TRAIN_TRAIL_ARMS = 8;
