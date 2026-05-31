@@ -3378,7 +3378,7 @@ function rr(n) {
 }
 //#endregion
 //#region src/render/Train.tsx
-var ir = /* @__PURE__ */ l("<svg><g></svg>", !1, !0, !1), ar = /* @__PURE__ */ l("<svg><rect x=-15 y=-10 width=30 height=20 rx=3></svg>", !1, !0, !1), or = /* @__PURE__ */ l("<svg><polygon points=\"15,-10 15,10 25,0\"></svg>", !1, !0, !1), sr = /* @__PURE__ */ l("<svg><g class=\"text-blue-400 dark:text-amber-500\"fill=currentColor stroke=none style=pointer-events:none></svg>", !1, !0, !1);
+var ir = /* @__PURE__ */ l("<svg><g></svg>", !1, !0, !1), ar = /* @__PURE__ */ l("<svg><rect x=-15 y=-10 width=30 height=20 rx=3></svg>", !1, !0, !1), or = /* @__PURE__ */ l("<svg><polygon points=\"15,-10 15,10 25,0\"></svg>", !1, !0, !1), sr = /* @__PURE__ */ l("<svg><g class=\"text-blue-400 dark:text-amber-300\"fill=currentColor stroke=none style=pointer-events:none></svg>", !1, !0, !1);
 function cr(e, t) {
 	let n = t.pieces.find((t) => t.id === e.pieceId);
 	return n ? n.magic ? n.magic.arms[e.connectionIndex] ?? null : ke(z(n.type).arms[e.connectionIndex], Pe(n)) : null;

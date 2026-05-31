@@ -34,8 +34,8 @@
 .text-blue-400 {
   color: #60a5fa;
 }
-.dark .dark\:text-amber-500 {
-  color: #f59e0b;
+.dark .dark\:text-amber-300 {
+  color: #fcd34d;
 }
 
 /* Adapter-location markers (issue 4). */
@@ -154,8 +154,8 @@
 .dark .tt-controls input[type="range"] {
   background: linear-gradient(
     to right,
-    #f59e0b 0,
-    #f59e0b calc(var(--tt-pct, 0.2) * 100%),
+    #fcd34d 0,
+    #fcd34d calc(var(--tt-pct, 0.2) * 100%),
     #404040 calc(var(--tt-pct, 0.2) * 100%),
     #404040 100%
   );
@@ -171,7 +171,7 @@
   cursor: pointer;
 }
 .dark .tt-controls input[type="range"]::-webkit-slider-thumb {
-  background: #f59e0b;
+  background: #fcd34d;
   border-color: #171717;
 }
 /* Firefox: native track + filled progress + thumb. */
@@ -189,7 +189,7 @@
   background: #60a5fa;
 }
 .dark .tt-controls input[type="range"]::-moz-range-progress {
-  background: #f59e0b;
+  background: #fcd34d;
 }
 .tt-controls input[type="range"]::-moz-range-thumb {
   width: 1rem;
@@ -200,7 +200,7 @@
   cursor: pointer;
 }
 .dark .tt-controls input[type="range"]::-moz-range-thumb {
-  background: #f59e0b;
+  background: #fcd34d;
   border-color: #171717;
 }
 
