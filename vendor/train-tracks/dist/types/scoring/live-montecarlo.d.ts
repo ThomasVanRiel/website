@@ -41,4 +41,5 @@ export declare function createLiveMC(args: {
     walker: Accessor<Walker | null>;
     reset: () => void;
     currentDirection: () => Direction | null;
+    totalDistance: Accessor<number>;
 };

@@ -57,6 +57,7 @@
    readout, hover tooltip) sit inside this relatively-positioned box. */
 .tt-stage {
   position: relative;
+  padding-top: 2rem;
 }
 
 /* Entropy readout, pinned to the top-left of the figure. */
@@ -225,7 +226,8 @@
 .tt-reset {
   border: 1px solid currentColor;
   border-radius: 0.25rem;
-  padding: 0.125rem 0.5rem;
+  height: 1.5rem;
+  padding: 0 0.5rem;
   font-size: 0.875rem;
   background: transparent;
   color: inherit;

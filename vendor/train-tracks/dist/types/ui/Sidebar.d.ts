@@ -1,6 +1,7 @@
 import type { Preset } from "../layouts/presets";
 import type { SpeedMode } from "../scoring/live-montecarlo";
 import type { ChainState } from "../scoring/types";
+import type { SwitchBias } from "../scoring/piece-stats";
 type Props = {
     onUndo: () => void;
     canUndo: () => boolean;
@@ -26,6 +27,11 @@ type Props = {
     pieceCount: () => number;
     freeEndCount: () => number;
     entropy: () => number | null;
+    gini: () => number | null;
+    spectralGap: () => number | null;
+    trackLength: () => number;
+    switchBiases: () => Map<string, SwitchBias> | undefined;
+    totalDistance: () => number | null;
     dark: () => boolean;
     setDark: (v: boolean) => void;
     showAdapters: () => boolean;
