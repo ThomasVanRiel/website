@@ -1,0 +1,31 @@
+---
+import "train-tracks/embed.css";
+
+const tracks = import.meta.glob<{ default: unknown }>(
+  "/src/content/articles/**/*.json",
+  { eager: true }
+);
+
+type Props = (
+  | { src: string; track?: never; preset?: never }
+  | { track: unknown; src?: never; preset?: never }
+  | { preset: string; src?: never; track?: never }
+) & {
+  initialSpeed?: number;
+};
+
+const { src, track: trackProp, preset, initialSpeed = 20 } = Astro.props;
+
+const track = src
+  ? Object.entries(tracks).find(([k]) => k.endsWith(`/${src}`))?.[1]?.default
+  : trackProp;
+---
+
+<div data-tt={JSON.stringify({ track, preset, initialSpeed })}></div>
+<script>
+  import { mountTrackLiveMC } from "train-tracks";
+  document.querySelectorAll<HTMLElement>("[data-tt]").forEach((el) => {
+    const { initialSpeed, ...input } = JSON.parse(el.dataset.tt!);
+    mountTrackLiveMC(el, { ...input, initialSpeed });
+  });
+</script>

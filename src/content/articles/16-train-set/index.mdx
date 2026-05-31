@@ -8,10 +8,7 @@ tags:
   - Interactive
 ---
 
-import TrackOval from "./TrackOval.astro";
-import TrackOvalDiagonal from "./TrackOvalDiagonal.astro";
-import TrackOval2Diagonal from "./TrackOval2Diagonal.astro";
-import TrackReal1 from "./TrackReal1.astro";
+import TrackEmbed from "@components/TrackEmbed.astro";
 import ResearchQuestion from "@components/ResearchQuestion.astro";
 import Scaffold from "@components/Scaffold.astro";
 
@@ -252,7 +249,7 @@ explicitly so the reader knows what to look for in the next figure.
 
 </Scaffold>
 
-<TrackOval />
+<TrackEmbed preset="oval" />
 
 ### Adding one diagonal
 
@@ -268,7 +265,7 @@ subsequent laps.
 
 </Scaffold>
 
-<TrackOvalDiagonal />
+<TrackEmbed preset="oval-diagonal" />
 
 If a diagonal interconnect is added to the track, that segment is reachable in one direction only. As soon as the train passed the segment, the direction is fixed and the diagonal segment can never be reached again.
 
@@ -285,7 +282,7 @@ Contrast explicitly with the previous figure.
 
 </Scaffold>
 
-<TrackOval2Diagonal />
+<TrackEmbed src="TrackOval2Diagonal.json" />
 
 Adding a second diagonal interconnect allows the train to change directions once again. Every segment of track gets visited the same amount, on average.
 
@@ -306,7 +303,7 @@ Write 3-4 sentences interpreting the figure once the layout is chosen.
 
 </Scaffold>
 
-<TrackReal1 />
+<TrackEmbed src="TrackReal1.json" />
 
 ## Key takeaways
 
