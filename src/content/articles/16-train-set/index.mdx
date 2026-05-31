@@ -45,10 +45,6 @@ export const questions = [
 <Scaffold>
 IDEAS (resolved — kept for reference, delete when done)
 
-- "State that the math should be doable using graph theory, but that it is too difficult for me."
-  Resolved: the graph theory section introduces the concepts at a high level and outsources the
-  heavy lifting to Numberphile links.
-
 - "State the simplifications I made to the brio tracks (magic connectors, adapters)."
   Resolved: covered in "The track as a graph" subsection. Magic connectors get one sentence there.
 
@@ -79,7 +75,7 @@ IDEAS (resolved — kept for reference, delete when done)
   questions appear.
 </Scaffold>
 
-Anyone who has snapped together a wooden or plastic train track has, at some point, stepped back and wondered whether the layout they just built is any _good_. There's a real instinct behind that question — some tracks feel satisfying to run a train on, others feel broken. This article turns that instinct into something we can measure.
+Anyone who has snapped together a wooden train track — BRIO, IKEA Lillabo, or one of their many compatible cousins — has, at some point, stepped back and wondered whether the layout they just built is any _good_. There's a real instinct behind that question — some tracks feel satisfying to run a train on, others feel broken. This article turns that instinct into something we can measure.
 
 {questions.map(({ answer, ...q }) => <ResearchQuestion {...q} />)}
 
@@ -119,7 +115,7 @@ old draft is cut — it led nowhere useful for the reader).
 
 A track is a collection of straight pieces, curves, and switches connecting them. Switches are the interesting part: they're the points where the train has a _choice_. Once we draw each segment as an edge and each junction as a node, the question becomes a question about a graph.
 
-There's a subtlety the graph alone hides: every real piece has a "male" end and a "female" end, so a valid track has to alternate M → F → M → F at every joint. Two male ends or two female ends bumping into each other simply won't connect. That's a _parity_ constraint sitting on top of the graph — and it's exactly what adapter pieces are for.
+There's a subtlety the graph alone hides: every real piece — in BRIO, Lillabo, and all compatible systems — has a "male" end and a "female" end, so a valid track has to alternate M → F → M → F at every joint. Two male ends or two female ends bumping into each other simply won't connect. That's a _parity_ constraint sitting on top of the graph — and it's exactly what adapter pieces are for.
 
 <Scaffold>
   OBSOLETE — do not restore: "Do adapter-heavy layouts score better?" The
@@ -229,6 +225,8 @@ The existing prose below covers the left/right asymmetry well; keep it.
 The natural way to surface these per-segment probabilities on the track itself is to draw a shape that grows alongside each segment in proportion to its traffic. Splitting that shape into a _left_ half and a _right_ half — one bulge per direction of travel — turns out to reveal more than the totals alone.
 
 A _symmetric_ bulge means the segment is a two-way street: the train passes through it about as often in each direction. A _lopsided_ bulge means the segment is effectively one-directional — the layout funnels traffic through it in only one orientation. A plain oval shows up as 100% one-sided everywhere; a balloon track shows up as a symmetric trunk feeding a one-sided loop. So the visualisation isn't just an aesthetic display of the score — the symmetry pattern surfaces the directional structure of the layout for free.
+
+<Scaffold>Add SVG renders of different bulge types.</Scaffold>
 
 ## Putting the math to work with a virtual train
 
@@ -343,10 +341,11 @@ The adapter tip is covered in the graph theory section — do not repeat it here
 <Scaffold>
   Short intro — warm and inviting. Something like: "Everything above you can now
   explore yourself." One or two sentences, no more. Then embed the interactive
-  editor.
+  editor. State the necessary simplifications to recreate the tracks in silico.
+  Adapters, magic connectors. Implementing the loose connections is a hassle.
 </Scaffold>
 
-{/* TODO: mount the interactive editor component here. */}
+The interactive editor is live [on this webpage](https://brio.thomasvanriel.com/).
 
 ### Try it yourself
 
@@ -364,3 +363,8 @@ Three-beat structure:
 Keep the language light and inviting. This is the kid-on-the-floor moment.
 
 </Scaffold>
+
+## Further reading
+
+[Other nerds discussing the train tracks](https://puzzling.stackexchange.com/questions/132762/how-many-ikea-train-track-layouts-with-self-intersections)
+[3D printable tracks, and trains linked within](https://www.printables.com/model/117903-extended-set-of-wooden-train-track-with-50-unique)

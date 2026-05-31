@@ -110,6 +110,35 @@ draft: true # optional, hides from sitemap
 
 Projects follow the same pattern in `src/content/projects/` with optional `demoUrl` and `repoUrl` fields.
 
+## Translating an Article
+
+The site supports English (`en`) and Dutch (`nl`). UI strings live in `src/lib/i18n.ts`. Article translations are separate files in the same directory as the original.
+
+### Steps
+
+1. **Create the translated file** alongside the original:
+   - Original: `src/content/articles/<slug>/index.mdx`
+   - Translation: `src/content/articles/<slug>/index.nl.mdx`
+
+2. **Add frontmatter** with `lang` and `translationKey`:
+
+   ```yaml
+   ---
+   title: "Translated title"
+   summary: "Translated summary"
+   date: "YYYY-MM-DD"     # same as original
+   tags: ["translated tag"]
+   lang: nl
+   translationKey: "<slug>"   # must match the English article's Astro slug
+   ---
+   ```
+
+   > **Critical:** `translationKey` must equal the English article's slug, which Astro derives as the directory name — e.g. for `06-flowchart-recipes/index.mdx` the slug is `"06-flowchart-recipes"` (Astro strips `/index`). Getting this wrong creates a separate article instead of a translation.
+
+3. **Translate the body.** If the article imports Astro components with embedded text (e.g. SVG flowcharts), copy those files with a `NL` suffix and translate the text inside, then update the imports in the translated MDX.
+
+4. **Verify** with `npm run build` — the Dutch article will be served at `/nl/articles/<slug>` and the language switcher in the header will link between the two versions. If only the English version exists, Dutch visitors get the English content (automatic fallback).
+
 ## Possible Improvements
 
 ### Bugs
