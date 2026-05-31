@@ -28,10 +28,10 @@ function E(e, t) {
 		}
 	};
 }
-var ee = E("straight-nub", C), D = E("straight-tiny", S), te = E("straight-short", b), ne = E("straight-long", x);
+var D = E("straight-nub", C), O = E("straight-tiny", S), ee = E("straight-short", b), te = E("straight-long", x);
 //#endregion
 //#region src/pieces/curve.ts
-function O(e, t, n) {
+function k(e, t, n) {
 	let r = -Math.PI / 2 + t, i = 205 * Math.cos(r), a = 205 + 205 * Math.sin(r), o = n === "l" ? 1 : -1, s = [i, o * a], c = o * (r + Math.PI / 2);
 	return {
 		type: `${e}-${n}`,
@@ -60,10 +60,10 @@ function O(e, t, n) {
 		}
 	};
 }
-var k = O("curve-45", v, "l"), A = O("curve-45", v, "r"), re = O("curve-22", y, "l"), ie = O("curve-22", y, "r");
+var A = k("curve-45", v, "l"), j = k("curve-45", v, "r"), ne = k("curve-22", y, "l"), re = k("curve-22", y, "r");
 //#endregion
 //#region src/pieces/switch.ts
-function j(e, t) {
+function M(e, t) {
 	let n = Math.PI / 8, r = -Math.PI / 2 + n, i = 205 * Math.cos(r), a = 205 + 205 * Math.sin(r), o = e === "l" ? 1 : -1, s = [i, o * a], c = [i, -o * a], l = o * (r + Math.PI / 2), u = -o * (r + Math.PI / 2), d = t === "fmm" ? "F" : "M", f = t === "fmm" ? "M" : "F";
 	return {
 		type: t === "fmm" ? `switch-y-${e}` : `switch-y-mff-${e}`,
@@ -107,17 +107,17 @@ function j(e, t) {
 		}
 	};
 }
-var ae = j("l", "fmm"), oe = j("r", "fmm"), se = j("l", "mff"), ce = j("r", "mff");
+var ie = M("l", "fmm"), ae = M("r", "fmm"), oe = M("l", "mff"), se = M("r", "mff");
 //#endregion
 //#region src/pieces/switch-parallel.ts
-function M(e, t, n) {
+function N(e, t, n) {
 	let r = e, i = 2 * n - t, a = 2 * n, o = Math.sqrt(r * r + i * i), s = Math.atan2(i, r), c = Math.asin(a / o) - s;
 	return {
 		alpha: c,
 		S: (e - 2 * n * Math.sin(c)) / Math.cos(c)
 	};
 }
-function N(e, t, n, r, i, a) {
+function P(e, t, n, r, i, a) {
 	let o = [t * Math.sin(n), e * t * (1 - Math.cos(n))], s = [o[0] + r * Math.cos(n), o[1] + e * r * Math.sin(n)], c = [s[0] + t * Math.sin(n), s[1] - e * t * Math.cos(n)], l = [i, e * a];
 	return {
 		kind: "composite",
@@ -146,8 +146,8 @@ function N(e, t, n, r, i, a) {
 		]
 	};
 }
-function P(e, t) {
-	let n = x, { alpha: r, S: i } = M(n, 22, 205), a = e === "l" ? 1 : -1, o = t === "fmm" ? "F" : "M", s = t === "fmm" ? "M" : "F";
+function F(e, t) {
+	let n = x, { alpha: r, S: i } = N(n, 22, 205), a = e === "l" ? 1 : -1, o = t === "fmm" ? "F" : "M", s = t === "fmm" ? "M" : "F";
 	return {
 		type: t === "fmm" ? `switch-parallel-${e}` : `switch-parallel-mff-${e}`,
 		category: "junction",
@@ -169,17 +169,17 @@ function P(e, t) {
 			}
 		],
 		connections: [[0, 1], [0, 2]],
-		arms: [N(a, 205, r, i, n, 22), N(-a, 205, r, i, n, 22)],
+		arms: [P(a, 205, r, i, n, 22), P(-a, 205, r, i, n, 22)],
 		bounds: {
 			min: [-2.5, -24.5],
 			max: [n + 2.5, 24.5]
 		}
 	};
 }
-var le = P("l", "fmm"), F = P("r", "fmm"), ue = P("l", "mff"), de = P("r", "mff");
+var ce = F("l", "fmm"), I = F("r", "fmm"), le = F("l", "mff"), ue = F("r", "mff");
 //#endregion
 //#region src/pieces/switch-turn.ts
-function I(e, t) {
+function L(e, t) {
 	let n = y, r = -Math.PI / 2 + n, i = 205 * Math.cos(r), a = 205 + 205 * Math.sin(r), o = e === "l" ? 1 : -1, s = [i, o * a], c = o * (r + Math.PI / 2), l = t === "fmm" ? "F" : "M", u = t === "fmm" ? "M" : "F";
 	return {
 		type: t === "fmm" ? `switch-turn-${e}` : `switch-turn-mff-${e}`,
@@ -220,27 +220,27 @@ function I(e, t) {
 		}
 	};
 }
-var fe = I("l", "fmm"), pe = I("r", "fmm"), me = I("l", "mff"), he = I("r", "mff"), L = 50, ge = {
+var de = L("l", "fmm"), fe = L("r", "fmm"), pe = L("l", "mff"), me = L("r", "mff"), R = 50, he = {
 	type: "crossing-diamond",
 	category: "crossing",
 	ends: [
 		{
-			position: [-L, 0],
+			position: [-R, 0],
 			angle: Math.PI,
 			polarity: "F"
 		},
 		{
-			position: [0, L],
+			position: [0, R],
 			angle: Math.PI / 2,
 			polarity: "M"
 		},
 		{
-			position: [L, 0],
+			position: [R, 0],
 			angle: 0,
 			polarity: "M"
 		},
 		{
-			position: [0, -L],
+			position: [0, -R],
 			angle: -Math.PI / 2,
 			polarity: "F"
 		}
@@ -248,21 +248,21 @@ var fe = I("l", "fmm"), pe = I("r", "fmm"), me = I("l", "mff"), he = I("r", "mff
 	connections: [[0, 2], [1, 3]],
 	arms: [{
 		kind: "line",
-		from: [-L, 0],
-		to: [L, 0]
+		from: [-R, 0],
+		to: [R, 0]
 	}, {
 		kind: "line",
-		from: [0, L],
-		to: [0, -L]
+		from: [0, R],
+		to: [0, -R]
 	}],
 	bounds: {
-		min: [-L - 2.5, -L - 2.5],
-		max: [L + 2.5, L + 2.5]
+		min: [-R - 2.5, -R - 2.5],
+		max: [R + 2.5, R + 2.5]
 	}
 };
 //#endregion
 //#region src/pieces/adapter.ts
-function _e(e, t) {
+function ge(e, t) {
 	return {
 		type: e,
 		category: "adapter",
@@ -287,7 +287,7 @@ function _e(e, t) {
 		}
 	};
 }
-var ve = _e("adapter-mm", "M"), ye = _e("adapter-ff", "F"), be = {
+var _e = ge("adapter-mm", "M"), ve = ge("adapter-ff", "F"), ye = {
 	type: "magic-connector",
 	category: "magic",
 	ends: [{
@@ -337,73 +337,73 @@ var ve = _e("adapter-mm", "M"), ye = _e("adapter-ff", "F"), be = {
 2 * Math.PI;
 //#endregion
 //#region src/pieces/registry.ts
-var xe = {
-	[ee.type]: ee,
+var be = {
 	[D.type]: D,
+	[O.type]: O,
+	[ee.type]: ee,
 	[te.type]: te,
 	[ne.type]: ne,
 	[re.type]: re,
-	[ie.type]: ie,
-	[k.type]: k,
 	[A.type]: A,
+	[j.type]: j,
+	[ie.type]: ie,
 	[ae.type]: ae,
 	[oe.type]: oe,
 	[se.type]: se,
 	[ce.type]: ce,
+	[I.type]: I,
 	[le.type]: le,
-	[F.type]: F,
 	[ue.type]: ue,
 	[de.type]: de,
 	[fe.type]: fe,
 	[pe.type]: pe,
 	[me.type]: me,
 	[he.type]: he,
-	[ge.type]: ge,
+	[_e.type]: _e,
 	[ve.type]: ve,
-	[ye.type]: ye,
-	[be.type]: be
+	[ye.type]: ye
 };
-function R(e) {
-	let t = xe[e];
+function z(e) {
+	let t = be[e];
 	if (!t) throw Error(`Unknown piece type: ${e}`);
 	return t;
 }
 //#endregion
 //#region src/lib/geometry.ts
-function Se(e, t) {
+function xe(e, t) {
 	let n = e[0] - t[0], r = e[1] - t[1];
 	return Math.sqrt(n * n + r * r);
 }
-function z(e) {
-	if (e.kind === "line") return Se(e.from, e.to);
-	if (e.kind === "arc") return e.radius * Ce(e);
+function B(e) {
+	if (e.kind === "line") return xe(e.from, e.to);
+	if (e.kind === "arc") return e.radius * Se(e);
 	if (e.kind === "bezier") {
-		let t = 0, n = we(e, 0);
+		let t = 0, n = Ce(e, 0);
 		for (let r = 1; r <= 32; r++) {
-			let i = we(e, r / 32);
-			t += Se(n, i), n = i;
+			let i = Ce(e, r / 32);
+			t += xe(n, i), n = i;
 		}
 		return t;
 	}
 	let t = 0;
-	for (let n of e.parts) t += z(n);
+	for (let n of e.parts) t += B(n);
 	return t;
 }
-function Ce(e) {
+function Se(e) {
 	let t = Math.atan2(e.from[1] - e.center[1], e.from[0] - e.center[0]), n = Math.atan2(e.to[1] - e.center[1], e.to[0] - e.center[0]), r = e.ccw ? n - t : t - n;
 	for (; r < 0;) r += 2 * Math.PI;
 	for (; r >= 2 * Math.PI;) r -= 2 * Math.PI;
 	return r;
 }
-function we(e, t) {
+function Ce(e, t) {
 	let n = 1 - t, r = n * n * n, i = 3 * n * n * t, a = 3 * n * t * t, o = t * t * t;
 	return [r * e.from[0] + i * e.c1[0] + a * e.c2[0] + o * e.to[0], r * e.from[1] + i * e.c1[1] + a * e.c2[1] + o * e.to[1]];
 }
-function Te(e, t) {
+function we(e, t) {
 	let n = 1 - t, r = 3 * n * n * (e.c1[0] - e.from[0]) + 6 * n * t * (e.c2[0] - e.c1[0]) + 3 * t * t * (e.to[0] - e.c2[0]), i = 3 * n * n * (e.c1[1] - e.from[1]) + 6 * n * t * (e.c2[1] - e.c1[1]) + 3 * t * t * (e.to[1] - e.c2[1]), a = Math.sqrt(r * r + i * i) || 1;
 	return [r / a, i / a];
 }
-function B(e, t) {
+function V(e, t) {
 	if (e.kind === "line") {
 		let n = [e.from[0] + (e.to[0] - e.from[0]) * t, e.from[1] + (e.to[1] - e.from[1]) * t], r = e.to[0] - e.from[0], i = e.to[1] - e.from[1], a = Math.sqrt(r * r + i * i) || 1, o = [r / a, i / a];
 		return {
@@ -413,7 +413,7 @@ function B(e, t) {
 		};
 	}
 	if (e.kind === "arc") {
-		let n = Math.atan2(e.from[1] - e.center[1], e.from[0] - e.center[0]), r = Ce(e), i = e.ccw ? 1 : -1, a = n + i * r * t, o = [e.center[0] + e.radius * Math.cos(a), e.center[1] + e.radius * Math.sin(a)], s = [-i * Math.sin(a), i * Math.cos(a)];
+		let n = Math.atan2(e.from[1] - e.center[1], e.from[0] - e.center[0]), r = Se(e), i = e.ccw ? 1 : -1, a = n + i * r * t, o = [e.center[0] + e.radius * Math.cos(a), e.center[1] + e.radius * Math.sin(a)], s = [-i * Math.sin(a), i * Math.cos(a)];
 		return {
 			point: o,
 			tangent: s,
@@ -421,73 +421,73 @@ function B(e, t) {
 		};
 	}
 	if (e.kind === "bezier") {
-		let n = we(e, t), r = Te(e, t);
+		let n = Ce(e, t), r = we(e, t);
 		return {
 			point: n,
 			tangent: r,
 			normal: [-r[1], r[0]]
 		};
 	}
-	let n = z(e), r = Math.max(0, Math.min(n, t * n)), i = 0;
+	let n = B(e), r = Math.max(0, Math.min(n, t * n)), i = 0;
 	for (let t = 0; t < e.parts.length; t++) {
-		let n = e.parts[t], a = z(n);
+		let n = e.parts[t], a = B(n);
 		if (t === e.parts.length - 1 || i + a >= r) {
 			let e = a > 1e-9 ? (r - i) / a : 0;
-			return B(n, Math.max(0, Math.min(1, e)));
+			return V(n, Math.max(0, Math.min(1, e)));
 		}
 		i += a;
 	}
-	return B(e.parts[e.parts.length - 1], 1);
+	return V(e.parts[e.parts.length - 1], 1);
 }
-function Ee(e, t) {
+function Te(e, t) {
 	let n = [];
-	for (let r = 0; r <= t; r++) n.push(B(e, r / t));
+	for (let r = 0; r <= t; r++) n.push(V(e, r / t));
 	return n;
 }
 //#endregion
 //#region src/lib/transform.ts
-var De = {
+var Ee = {
 	position: [0, 0],
 	rotation: 0
 };
-function V([e, t], n) {
+function H([e, t], n) {
 	let r = Math.cos(n.rotation), i = Math.sin(n.rotation);
 	return [r * e - i * t + n.position[0], i * e + r * t + n.position[1]];
 }
-function Oe(e, t) {
+function De(e, t) {
 	return e + t.rotation;
 }
-function ke(e, t) {
+function Oe(e, t) {
 	return {
-		position: V(e.position, t),
-		angle: Oe(e.angle, t),
+		position: H(e.position, t),
+		angle: De(e.angle, t),
 		polarity: e.polarity
 	};
 }
-function H(e, t) {
+function U(e, t) {
 	return e.kind === "line" ? {
 		kind: "line",
-		from: V(e.from, t),
-		to: V(e.to, t)
+		from: H(e.from, t),
+		to: H(e.to, t)
 	} : e.kind === "arc" ? {
 		kind: "arc",
-		from: V(e.from, t),
-		to: V(e.to, t),
-		center: V(e.center, t),
+		from: H(e.from, t),
+		to: H(e.to, t),
+		center: H(e.center, t),
 		radius: e.radius,
 		ccw: e.ccw
 	} : e.kind === "bezier" ? {
 		kind: "bezier",
-		from: V(e.from, t),
-		to: V(e.to, t),
-		c1: V(e.c1, t),
-		c2: V(e.c2, t)
+		from: H(e.from, t),
+		to: H(e.to, t),
+		c1: H(e.c1, t),
+		c2: H(e.c2, t)
 	} : {
 		kind: "composite",
-		parts: e.parts.map((e) => H(e, t))
+		parts: e.parts.map((e) => U(e, t))
 	};
 }
-function Ae(e) {
+function ke(e) {
 	let t = e;
 	for (; t > Math.PI;) t -= 2 * Math.PI;
 	for (; t <= -Math.PI;) t += 2 * Math.PI;
@@ -495,14 +495,14 @@ function Ae(e) {
 }
 //#endregion
 //#region src/track/placement.ts
-var je = 0;
-function Me() {
-	return je += 1, `p${je}`;
+var Ae = 0;
+function je() {
+	return Ae += 1, `p${Ae}`;
+}
+function Me(e) {
+	e > Ae && (Ae = e);
 }
 function Ne(e) {
-	e > je && (je = e);
-}
-function U(e) {
 	return {
 		position: e.position,
 		rotation: e.rotation
@@ -510,15 +510,15 @@ function U(e) {
 }
 function Pe(e) {
 	if (e.magic) return e.magic.ends;
-	let t = R(e.type), n = U(e);
-	return t.ends.map((e) => ke(e, n));
+	let t = z(e.type), n = Ne(e);
+	return t.ends.map((e) => Oe(e, n));
 }
 function Fe(e, t, n) {
-	let r = R(e).ends[t];
+	let r = z(e).ends[t];
 	if (!Ie(r.polarity, n.polarity)) return null;
-	let i = Ae(Ae(n.angle + Math.PI) - r.angle), a = Math.cos(i), o = Math.sin(i), s = a * r.position[0] - o * r.position[1], c = o * r.position[0] + a * r.position[1], l = [n.position[0] - s, n.position[1] - c];
+	let i = ke(ke(n.angle + Math.PI) - r.angle), a = Math.cos(i), o = Math.sin(i), s = a * r.position[0] - o * r.position[1], c = o * r.position[0] + a * r.position[1], l = [n.position[0] - s, n.position[1] - c];
 	return {
-		id: Me(),
+		id: je(),
 		type: e,
 		position: l,
 		rotation: i
@@ -545,7 +545,7 @@ function Le(e, t = w) {
 		if (r[e]) continue;
 		r[e] = !0;
 		let o = [n[e].ref], s = n[e].position[0], c = n[e].position[1], l = 1;
-		for (let i = e + 1; i < n.length; i++) r[i] || Se(n[e].position, n[i].position) < t && (r[i] = !0, o.push(n[i].ref), s += n[i].position[0], c += n[i].position[1], l += 1);
+		for (let i = e + 1; i < n.length; i++) r[i] || xe(n[e].position, n[i].position) < t && (r[i] = !0, o.push(n[i].ref), s += n[i].position[0], c += n[i].position[1], l += 1);
 		i.push({
 			id: a++,
 			members: o,
@@ -568,14 +568,14 @@ function ze(e) {
 function Be(e, t, n, r) {
 	let i = n.pieces.find((t) => t.id === e);
 	if (!i) return null;
-	let [a, o] = R(i.type).connections[t];
+	let [a, o] = z(i.type).connections[t];
 	return r.includes(a) ? a : r.includes(o) ? o : null;
 }
 function Ve(e, t, n) {
 	return e.connections[t][1] === n;
 }
 function He(e, t) {
-	let n = Le(e), r = new Map(e.pieces.map((e) => [e.id, e])), i = (e) => R(r.get(e).type), a = /* @__PURE__ */ new Map();
+	let n = Le(e), r = new Map(e.pieces.map((e) => [e.id, e])), i = (e) => z(r.get(e).type), a = /* @__PURE__ */ new Map();
 	for (let r of n) {
 		let n = /* @__PURE__ */ new Map();
 		for (let { pieceId: e, endIndex: t } of r.members) n.has(e) || n.set(e, []), n.get(e).push(t);
@@ -583,7 +583,7 @@ function He(e, t) {
 		for (let [r, i] of n) {
 			let n = e.pieces.find((e) => e.id === r);
 			if (!n) continue;
-			let a = R(n.type);
+			let a = z(n.type);
 			for (let e = 0; e < a.connections.length; e++) {
 				let [n, s] = a.connections[e];
 				(i.includes(n) || i.includes(s)) && o.push({
@@ -628,7 +628,7 @@ function He(e, t) {
 	}
 	let o = /* @__PURE__ */ new Map();
 	for (let r of e.pieces) {
-		let e = R(r.type);
+		let e = z(r.type);
 		for (let i = 0; i < e.connections.length; i++) {
 			let [s, c] = e.connections[i], l = Re(n, {
 				pieceId: r.id,
@@ -652,27 +652,27 @@ function He(e, t) {
 }
 //#endregion
 //#region src/scoring/types.ts
-function W(e) {
+function Ue(e) {
 	return `${e.pieceId}:${e.connectionIndex}:${e.direction}`;
 }
 //#endregion
 //#region src/render/path.ts
-var Ue = .3;
-function We(e, t) {
-	let n = H(e, t);
+var We = .3;
+function Ge(e, t) {
+	let n = U(e, t);
 	if (n.kind === "line") return `M ${n.from[0]} ${n.from[1]} L ${n.to[0]} ${n.to[1]}`;
 	if (n.kind === "bezier") return `M ${n.from[0]} ${n.from[1]} C ${n.c1[0]} ${n.c1[1]}, ${n.c2[0]} ${n.c2[1]}, ${n.to[0]} ${n.to[1]}`;
-	let r = Math.max(8, Math.ceil(z(n) * Ue)), i = "";
+	let r = Math.max(8, Math.ceil(B(n) * We)), i = "";
 	for (let e = 0; e <= r; e++) {
-		let t = B(n, e / r).point;
+		let t = V(n, e / r).point;
 		i += `${e === 0 ? "M" : "L"} ${t[0]} ${t[1]} `;
 	}
 	return i.trim();
 }
 //#endregion
 //#region src/render/bulge.ts
-function Ge(e, t, n, r, i, a, o = 16) {
-	let s = Ee(H(e, t), o), c = a === "atob" ? 1 : -1, l = "";
+function Ke(e, t, n, r, i, a, o = 16) {
+	let s = Te(U(e, t), o), c = a === "atob" ? 1 : -1, l = "";
 	for (let e = 0; e < s.length; e++) {
 		let t = e / (s.length - 1), a = n + (r - n) * t, o = Math.min(i * a, 50), u = s[e].point[0] + c * s[e].normal[0] * o, d = s[e].point[1] + c * s[e].normal[1] * o;
 		l += `${e === 0 ? "M" : "L"} ${u} ${d} `;
@@ -682,115 +682,115 @@ function Ge(e, t, n, r, i, a, o = 16) {
 }
 //#endregion
 //#region node_modules/clsx/dist/clsx.mjs
-function Ke(e) {
+function qe(e) {
 	var t, n, r = "";
 	if (typeof e == "string" || typeof e == "number") r += e;
 	else if (typeof e == "object") if (Array.isArray(e)) {
 		var i = e.length;
-		for (t = 0; t < i; t++) e[t] && (n = Ke(e[t])) && (r && (r += " "), r += n);
+		for (t = 0; t < i; t++) e[t] && (n = qe(e[t])) && (r && (r += " "), r += n);
 	} else for (n in e) e[n] && (r && (r += " "), r += n);
 	return r;
 }
-function qe() {
-	for (var e, t, n = 0, r = "", i = arguments.length; n < i; n++) (e = arguments[n]) && (t = Ke(e)) && (r && (r += " "), r += t);
+function Je() {
+	for (var e, t, n = 0, r = "", i = arguments.length; n < i; n++) (e = arguments[n]) && (t = qe(e)) && (r && (r += " "), r += t);
 	return r;
 }
 //#endregion
 //#region node_modules/tailwind-merge/dist/bundle-mjs.mjs
-var Je = (e, t) => {
+var Ye = (e, t) => {
 	let n = Array(e.length + t.length);
 	for (let t = 0; t < e.length; t++) n[t] = e[t];
 	for (let r = 0; r < t.length; r++) n[e.length + r] = t[r];
 	return n;
-}, Ye = (e, t) => ({
+}, Xe = (e, t) => ({
 	classGroupId: e,
 	validator: t
-}), Xe = (e = /* @__PURE__ */ new Map(), t = null, n) => ({
+}), Ze = (e = /* @__PURE__ */ new Map(), t = null, n) => ({
 	nextPart: e,
 	validators: t,
 	classGroupId: n
-}), Ze = "-", Qe = [], $e = "arbitrary..", et = (e) => {
-	let t = rt(e), { conflictingClassGroups: n, conflictingClassGroupModifiers: r } = e;
+}), Qe = "-", $e = [], et = "arbitrary..", tt = (e) => {
+	let t = it(e), { conflictingClassGroups: n, conflictingClassGroupModifiers: r } = e;
 	return {
 		getClassGroupId: (e) => {
-			if (e.startsWith("[") && e.endsWith("]")) return nt(e);
-			let n = e.split(Ze);
-			return tt(n, +(n[0] === "" && n.length > 1), t);
+			if (e.startsWith("[") && e.endsWith("]")) return rt(e);
+			let n = e.split(Qe);
+			return nt(n, +(n[0] === "" && n.length > 1), t);
 		},
 		getConflictingClassGroupIds: (e, t) => {
 			if (t) {
 				let t = r[e], i = n[e];
-				return t ? i ? Je(i, t) : t : i || Qe;
+				return t ? i ? Ye(i, t) : t : i || $e;
 			}
-			return n[e] || Qe;
+			return n[e] || $e;
 		}
 	};
-}, tt = (e, t, n) => {
+}, nt = (e, t, n) => {
 	if (e.length - t === 0) return n.classGroupId;
 	let r = e[t], i = n.nextPart.get(r);
 	if (i) {
-		let n = tt(e, t + 1, i);
+		let n = nt(e, t + 1, i);
 		if (n) return n;
 	}
 	let a = n.validators;
 	if (a === null) return;
-	let o = t === 0 ? e.join(Ze) : e.slice(t).join(Ze), s = a.length;
+	let o = t === 0 ? e.join(Qe) : e.slice(t).join(Qe), s = a.length;
 	for (let e = 0; e < s; e++) {
 		let t = a[e];
 		if (t.validator(o)) return t.classGroupId;
 	}
-}, nt = (e) => e.slice(1, -1).indexOf(":") === -1 ? void 0 : (() => {
+}, rt = (e) => e.slice(1, -1).indexOf(":") === -1 ? void 0 : (() => {
 	let t = e.slice(1, -1), n = t.indexOf(":"), r = t.slice(0, n);
-	return r ? $e + r : void 0;
-})(), rt = (e) => {
+	return r ? et + r : void 0;
+})(), it = (e) => {
 	let { theme: t, classGroups: n } = e;
-	return it(n, t);
-}, it = (e, t) => {
-	let n = Xe();
+	return at(n, t);
+}, at = (e, t) => {
+	let n = Ze();
 	for (let r in e) {
 		let i = e[r];
-		at(i, n, r, t);
+		ot(i, n, r, t);
 	}
 	return n;
-}, at = (e, t, n, r) => {
+}, ot = (e, t, n, r) => {
 	let i = e.length;
 	for (let a = 0; a < i; a++) {
 		let i = e[a];
-		ot(i, t, n, r);
+		st(i, t, n, r);
 	}
-}, ot = (e, t, n, r) => {
+}, st = (e, t, n, r) => {
 	if (typeof e == "string") {
-		st(e, t, n);
+		ct(e, t, n);
 		return;
 	}
 	if (typeof e == "function") {
-		ct(e, t, n, r);
+		lt(e, t, n, r);
 		return;
 	}
-	lt(e, t, n, r);
-}, st = (e, t, n) => {
-	let r = e === "" ? t : ut(t, e);
+	ut(e, t, n, r);
+}, ct = (e, t, n) => {
+	let r = e === "" ? t : dt(t, e);
 	r.classGroupId = n;
-}, ct = (e, t, n, r) => {
-	if (dt(e)) {
-		at(e(r), t, n, r);
+}, lt = (e, t, n, r) => {
+	if (ft(e)) {
+		ot(e(r), t, n, r);
 		return;
 	}
-	t.validators === null && (t.validators = []), t.validators.push(Ye(n, e));
-}, lt = (e, t, n, r) => {
+	t.validators === null && (t.validators = []), t.validators.push(Xe(n, e));
+}, ut = (e, t, n, r) => {
 	let i = Object.entries(e), a = i.length;
 	for (let e = 0; e < a; e++) {
 		let [a, o] = i[e];
-		at(o, ut(t, a), n, r);
+		ot(o, dt(t, a), n, r);
 	}
-}, ut = (e, t) => {
-	let n = e, r = t.split(Ze), i = r.length;
+}, dt = (e, t) => {
+	let n = e, r = t.split(Qe), i = r.length;
 	for (let e = 0; e < i; e++) {
 		let t = r[e], i = n.nextPart.get(t);
-		i || (i = Xe(), n.nextPart.set(t, i)), n = i;
+		i || (i = Ze(), n.nextPart.set(t, i)), n = i;
 	}
 	return n;
-}, dt = (e) => "isThemeGetter" in e && e.isThemeGetter === !0, ft = (e) => {
+}, ft = (e) => "isThemeGetter" in e && e.isThemeGetter === !0, pt = (e) => {
 	if (e < 1) return {
 		get: () => void 0,
 		set: () => {}
@@ -808,19 +808,19 @@ var Je = (e, t) => {
 			e in n ? n[e] = t : i(e, t);
 		}
 	};
-}, pt = "!", mt = ":", ht = [], gt = (e, t, n, r, i) => ({
+}, mt = "!", ht = ":", gt = [], _t = (e, t, n, r, i) => ({
 	modifiers: e,
 	hasImportantModifier: t,
 	baseClassName: n,
 	maybePostfixModifierPosition: r,
 	isExternal: i
-}), _t = (e) => {
+}), vt = (e) => {
 	let { prefix: t, experimentalParseClassName: n } = e, r = (e) => {
 		let t = [], n = 0, r = 0, i = 0, a, o = e.length;
 		for (let s = 0; s < o; s++) {
 			let o = e[s];
 			if (n === 0 && r === 0) {
-				if (o === mt) {
+				if (o === ht) {
 					t.push(e.slice(i, s)), i = s + 1;
 					continue;
 				}
@@ -832,13 +832,13 @@ var Je = (e, t) => {
 			o === "[" ? n++ : o === "]" ? n-- : o === "(" ? r++ : o === ")" && r--;
 		}
 		let s = t.length === 0 ? e : e.slice(i), c = s, l = !1;
-		s.endsWith(pt) ? (c = s.slice(0, -1), l = !0) : s.startsWith(pt) && (c = s.slice(1), l = !0);
+		s.endsWith(mt) ? (c = s.slice(0, -1), l = !0) : s.startsWith(mt) && (c = s.slice(1), l = !0);
 		let u = a && a > i ? a - i : void 0;
-		return gt(t, l, c, u);
+		return _t(t, l, c, u);
 	};
 	if (t) {
-		let e = t + mt, n = r;
-		r = (t) => t.startsWith(e) ? n(t.slice(e.length)) : gt(ht, !1, t, void 0, !0);
+		let e = t + ht, n = r;
+		r = (t) => t.startsWith(e) ? n(t.slice(e.length)) : _t(gt, !1, t, void 0, !0);
 	}
 	if (n) {
 		let e = r;
@@ -848,7 +848,7 @@ var Je = (e, t) => {
 		});
 	}
 	return r;
-}, vt = (e) => {
+}, yt = (e) => {
 	let t = /* @__PURE__ */ new Map();
 	return e.orderSensitiveModifiers.forEach((e, n) => {
 		t.set(e, 1e6 + n);
@@ -860,18 +860,18 @@ var Je = (e, t) => {
 		}
 		return r.length > 0 && (r.sort(), n.push(...r)), n;
 	};
-}, yt = (e) => ({
-	cache: ft(e.cacheSize),
-	parseClassName: _t(e),
-	sortModifiers: vt(e),
-	postfixLookupClassGroupIds: bt(e),
-	...et(e)
-}), bt = (e) => {
+}, bt = (e) => ({
+	cache: pt(e.cacheSize),
+	parseClassName: vt(e),
+	sortModifiers: yt(e),
+	postfixLookupClassGroupIds: xt(e),
+	...tt(e)
+}), xt = (e) => {
 	let t = Object.create(null), n = e.postfixLookupClassGroups;
 	if (n) for (let e = 0; e < n.length; e++) t[n[e]] = !0;
 	return t;
-}, xt = /\s+/, St = (e, t) => {
-	let { parseClassName: n, getClassGroupId: r, getConflictingClassGroupIds: i, sortModifiers: a, postfixLookupClassGroupIds: o } = t, s = [], c = e.trim().split(xt), l = "";
+}, St = /\s+/, Ct = (e, t) => {
+	let { parseClassName: n, getClassGroupId: r, getConflictingClassGroupIds: i, sortModifiers: a, postfixLookupClassGroupIds: o } = t, s = [], c = e.trim().split(St), l = "";
 	for (let e = c.length - 1; e >= 0; --e) {
 		let t = c[e], { isExternal: u, modifiers: d, hasImportantModifier: f, baseClassName: p, maybePostfixModifierPosition: m } = n(t);
 		if (u) {
@@ -895,7 +895,7 @@ var Je = (e, t) => {
 			}
 			h = !1;
 		}
-		let _ = d.length === 0 ? "" : d.length === 1 ? d[0] : a(d).join(":"), v = f ? _ + pt : _, y = v + g;
+		let _ = d.length === 0 ? "" : d.length === 1 ? d[0] : a(d).join(":"), v = f ? _ + mt : _, y = v + g;
 		if (s.indexOf(y) > -1) continue;
 		s.push(y);
 		let b = i(g, h);
@@ -906,34 +906,34 @@ var Je = (e, t) => {
 		l = t + (l.length > 0 ? " " + l : l);
 	}
 	return l;
-}, Ct = (...e) => {
+}, wt = (...e) => {
 	let t = 0, n, r, i = "";
-	for (; t < e.length;) (n = e[t++]) && (r = wt(n)) && (i && (i += " "), i += r);
+	for (; t < e.length;) (n = e[t++]) && (r = Tt(n)) && (i && (i += " "), i += r);
 	return i;
-}, wt = (e) => {
+}, Tt = (e) => {
 	if (typeof e == "string") return e;
 	let t, n = "";
-	for (let r = 0; r < e.length; r++) e[r] && (t = wt(e[r])) && (n && (n += " "), n += t);
+	for (let r = 0; r < e.length; r++) e[r] && (t = Tt(e[r])) && (n && (n += " "), n += t);
 	return n;
-}, Tt = (e, ...t) => {
-	let n, r, i, a, o = (o) => (n = yt(t.reduce((e, t) => t(e), e())), r = n.cache.get, i = n.cache.set, a = s, s(o)), s = (e) => {
+}, Et = (e, ...t) => {
+	let n, r, i, a, o = (o) => (n = bt(t.reduce((e, t) => t(e), e())), r = n.cache.get, i = n.cache.set, a = s, s(o)), s = (e) => {
 		let t = r(e);
 		if (t) return t;
-		let a = St(e, n);
+		let a = Ct(e, n);
 		return i(e, a), a;
 	};
-	return a = o, (...e) => a(Ct(...e));
-}, Et = [], G = (e) => {
-	let t = (t) => t[e] || Et;
+	return a = o, (...e) => a(wt(...e));
+}, Dt = [], W = (e) => {
+	let t = (t) => t[e] || Dt;
 	return t.isThemeGetter = !0, t;
-}, Dt = /^\[(?:(\w[\w-]*):)?(.+)\]$/i, Ot = /^\((?:(\w[\w-]*):)?(.+)\)$/i, kt = /^\d+(?:\.\d+)?\/\d+(?:\.\d+)?$/, At = /^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/, jt = /\d+(%|px|r?em|[sdl]?v([hwib]|min|max)|pt|pc|in|cm|mm|cap|ch|ex|r?lh|cq(w|h|i|b|min|max))|\b(calc|min|max|clamp)\(.+\)|^0$/, Mt = /^(rgba?|hsla?|hwb|(ok)?(lab|lch)|color-mix)\(.+\)$/, Nt = /^(inset_)?-?((\d+)?\.?(\d+)[a-z]+|0)_-?((\d+)?\.?(\d+)[a-z]+|0)/, Pt = /^(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(.+\)$/, K = (e) => kt.test(e), q = (e) => !!e && !Number.isNaN(Number(e)), J = (e) => !!e && Number.isInteger(Number(e)), Ft = (e) => e.endsWith("%") && q(e.slice(0, -1)), Y = (e) => At.test(e), It = () => !0, Lt = (e) => jt.test(e) && !Mt.test(e), Rt = () => !1, zt = (e) => Nt.test(e), Bt = (e) => Pt.test(e), Vt = (e) => !X(e) && !Q(e), Ht = (e) => e.startsWith("@container") && (e[10] === "/" && e[11] !== void 0 || e[11] === "s" && e[16] !== void 0 && e.startsWith("-size/", 10) || e[11] === "n" && e[18] !== void 0 && e.startsWith("-normal/", 10)), Ut = (e) => $(e, sn, Rt), X = (e) => Dt.test(e), Z = (e) => $(e, cn, Lt), Wt = (e) => $(e, ln, q), Gt = (e) => $(e, dn, It), Kt = (e) => $(e, un, Rt), qt = (e) => $(e, an, Rt), Jt = (e) => $(e, on, Bt), Yt = (e) => $(e, fn, zt), Q = (e) => Ot.test(e), Xt = (e) => rn(e, cn), Zt = (e) => rn(e, un), Qt = (e) => rn(e, an), $t = (e) => rn(e, sn), en = (e) => rn(e, on), tn = (e) => rn(e, fn, !0), nn = (e) => rn(e, dn, !0), $ = (e, t, n) => {
-	let r = Dt.exec(e);
-	return r ? r[1] ? t(r[1]) : n(r[2]) : !1;
-}, rn = (e, t, n = !1) => {
+}, Ot = /^\[(?:(\w[\w-]*):)?(.+)\]$/i, kt = /^\((?:(\w[\w-]*):)?(.+)\)$/i, At = /^\d+(?:\.\d+)?\/\d+(?:\.\d+)?$/, jt = /^(\d+(\.\d+)?)?(xs|sm|md|lg|xl)$/, Mt = /\d+(%|px|r?em|[sdl]?v([hwib]|min|max)|pt|pc|in|cm|mm|cap|ch|ex|r?lh|cq(w|h|i|b|min|max))|\b(calc|min|max|clamp)\(.+\)|^0$/, Nt = /^(rgba?|hsla?|hwb|(ok)?(lab|lch)|color-mix)\(.+\)$/, Pt = /^(inset_)?-?((\d+)?\.?(\d+)[a-z]+|0)_-?((\d+)?\.?(\d+)[a-z]+|0)/, Ft = /^(url|image|image-set|cross-fade|element|(repeating-)?(linear|radial|conic)-gradient)\(.+\)$/, G = (e) => At.test(e), K = (e) => !!e && !Number.isNaN(Number(e)), q = (e) => !!e && Number.isInteger(Number(e)), It = (e) => e.endsWith("%") && K(e.slice(0, -1)), J = (e) => jt.test(e), Lt = () => !0, Rt = (e) => Mt.test(e) && !Nt.test(e), zt = () => !1, Bt = (e) => Pt.test(e), Vt = (e) => Ft.test(e), Ht = (e) => !Y(e) && !Z(e), Ut = (e) => e.startsWith("@container") && (e[10] === "/" && e[11] !== void 0 || e[11] === "s" && e[16] !== void 0 && e.startsWith("-size/", 10) || e[11] === "n" && e[18] !== void 0 && e.startsWith("-normal/", 10)), Wt = (e) => Q(e, sn, zt), Y = (e) => Ot.test(e), X = (e) => Q(e, cn, Rt), Gt = (e) => Q(e, ln, K), Kt = (e) => Q(e, dn, Lt), qt = (e) => Q(e, un, zt), Jt = (e) => Q(e, an, zt), Yt = (e) => Q(e, on, Vt), Xt = (e) => Q(e, fn, Bt), Z = (e) => kt.test(e), Zt = (e) => $(e, cn), Qt = (e) => $(e, un), $t = (e) => $(e, an), en = (e) => $(e, sn), tn = (e) => $(e, on), nn = (e) => $(e, fn, !0), rn = (e) => $(e, dn, !0), Q = (e, t, n) => {
 	let r = Ot.exec(e);
+	return r ? r[1] ? t(r[1]) : n(r[2]) : !1;
+}, $ = (e, t, n = !1) => {
+	let r = kt.exec(e);
 	return r ? r[1] ? t(r[1]) : n : !1;
-}, an = (e) => e === "position" || e === "percentage", on = (e) => e === "image" || e === "url", sn = (e) => e === "length" || e === "size" || e === "bg-size", cn = (e) => e === "length", ln = (e) => e === "number", un = (e) => e === "family-name", dn = (e) => e === "number" || e === "weight", fn = (e) => e === "shadow", pn = /* @__PURE__ */ Tt(() => {
-	let e = G("color"), t = G("font"), n = G("text"), r = G("font-weight"), i = G("tracking"), a = G("leading"), o = G("breakpoint"), s = G("container"), c = G("spacing"), l = G("radius"), u = G("shadow"), d = G("inset-shadow"), f = G("text-shadow"), p = G("drop-shadow"), m = G("blur"), h = G("perspective"), g = G("aspect"), _ = G("ease"), v = G("animate"), y = () => [
+}, an = (e) => e === "position" || e === "percentage", on = (e) => e === "image" || e === "url", sn = (e) => e === "length" || e === "size" || e === "bg-size", cn = (e) => e === "length", ln = (e) => e === "number", un = (e) => e === "family-name", dn = (e) => e === "number" || e === "weight", fn = (e) => e === "shadow", pn = /* @__PURE__ */ Et(() => {
+	let e = W("color"), t = W("font"), n = W("text"), r = W("font-weight"), i = W("tracking"), a = W("leading"), o = W("breakpoint"), s = W("container"), c = W("spacing"), l = W("radius"), u = W("shadow"), d = W("inset-shadow"), f = W("text-shadow"), p = W("drop-shadow"), m = W("blur"), h = W("perspective"), g = W("aspect"), _ = W("ease"), v = W("animate"), y = () => [
 		"auto",
 		"avoid",
 		"all",
@@ -958,8 +958,8 @@ var Je = (e, t) => {
 		"left-bottom"
 	], x = () => [
 		...b(),
-		Q,
-		X
+		Z,
+		Y
 	], S = () => [
 		"auto",
 		"hidden",
@@ -971,44 +971,44 @@ var Je = (e, t) => {
 		"contain",
 		"none"
 	], w = () => [
-		Q,
-		X,
+		Z,
+		Y,
 		c
 	], T = () => [
-		K,
+		G,
 		"full",
 		"auto",
 		...w()
 	], E = () => [
-		J,
+		q,
 		"none",
 		"subgrid",
-		Q,
-		X
-	], ee = () => [
+		Z,
+		Y
+	], D = () => [
 		"auto",
 		{ span: [
 			"full",
-			J,
-			Q,
-			X
+			q,
+			Z,
+			Y
 		] },
-		J,
-		Q,
-		X
-	], D = () => [
-		J,
+		q,
+		Z,
+		Y
+	], O = () => [
+		q,
 		"auto",
-		Q,
-		X
-	], te = () => [
+		Z,
+		Y
+	], ee = () => [
 		"auto",
 		"min",
 		"max",
 		"fr",
-		Q,
-		X
-	], ne = () => [
+		Z,
+		Y
+	], te = () => [
 		"start",
 		"end",
 		"center",
@@ -1019,15 +1019,15 @@ var Je = (e, t) => {
 		"baseline",
 		"center-safe",
 		"end-safe"
-	], O = () => [
+	], k = () => [
 		"start",
 		"end",
 		"center",
 		"stretch",
 		"center-safe",
 		"end-safe"
-	], k = () => ["auto", ...w()], A = () => [
-		K,
+	], A = () => ["auto", ...w()], j = () => [
+		G,
 		"auto",
 		"full",
 		"dvw",
@@ -1040,8 +1040,8 @@ var Je = (e, t) => {
 		"max",
 		"fit",
 		...w()
-	], re = () => [
-		K,
+	], ne = () => [
+		G,
 		"screen",
 		"full",
 		"dvw",
@@ -1051,8 +1051,8 @@ var Je = (e, t) => {
 		"max",
 		"fit",
 		...w()
-	], ie = () => [
-		K,
+	], re = () => [
+		G,
 		"screen",
 		"full",
 		"lh",
@@ -1063,50 +1063,50 @@ var Je = (e, t) => {
 		"max",
 		"fit",
 		...w()
-	], j = () => [
+	], M = () => [
 		e,
-		Q,
-		X
-	], ae = () => [
+		Z,
+		Y
+	], ie = () => [
 		...b(),
-		Qt,
-		qt,
-		{ position: [Q, X] }
-	], oe = () => ["no-repeat", { repeat: [
+		$t,
+		Jt,
+		{ position: [Z, Y] }
+	], ae = () => ["no-repeat", { repeat: [
 		"",
 		"x",
 		"y",
 		"space",
 		"round"
-	] }], se = () => [
+	] }], oe = () => [
 		"auto",
 		"cover",
 		"contain",
-		$t,
-		Ut,
-		{ size: [Q, X] }
-	], ce = () => [
-		Ft,
-		Xt,
-		Z
-	], M = () => [
+		en,
+		Wt,
+		{ size: [Z, Y] }
+	], se = () => [
+		It,
+		Zt,
+		X
+	], N = () => [
 		"",
 		"none",
 		"full",
 		l,
-		Q,
-		X
-	], N = () => [
-		"",
-		q,
-		Xt,
-		Z
+		Z,
+		Y
 	], P = () => [
+		"",
+		K,
+		Zt,
+		X
+	], F = () => [
 		"solid",
 		"dashed",
 		"dotted",
 		"double"
-	], le = () => [
+	], ce = () => [
 		"normal",
 		"multiply",
 		"screen",
@@ -1123,33 +1123,33 @@ var Je = (e, t) => {
 		"saturation",
 		"color",
 		"luminosity"
-	], F = () => [
-		q,
-		Ft,
-		Qt,
-		qt
-	], ue = () => [
+	], I = () => [
+		K,
+		It,
+		$t,
+		Jt
+	], le = () => [
 		"",
 		"none",
 		m,
-		Q,
-		X
-	], de = () => [
+		Z,
+		Y
+	], ue = () => [
 		"none",
-		q,
-		Q,
-		X
-	], I = () => [
-		"none",
-		q,
-		Q,
-		X
-	], fe = () => [
-		q,
-		Q,
-		X
-	], pe = () => [
 		K,
+		Z,
+		Y
+	], L = () => [
+		"none",
+		K,
+		Z,
+		Y
+	], de = () => [
+		K,
+		Z,
+		Y
+	], fe = () => [
+		G,
 		"full",
 		...w()
 	];
@@ -1163,17 +1163,17 @@ var Je = (e, t) => {
 				"bounce"
 			],
 			aspect: ["video"],
-			blur: [Y],
-			breakpoint: [Y],
-			color: [It],
-			container: [Y],
-			"drop-shadow": [Y],
+			blur: [J],
+			breakpoint: [J],
+			color: [Lt],
+			container: [J],
+			"drop-shadow": [J],
 			ease: [
 				"in",
 				"out",
 				"in-out"
 			],
-			font: [Vt],
+			font: [Ht],
 			"font-weight": [
 				"thin",
 				"extralight",
@@ -1185,7 +1185,7 @@ var Je = (e, t) => {
 				"extrabold",
 				"black"
 			],
-			"inset-shadow": [Y],
+			"inset-shadow": [J],
 			leading: [
 				"none",
 				"tight",
@@ -1202,11 +1202,11 @@ var Je = (e, t) => {
 				"distant",
 				"none"
 			],
-			radius: [Y],
-			shadow: [Y],
-			spacing: ["px", q],
-			text: [Y],
-			"text-shadow": [Y],
+			radius: [J],
+			shadow: [J],
+			spacing: ["px", K],
+			text: [J],
+			"text-shadow": [J],
 			tracking: [
 				"tighter",
 				"tight",
@@ -1220,9 +1220,9 @@ var Je = (e, t) => {
 			aspect: [{ aspect: [
 				"auto",
 				"square",
-				K,
-				X,
-				Q,
+				G,
+				Y,
+				Z,
 				g
 			] }],
 			container: ["container"],
@@ -1230,14 +1230,14 @@ var Je = (e, t) => {
 				"",
 				"normal",
 				"size",
-				Q,
-				X
+				Z,
+				Y
 			] }],
-			"container-named": [Ht],
+			"container-named": [Ut],
 			columns: [{ columns: [
-				q,
-				X,
-				Q,
+				K,
+				Y,
+				Z,
 				s
 			] }],
 			"break-after": [{ "break-after": y() }],
@@ -1334,13 +1334,13 @@ var Je = (e, t) => {
 				"collapse"
 			],
 			z: [{ z: [
-				J,
+				q,
 				"auto",
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			basis: [{ basis: [
-				K,
+				G,
 				"full",
 				"auto",
 				s,
@@ -1358,41 +1358,41 @@ var Je = (e, t) => {
 				"wrap-reverse"
 			] }],
 			flex: [{ flex: [
-				q,
 				K,
+				G,
 				"auto",
 				"initial",
 				"none",
-				X
+				Y
 			] }],
 			grow: [{ grow: [
 				"",
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			shrink: [{ shrink: [
 				"",
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			order: [{ order: [
-				J,
+				q,
 				"first",
 				"last",
 				"none",
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			"grid-cols": [{ "grid-cols": E() }],
-			"col-start-end": [{ col: ee() }],
-			"col-start": [{ "col-start": D() }],
-			"col-end": [{ "col-end": D() }],
+			"col-start-end": [{ col: D() }],
+			"col-start": [{ "col-start": O() }],
+			"col-end": [{ "col-end": O() }],
 			"grid-rows": [{ "grid-rows": E() }],
-			"row-start-end": [{ row: ee() }],
-			"row-start": [{ "row-start": D() }],
-			"row-end": [{ "row-end": D() }],
+			"row-start-end": [{ row: D() }],
+			"row-start": [{ "row-start": O() }],
+			"row-end": [{ "row-end": O() }],
 			"grid-flow": [{ "grid-flow": [
 				"row",
 				"col",
@@ -1400,24 +1400,24 @@ var Je = (e, t) => {
 				"row-dense",
 				"col-dense"
 			] }],
-			"auto-cols": [{ "auto-cols": te() }],
-			"auto-rows": [{ "auto-rows": te() }],
+			"auto-cols": [{ "auto-cols": ee() }],
+			"auto-rows": [{ "auto-rows": ee() }],
 			gap: [{ gap: w() }],
 			"gap-x": [{ "gap-x": w() }],
 			"gap-y": [{ "gap-y": w() }],
-			"justify-content": [{ justify: [...ne(), "normal"] }],
-			"justify-items": [{ "justify-items": [...O(), "normal"] }],
-			"justify-self": [{ "justify-self": ["auto", ...O()] }],
-			"align-content": [{ content: ["normal", ...ne()] }],
-			"align-items": [{ items: [...O(), { baseline: ["", "last"] }] }],
+			"justify-content": [{ justify: [...te(), "normal"] }],
+			"justify-items": [{ "justify-items": [...k(), "normal"] }],
+			"justify-self": [{ "justify-self": ["auto", ...k()] }],
+			"align-content": [{ content: ["normal", ...te()] }],
+			"align-items": [{ items: [...k(), { baseline: ["", "last"] }] }],
 			"align-self": [{ self: [
 				"auto",
-				...O(),
+				...k(),
 				{ baseline: ["", "last"] }
 			] }],
-			"place-content": [{ "place-content": ne() }],
-			"place-items": [{ "place-items": [...O(), "baseline"] }],
-			"place-self": [{ "place-self": ["auto", ...O()] }],
+			"place-content": [{ "place-content": te() }],
+			"place-items": [{ "place-items": [...k(), "baseline"] }],
+			"place-self": [{ "place-self": ["auto", ...k()] }],
 			p: [{ p: w() }],
 			px: [{ px: w() }],
 			py: [{ py: w() }],
@@ -1429,38 +1429,38 @@ var Je = (e, t) => {
 			pr: [{ pr: w() }],
 			pb: [{ pb: w() }],
 			pl: [{ pl: w() }],
-			m: [{ m: k() }],
-			mx: [{ mx: k() }],
-			my: [{ my: k() }],
-			ms: [{ ms: k() }],
-			me: [{ me: k() }],
-			mbs: [{ mbs: k() }],
-			mbe: [{ mbe: k() }],
-			mt: [{ mt: k() }],
-			mr: [{ mr: k() }],
-			mb: [{ mb: k() }],
-			ml: [{ ml: k() }],
+			m: [{ m: A() }],
+			mx: [{ mx: A() }],
+			my: [{ my: A() }],
+			ms: [{ ms: A() }],
+			me: [{ me: A() }],
+			mbs: [{ mbs: A() }],
+			mbe: [{ mbe: A() }],
+			mt: [{ mt: A() }],
+			mr: [{ mr: A() }],
+			mb: [{ mb: A() }],
+			ml: [{ ml: A() }],
 			"space-x": [{ "space-x": w() }],
 			"space-x-reverse": ["space-x-reverse"],
 			"space-y": [{ "space-y": w() }],
 			"space-y-reverse": ["space-y-reverse"],
-			size: [{ size: A() }],
-			"inline-size": [{ inline: ["auto", ...re()] }],
-			"min-inline-size": [{ "min-inline": ["auto", ...re()] }],
-			"max-inline-size": [{ "max-inline": ["none", ...re()] }],
-			"block-size": [{ block: ["auto", ...ie()] }],
-			"min-block-size": [{ "min-block": ["auto", ...ie()] }],
-			"max-block-size": [{ "max-block": ["none", ...ie()] }],
+			size: [{ size: j() }],
+			"inline-size": [{ inline: ["auto", ...ne()] }],
+			"min-inline-size": [{ "min-inline": ["auto", ...ne()] }],
+			"max-inline-size": [{ "max-inline": ["none", ...ne()] }],
+			"block-size": [{ block: ["auto", ...re()] }],
+			"min-block-size": [{ "min-block": ["auto", ...re()] }],
+			"max-block-size": [{ "max-block": ["none", ...re()] }],
 			w: [{ w: [
 				s,
 				"screen",
-				...A()
+				...j()
 			] }],
 			"min-w": [{ "min-w": [
 				s,
 				"screen",
 				"none",
-				...A()
+				...j()
 			] }],
 			"max-w": [{ "max-w": [
 				s,
@@ -1468,36 +1468,36 @@ var Je = (e, t) => {
 				"none",
 				"prose",
 				{ screen: [o] },
-				...A()
+				...j()
 			] }],
 			h: [{ h: [
 				"screen",
 				"lh",
-				...A()
+				...j()
 			] }],
 			"min-h": [{ "min-h": [
 				"screen",
 				"lh",
 				"none",
-				...A()
+				...j()
 			] }],
 			"max-h": [{ "max-h": [
 				"screen",
 				"lh",
-				...A()
+				...j()
 			] }],
 			"font-size": [{ text: [
 				"base",
 				n,
-				Xt,
-				Z
+				Zt,
+				X
 			] }],
 			"font-smoothing": ["antialiased", "subpixel-antialiased"],
 			"font-style": ["italic", "not-italic"],
 			"font-weight": [{ font: [
 				r,
-				nn,
-				Gt
+				rn,
+				Kt
 			] }],
 			"font-stretch": [{ "font-stretch": [
 				"ultra-condensed",
@@ -1509,15 +1509,15 @@ var Je = (e, t) => {
 				"expanded",
 				"extra-expanded",
 				"ultra-expanded",
-				Ft,
-				X
+				It,
+				Y
 			] }],
 			"font-family": [{ font: [
-				Zt,
-				Kt,
+				Qt,
+				qt,
 				t
 			] }],
-			"font-features": [{ "font-features": [X] }],
+			"font-features": [{ "font-features": [Y] }],
 			"fvn-normal": ["normal-nums"],
 			"fvn-ordinal": ["ordinal"],
 			"fvn-slashed-zero": ["slashed-zero"],
@@ -1526,28 +1526,28 @@ var Je = (e, t) => {
 			"fvn-fraction": ["diagonal-fractions", "stacked-fractions"],
 			tracking: [{ tracking: [
 				i,
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			"line-clamp": [{ "line-clamp": [
-				q,
+				K,
 				"none",
-				Q,
-				Wt
+				Z,
+				Gt
 			] }],
 			leading: [{ leading: [a, ...w()] }],
 			"list-image": [{ "list-image": [
 				"none",
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			"list-style-position": [{ list: ["inside", "outside"] }],
 			"list-style-type": [{ list: [
 				"disc",
 				"decimal",
 				"none",
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			"text-alignment": [{ text: [
 				"left",
@@ -1557,28 +1557,28 @@ var Je = (e, t) => {
 				"start",
 				"end"
 			] }],
-			"placeholder-color": [{ placeholder: j() }],
-			"text-color": [{ text: j() }],
+			"placeholder-color": [{ placeholder: M() }],
+			"text-color": [{ text: M() }],
 			"text-decoration": [
 				"underline",
 				"overline",
 				"line-through",
 				"no-underline"
 			],
-			"text-decoration-style": [{ decoration: [...P(), "wavy"] }],
+			"text-decoration-style": [{ decoration: [...F(), "wavy"] }],
 			"text-decoration-thickness": [{ decoration: [
-				q,
+				K,
 				"from-font",
 				"auto",
-				Q,
-				Z
-			] }],
-			"text-decoration-color": [{ decoration: j() }],
-			"underline-offset": [{ "underline-offset": [
-				q,
-				"auto",
-				Q,
+				Z,
 				X
+			] }],
+			"text-decoration-color": [{ decoration: M() }],
+			"underline-offset": [{ "underline-offset": [
+				K,
+				"auto",
+				Z,
+				Y
 			] }],
 			"text-transform": [
 				"uppercase",
@@ -1599,9 +1599,9 @@ var Je = (e, t) => {
 			] }],
 			indent: [{ indent: w() }],
 			"tab-size": [{ tab: [
-				J,
-				Q,
-				X
+				q,
+				Z,
+				Y
 			] }],
 			"vertical-align": [{ align: [
 				"baseline",
@@ -1612,8 +1612,8 @@ var Je = (e, t) => {
 				"text-bottom",
 				"sub",
 				"super",
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			whitespace: [{ whitespace: [
 				"normal",
@@ -1641,8 +1641,8 @@ var Je = (e, t) => {
 			] }],
 			content: [{ content: [
 				"none",
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			"bg-attachment": [{ bg: [
 				"fixed",
@@ -1660,9 +1660,9 @@ var Je = (e, t) => {
 				"padding",
 				"content"
 			] }],
-			"bg-position": [{ bg: ae() }],
-			"bg-repeat": [{ bg: oe() }],
-			"bg-size": [{ bg: se() }],
+			"bg-position": [{ bg: ie() }],
+			"bg-repeat": [{ bg: ae() }],
+			"bg-size": [{ bg: oe() }],
 			"bg-image": [{ bg: [
 				"none",
 				{
@@ -1677,140 +1677,140 @@ var Je = (e, t) => {
 							"l",
 							"tl"
 						] },
-						J,
-						Q,
-						X
+						q,
+						Z,
+						Y
 					],
 					radial: [
 						"",
-						Q,
-						X
+						Z,
+						Y
 					],
 					conic: [
-						J,
-						Q,
-						X
+						q,
+						Z,
+						Y
 					]
 				},
-				en,
-				Jt
+				tn,
+				Yt
 			] }],
-			"bg-color": [{ bg: j() }],
-			"gradient-from-pos": [{ from: ce() }],
-			"gradient-via-pos": [{ via: ce() }],
-			"gradient-to-pos": [{ to: ce() }],
-			"gradient-from": [{ from: j() }],
-			"gradient-via": [{ via: j() }],
-			"gradient-to": [{ to: j() }],
-			rounded: [{ rounded: M() }],
-			"rounded-s": [{ "rounded-s": M() }],
-			"rounded-e": [{ "rounded-e": M() }],
-			"rounded-t": [{ "rounded-t": M() }],
-			"rounded-r": [{ "rounded-r": M() }],
-			"rounded-b": [{ "rounded-b": M() }],
-			"rounded-l": [{ "rounded-l": M() }],
-			"rounded-ss": [{ "rounded-ss": M() }],
-			"rounded-se": [{ "rounded-se": M() }],
-			"rounded-ee": [{ "rounded-ee": M() }],
-			"rounded-es": [{ "rounded-es": M() }],
-			"rounded-tl": [{ "rounded-tl": M() }],
-			"rounded-tr": [{ "rounded-tr": M() }],
-			"rounded-br": [{ "rounded-br": M() }],
-			"rounded-bl": [{ "rounded-bl": M() }],
-			"border-w": [{ border: N() }],
-			"border-w-x": [{ "border-x": N() }],
-			"border-w-y": [{ "border-y": N() }],
-			"border-w-s": [{ "border-s": N() }],
-			"border-w-e": [{ "border-e": N() }],
-			"border-w-bs": [{ "border-bs": N() }],
-			"border-w-be": [{ "border-be": N() }],
-			"border-w-t": [{ "border-t": N() }],
-			"border-w-r": [{ "border-r": N() }],
-			"border-w-b": [{ "border-b": N() }],
-			"border-w-l": [{ "border-l": N() }],
-			"divide-x": [{ "divide-x": N() }],
+			"bg-color": [{ bg: M() }],
+			"gradient-from-pos": [{ from: se() }],
+			"gradient-via-pos": [{ via: se() }],
+			"gradient-to-pos": [{ to: se() }],
+			"gradient-from": [{ from: M() }],
+			"gradient-via": [{ via: M() }],
+			"gradient-to": [{ to: M() }],
+			rounded: [{ rounded: N() }],
+			"rounded-s": [{ "rounded-s": N() }],
+			"rounded-e": [{ "rounded-e": N() }],
+			"rounded-t": [{ "rounded-t": N() }],
+			"rounded-r": [{ "rounded-r": N() }],
+			"rounded-b": [{ "rounded-b": N() }],
+			"rounded-l": [{ "rounded-l": N() }],
+			"rounded-ss": [{ "rounded-ss": N() }],
+			"rounded-se": [{ "rounded-se": N() }],
+			"rounded-ee": [{ "rounded-ee": N() }],
+			"rounded-es": [{ "rounded-es": N() }],
+			"rounded-tl": [{ "rounded-tl": N() }],
+			"rounded-tr": [{ "rounded-tr": N() }],
+			"rounded-br": [{ "rounded-br": N() }],
+			"rounded-bl": [{ "rounded-bl": N() }],
+			"border-w": [{ border: P() }],
+			"border-w-x": [{ "border-x": P() }],
+			"border-w-y": [{ "border-y": P() }],
+			"border-w-s": [{ "border-s": P() }],
+			"border-w-e": [{ "border-e": P() }],
+			"border-w-bs": [{ "border-bs": P() }],
+			"border-w-be": [{ "border-be": P() }],
+			"border-w-t": [{ "border-t": P() }],
+			"border-w-r": [{ "border-r": P() }],
+			"border-w-b": [{ "border-b": P() }],
+			"border-w-l": [{ "border-l": P() }],
+			"divide-x": [{ "divide-x": P() }],
 			"divide-x-reverse": ["divide-x-reverse"],
-			"divide-y": [{ "divide-y": N() }],
+			"divide-y": [{ "divide-y": P() }],
 			"divide-y-reverse": ["divide-y-reverse"],
 			"border-style": [{ border: [
-				...P(),
+				...F(),
 				"hidden",
 				"none"
 			] }],
 			"divide-style": [{ divide: [
-				...P(),
+				...F(),
 				"hidden",
 				"none"
 			] }],
-			"border-color": [{ border: j() }],
-			"border-color-x": [{ "border-x": j() }],
-			"border-color-y": [{ "border-y": j() }],
-			"border-color-s": [{ "border-s": j() }],
-			"border-color-e": [{ "border-e": j() }],
-			"border-color-bs": [{ "border-bs": j() }],
-			"border-color-be": [{ "border-be": j() }],
-			"border-color-t": [{ "border-t": j() }],
-			"border-color-r": [{ "border-r": j() }],
-			"border-color-b": [{ "border-b": j() }],
-			"border-color-l": [{ "border-l": j() }],
-			"divide-color": [{ divide: j() }],
+			"border-color": [{ border: M() }],
+			"border-color-x": [{ "border-x": M() }],
+			"border-color-y": [{ "border-y": M() }],
+			"border-color-s": [{ "border-s": M() }],
+			"border-color-e": [{ "border-e": M() }],
+			"border-color-bs": [{ "border-bs": M() }],
+			"border-color-be": [{ "border-be": M() }],
+			"border-color-t": [{ "border-t": M() }],
+			"border-color-r": [{ "border-r": M() }],
+			"border-color-b": [{ "border-b": M() }],
+			"border-color-l": [{ "border-l": M() }],
+			"divide-color": [{ divide: M() }],
 			"outline-style": [{ outline: [
-				...P(),
+				...F(),
 				"none",
 				"hidden"
 			] }],
 			"outline-offset": [{ "outline-offset": [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"outline-w": [{ outline: [
 				"",
-				q,
-				Xt,
-				Z
+				K,
+				Zt,
+				X
 			] }],
-			"outline-color": [{ outline: j() }],
+			"outline-color": [{ outline: M() }],
 			shadow: [{ shadow: [
 				"",
 				"none",
 				u,
-				tn,
-				Yt
+				nn,
+				Xt
 			] }],
-			"shadow-color": [{ shadow: j() }],
+			"shadow-color": [{ shadow: M() }],
 			"inset-shadow": [{ "inset-shadow": [
 				"none",
 				d,
-				tn,
-				Yt
+				nn,
+				Xt
 			] }],
-			"inset-shadow-color": [{ "inset-shadow": j() }],
-			"ring-w": [{ ring: N() }],
+			"inset-shadow-color": [{ "inset-shadow": M() }],
+			"ring-w": [{ ring: P() }],
 			"ring-w-inset": ["ring-inset"],
-			"ring-color": [{ ring: j() }],
-			"ring-offset-w": [{ "ring-offset": [q, Z] }],
-			"ring-offset-color": [{ "ring-offset": j() }],
-			"inset-ring-w": [{ "inset-ring": N() }],
-			"inset-ring-color": [{ "inset-ring": j() }],
+			"ring-color": [{ ring: M() }],
+			"ring-offset-w": [{ "ring-offset": [K, X] }],
+			"ring-offset-color": [{ "ring-offset": M() }],
+			"inset-ring-w": [{ "inset-ring": P() }],
+			"inset-ring-color": [{ "inset-ring": M() }],
 			"text-shadow": [{ "text-shadow": [
 				"none",
 				f,
-				tn,
-				Yt
+				nn,
+				Xt
 			] }],
-			"text-shadow-color": [{ "text-shadow": j() }],
+			"text-shadow-color": [{ "text-shadow": M() }],
 			opacity: [{ opacity: [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"mix-blend": [{ "mix-blend": [
-				...le(),
+				...ce(),
 				"plus-darker",
 				"plus-lighter"
 			] }],
-			"bg-blend": [{ "bg-blend": le() }],
+			"bg-blend": [{ "bg-blend": ce() }],
 			"mask-clip": [{ "mask-clip": [
 				"border",
 				"padding",
@@ -1825,51 +1825,51 @@ var Je = (e, t) => {
 				"intersect",
 				"exclude"
 			] }],
-			"mask-image-linear-pos": [{ "mask-linear": [q] }],
-			"mask-image-linear-from-pos": [{ "mask-linear-from": F() }],
-			"mask-image-linear-to-pos": [{ "mask-linear-to": F() }],
-			"mask-image-linear-from-color": [{ "mask-linear-from": j() }],
-			"mask-image-linear-to-color": [{ "mask-linear-to": j() }],
-			"mask-image-t-from-pos": [{ "mask-t-from": F() }],
-			"mask-image-t-to-pos": [{ "mask-t-to": F() }],
-			"mask-image-t-from-color": [{ "mask-t-from": j() }],
-			"mask-image-t-to-color": [{ "mask-t-to": j() }],
-			"mask-image-r-from-pos": [{ "mask-r-from": F() }],
-			"mask-image-r-to-pos": [{ "mask-r-to": F() }],
-			"mask-image-r-from-color": [{ "mask-r-from": j() }],
-			"mask-image-r-to-color": [{ "mask-r-to": j() }],
-			"mask-image-b-from-pos": [{ "mask-b-from": F() }],
-			"mask-image-b-to-pos": [{ "mask-b-to": F() }],
-			"mask-image-b-from-color": [{ "mask-b-from": j() }],
-			"mask-image-b-to-color": [{ "mask-b-to": j() }],
-			"mask-image-l-from-pos": [{ "mask-l-from": F() }],
-			"mask-image-l-to-pos": [{ "mask-l-to": F() }],
-			"mask-image-l-from-color": [{ "mask-l-from": j() }],
-			"mask-image-l-to-color": [{ "mask-l-to": j() }],
-			"mask-image-x-from-pos": [{ "mask-x-from": F() }],
-			"mask-image-x-to-pos": [{ "mask-x-to": F() }],
-			"mask-image-x-from-color": [{ "mask-x-from": j() }],
-			"mask-image-x-to-color": [{ "mask-x-to": j() }],
-			"mask-image-y-from-pos": [{ "mask-y-from": F() }],
-			"mask-image-y-to-pos": [{ "mask-y-to": F() }],
-			"mask-image-y-from-color": [{ "mask-y-from": j() }],
-			"mask-image-y-to-color": [{ "mask-y-to": j() }],
-			"mask-image-radial": [{ "mask-radial": [Q, X] }],
-			"mask-image-radial-from-pos": [{ "mask-radial-from": F() }],
-			"mask-image-radial-to-pos": [{ "mask-radial-to": F() }],
-			"mask-image-radial-from-color": [{ "mask-radial-from": j() }],
-			"mask-image-radial-to-color": [{ "mask-radial-to": j() }],
+			"mask-image-linear-pos": [{ "mask-linear": [K] }],
+			"mask-image-linear-from-pos": [{ "mask-linear-from": I() }],
+			"mask-image-linear-to-pos": [{ "mask-linear-to": I() }],
+			"mask-image-linear-from-color": [{ "mask-linear-from": M() }],
+			"mask-image-linear-to-color": [{ "mask-linear-to": M() }],
+			"mask-image-t-from-pos": [{ "mask-t-from": I() }],
+			"mask-image-t-to-pos": [{ "mask-t-to": I() }],
+			"mask-image-t-from-color": [{ "mask-t-from": M() }],
+			"mask-image-t-to-color": [{ "mask-t-to": M() }],
+			"mask-image-r-from-pos": [{ "mask-r-from": I() }],
+			"mask-image-r-to-pos": [{ "mask-r-to": I() }],
+			"mask-image-r-from-color": [{ "mask-r-from": M() }],
+			"mask-image-r-to-color": [{ "mask-r-to": M() }],
+			"mask-image-b-from-pos": [{ "mask-b-from": I() }],
+			"mask-image-b-to-pos": [{ "mask-b-to": I() }],
+			"mask-image-b-from-color": [{ "mask-b-from": M() }],
+			"mask-image-b-to-color": [{ "mask-b-to": M() }],
+			"mask-image-l-from-pos": [{ "mask-l-from": I() }],
+			"mask-image-l-to-pos": [{ "mask-l-to": I() }],
+			"mask-image-l-from-color": [{ "mask-l-from": M() }],
+			"mask-image-l-to-color": [{ "mask-l-to": M() }],
+			"mask-image-x-from-pos": [{ "mask-x-from": I() }],
+			"mask-image-x-to-pos": [{ "mask-x-to": I() }],
+			"mask-image-x-from-color": [{ "mask-x-from": M() }],
+			"mask-image-x-to-color": [{ "mask-x-to": M() }],
+			"mask-image-y-from-pos": [{ "mask-y-from": I() }],
+			"mask-image-y-to-pos": [{ "mask-y-to": I() }],
+			"mask-image-y-from-color": [{ "mask-y-from": M() }],
+			"mask-image-y-to-color": [{ "mask-y-to": M() }],
+			"mask-image-radial": [{ "mask-radial": [Z, Y] }],
+			"mask-image-radial-from-pos": [{ "mask-radial-from": I() }],
+			"mask-image-radial-to-pos": [{ "mask-radial-to": I() }],
+			"mask-image-radial-from-color": [{ "mask-radial-from": M() }],
+			"mask-image-radial-to-color": [{ "mask-radial-to": M() }],
 			"mask-image-radial-shape": [{ "mask-radial": ["circle", "ellipse"] }],
 			"mask-image-radial-size": [{ "mask-radial": [{
 				closest: ["side", "corner"],
 				farthest: ["side", "corner"]
 			}] }],
 			"mask-image-radial-pos": [{ "mask-radial-at": b() }],
-			"mask-image-conic-pos": [{ "mask-conic": [q] }],
-			"mask-image-conic-from-pos": [{ "mask-conic-from": F() }],
-			"mask-image-conic-to-pos": [{ "mask-conic-to": F() }],
-			"mask-image-conic-from-color": [{ "mask-conic-from": j() }],
-			"mask-image-conic-to-color": [{ "mask-conic-to": j() }],
+			"mask-image-conic-pos": [{ "mask-conic": [K] }],
+			"mask-image-conic-from-pos": [{ "mask-conic-from": I() }],
+			"mask-image-conic-to-pos": [{ "mask-conic-to": I() }],
+			"mask-image-conic-from-color": [{ "mask-conic-from": M() }],
+			"mask-image-conic-to-color": [{ "mask-conic-to": M() }],
 			"mask-mode": [{ mask: [
 				"alpha",
 				"luminance",
@@ -1883,117 +1883,117 @@ var Je = (e, t) => {
 				"stroke",
 				"view"
 			] }],
-			"mask-position": [{ mask: ae() }],
-			"mask-repeat": [{ mask: oe() }],
-			"mask-size": [{ mask: se() }],
+			"mask-position": [{ mask: ie() }],
+			"mask-repeat": [{ mask: ae() }],
+			"mask-size": [{ mask: oe() }],
 			"mask-type": [{ "mask-type": ["alpha", "luminance"] }],
 			"mask-image": [{ mask: [
 				"none",
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			filter: [{ filter: [
 				"",
 				"none",
-				Q,
-				X
+				Z,
+				Y
 			] }],
-			blur: [{ blur: ue() }],
+			blur: [{ blur: le() }],
 			brightness: [{ brightness: [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			contrast: [{ contrast: [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"drop-shadow": [{ "drop-shadow": [
 				"",
 				"none",
 				p,
-				tn,
-				Yt
+				nn,
+				Xt
 			] }],
-			"drop-shadow-color": [{ "drop-shadow": j() }],
+			"drop-shadow-color": [{ "drop-shadow": M() }],
 			grayscale: [{ grayscale: [
 				"",
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"hue-rotate": [{ "hue-rotate": [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			invert: [{ invert: [
 				"",
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			saturate: [{ saturate: [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			sepia: [{ sepia: [
 				"",
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"backdrop-filter": [{ "backdrop-filter": [
 				"",
 				"none",
-				Q,
-				X
+				Z,
+				Y
 			] }],
-			"backdrop-blur": [{ "backdrop-blur": ue() }],
+			"backdrop-blur": [{ "backdrop-blur": le() }],
 			"backdrop-brightness": [{ "backdrop-brightness": [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"backdrop-contrast": [{ "backdrop-contrast": [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"backdrop-grayscale": [{ "backdrop-grayscale": [
 				"",
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"backdrop-hue-rotate": [{ "backdrop-hue-rotate": [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"backdrop-invert": [{ "backdrop-invert": [
 				"",
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"backdrop-opacity": [{ "backdrop-opacity": [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"backdrop-saturate": [{ "backdrop-saturate": [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"backdrop-sepia": [{ "backdrop-sepia": [
 				"",
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			"border-collapse": [{ border: ["collapse", "separate"] }],
 			"border-spacing": [{ "border-spacing": w() }],
@@ -2009,56 +2009,56 @@ var Je = (e, t) => {
 				"shadow",
 				"transform",
 				"none",
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			"transition-behavior": [{ transition: ["normal", "discrete"] }],
 			duration: [{ duration: [
-				q,
+				K,
 				"initial",
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			ease: [{ ease: [
 				"linear",
 				"initial",
 				_,
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			delay: [{ delay: [
-				q,
-				Q,
-				X
+				K,
+				Z,
+				Y
 			] }],
 			animate: [{ animate: [
 				"none",
 				v,
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			backface: [{ backface: ["hidden", "visible"] }],
 			perspective: [{ perspective: [
 				h,
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			"perspective-origin": [{ "perspective-origin": x() }],
-			rotate: [{ rotate: de() }],
-			"rotate-x": [{ "rotate-x": de() }],
-			"rotate-y": [{ "rotate-y": de() }],
-			"rotate-z": [{ "rotate-z": de() }],
-			scale: [{ scale: I() }],
-			"scale-x": [{ "scale-x": I() }],
-			"scale-y": [{ "scale-y": I() }],
-			"scale-z": [{ "scale-z": I() }],
+			rotate: [{ rotate: ue() }],
+			"rotate-x": [{ "rotate-x": ue() }],
+			"rotate-y": [{ "rotate-y": ue() }],
+			"rotate-z": [{ "rotate-z": ue() }],
+			scale: [{ scale: L() }],
+			"scale-x": [{ "scale-x": L() }],
+			"scale-y": [{ "scale-y": L() }],
+			"scale-z": [{ "scale-z": L() }],
 			"scale-3d": ["scale-3d"],
-			skew: [{ skew: fe() }],
-			"skew-x": [{ "skew-x": fe() }],
-			"skew-y": [{ "skew-y": fe() }],
+			skew: [{ skew: de() }],
+			"skew-x": [{ "skew-x": de() }],
+			"skew-y": [{ "skew-y": de() }],
 			transform: [{ transform: [
-				Q,
-				X,
+				Z,
+				Y,
 				"",
 				"none",
 				"gpu",
@@ -2066,19 +2066,19 @@ var Je = (e, t) => {
 			] }],
 			"transform-origin": [{ origin: x() }],
 			"transform-style": [{ transform: ["3d", "flat"] }],
-			translate: [{ translate: pe() }],
-			"translate-x": [{ "translate-x": pe() }],
-			"translate-y": [{ "translate-y": pe() }],
-			"translate-z": [{ "translate-z": pe() }],
+			translate: [{ translate: fe() }],
+			"translate-x": [{ "translate-x": fe() }],
+			"translate-y": [{ "translate-y": fe() }],
+			"translate-z": [{ "translate-z": fe() }],
 			"translate-none": ["translate-none"],
 			zoom: [{ zoom: [
-				J,
-				Q,
-				X
+				q,
+				Z,
+				Y
 			] }],
-			accent: [{ accent: j() }],
+			accent: [{ accent: M() }],
 			appearance: [{ appearance: ["none", "auto"] }],
-			"caret-color": [{ caret: j() }],
+			"caret-color": [{ caret: M() }],
 			"color-scheme": [{ scheme: [
 				"normal",
 				"dark",
@@ -2124,8 +2124,8 @@ var Je = (e, t) => {
 				"nwse-resize",
 				"zoom-in",
 				"zoom-out",
-				Q,
-				X
+				Z,
+				Y
 			] }],
 			"field-sizing": [{ "field-sizing": ["fixed", "content"] }],
 			"pointer-events": [{ "pointer-events": ["auto", "none"] }],
@@ -2136,8 +2136,8 @@ var Je = (e, t) => {
 				"x"
 			] }],
 			"scroll-behavior": [{ scroll: ["auto", "smooth"] }],
-			"scrollbar-thumb-color": [{ "scrollbar-thumb": j() }],
-			"scrollbar-track-color": [{ "scrollbar-track": j() }],
+			"scrollbar-thumb-color": [{ "scrollbar-thumb": M() }],
+			"scrollbar-track-color": [{ "scrollbar-track": M() }],
 			"scrollbar-gutter": [{ "scrollbar-gutter": [
 				"auto",
 				"stable",
@@ -2211,17 +2211,17 @@ var Je = (e, t) => {
 				"scroll",
 				"contents",
 				"transform",
-				Q,
-				X
-			] }],
-			fill: [{ fill: ["none", ...j()] }],
-			"stroke-w": [{ stroke: [
-				q,
-				Xt,
 				Z,
-				Wt
+				Y
 			] }],
-			stroke: [{ stroke: ["none", ...j()] }],
+			fill: [{ fill: ["none", ...M()] }],
+			"stroke-w": [{ stroke: [
+				K,
+				Zt,
+				X,
+				Gt
+			] }],
+			stroke: [{ stroke: ["none", ...M()] }],
 			"forced-color-adjust": [{ "forced-color-adjust": ["auto", "none"] }]
 		},
 		conflictingClassGroups: {
@@ -2411,7 +2411,7 @@ var Je = (e, t) => {
 //#endregion
 //#region src/lib/cn.ts
 function mn(...e) {
-	return pn(qe(e));
+	return pn(Je(e));
 }
 //#endregion
 //#region src/render/Arm.tsx
@@ -2425,10 +2425,10 @@ function _n(e) {
 		get children() {
 			return [(() => {
 				var t = hn();
-				return r(() => s(t, "d", Ge(e.arm, e.transform, e.pAtoBFrom ?? 0, e.pAtoBTo ?? 0, e.bulgeScale ?? 1, "atob"))), t;
+				return r(() => s(t, "d", Ke(e.arm, e.transform, e.pAtoBFrom ?? 0, e.pAtoBTo ?? 0, e.bulgeScale ?? 1, "atob"))), t;
 			})(), (() => {
 				var t = hn();
-				return r(() => s(t, "d", Ge(e.arm, e.transform, e.pBtoAFrom ?? 0, e.pBtoATo ?? 0, e.bulgeScale ?? 1, "btoa"))), t;
+				return r(() => s(t, "d", Ke(e.arm, e.transform, e.pBtoAFrom ?? 0, e.pBtoATo ?? 0, e.bulgeScale ?? 1, "btoa"))), t;
 			})()];
 		}
 	}), t(f, {
@@ -2438,7 +2438,7 @@ function _n(e) {
 		get children() {
 			var t = gn();
 			return r((n) => {
-				var r = We(e.arm, e.transform), i = e.dashed ? "butt" : "round", a = e.dashed ? "16 12" : void 0, o = mn("arm-stroke", e.class);
+				var r = Ge(e.arm, e.transform), i = e.dashed ? "butt" : "round", a = e.dashed ? "16 12" : void 0, o = mn("arm-stroke", e.class);
 				return r !== n.e && s(t, "d", n.e = r), i !== n.t && s(t, "stroke-linecap", n.t = i), a !== n.a && s(t, "stroke-dasharray", n.a = a), o !== n.o && s(t, "class", n.o = o), n;
 			}, {
 				e: void 0,
@@ -2467,17 +2467,17 @@ function Cn() {
 	};
 }
 function wn(e) {
-	let n = () => R(e.piece.type), o = () => e.piece.magic?.arms ?? n().arms, l = () => e.piece.magic ? De : U(e.piece), u = () => e.piece.type === "magic-connector" && !e.piece.magic;
+	let n = () => z(e.piece.type), o = () => e.piece.magic?.arms ?? n().arms, l = () => e.piece.magic ? Ee : Ne(e.piece), u = () => e.piece.type === "magic-connector" && !e.piece.magic;
 	function p(t) {
 		let n = e.smoothedWidths?.get(`${e.piece.id}:${t}`);
 		if (n) return n;
 		let r = e.scores;
 		if (!r) return null;
-		let i = r.get(W({
+		let i = r.get(Ue({
 			pieceId: e.piece.id,
 			connectionIndex: t,
 			direction: "AtoB"
-		})) ?? 0, a = r.get(W({
+		})) ?? 0, a = r.get(Ue({
 			pieceId: e.piece.id,
 			connectionIndex: t,
 			direction: "BtoA"
@@ -2598,11 +2598,11 @@ function wn(e) {
 						let n = e.piece.magic.arms[0], a = n.kind === "composite" ? n.parts.find((e) => e.kind === "line") : n.kind === "line" ? n : void 0;
 						if (a && a.kind === "line") t = (a.from[0] + a.to[0]) / 2, r = (a.from[1] + a.to[1]) / 2, i = Math.atan2(a.to[1] - a.from[1], a.to[0] - a.from[0]) * 180 / Math.PI;
 						else {
-							let e = B(n, .5);
+							let e = V(n, .5);
 							t = e.point[0], r = e.point[1], i = Math.atan2(e.tangent[1], e.tangent[0]) * 180 / Math.PI;
 						}
 					} else {
-						let a = B(H(n().arms[0], U(e.piece)), .5);
+						let a = V(U(n().arms[0], Ne(e.piece)), .5);
 						t = a.point[0], r = a.point[1], i = Math.atan2(a.tangent[1], a.tangent[0]) * 180 / Math.PI;
 					}
 					return (() => {
@@ -2646,11 +2646,11 @@ function Dn(e, t, n) {
 		for (let { pieceId: i, endIndex: o } of a.members) {
 			let s = e.pieces.find((e) => e.id === i);
 			if (!s) continue;
-			let c = R(s.type);
+			let c = z(s.type);
 			for (let e = 0; e < c.connections.length; e++) {
 				let [l, u] = c.connections[e];
 				if (l !== o && u !== o) continue;
-				let d = B(s.magic ? s.magic.arms[e] : H(c.arms[e], U(s)), l === o ? 0 : 1), f = t.get(`${i}:${e}`), p = l === o ? f?.atobFrom ?? 0 : f?.atobTo ?? 0, m = l === o ? f?.btoaFrom ?? 0 : f?.btoaTo ?? 0;
+				let d = V(s.magic ? s.magic.arms[e] : U(c.arms[e], Ne(s)), l === o ? 0 : 1), f = t.get(`${i}:${e}`), p = l === o ? f?.atobFrom ?? 0 : f?.atobTo ?? 0, m = l === o ? f?.btoaFrom ?? 0 : f?.btoaTo ?? 0;
 				if (p > 0) {
 					let e = [d.normal[0] * p * n, d.normal[1] * p * n];
 					r.push({
@@ -2694,14 +2694,14 @@ function On(e, t = 1) {
 	};
 	let n = Infinity, r = Infinity, i = -Infinity, a = -Infinity;
 	for (let t of e.pieces) {
-		let e = t.magic?.bounds ?? R(t.type).bounds, o = t.magic ? null : U(t), s = [
+		let e = t.magic?.bounds ?? z(t.type).bounds, o = t.magic ? null : Ne(t), s = [
 			[e.min[0], e.min[1]],
 			[e.min[0], e.max[1]],
 			[e.max[0], e.min[1]],
 			[e.max[0], e.max[1]]
 		];
 		for (let e of s) {
-			let [t, s] = o ? V(e, o) : e;
+			let [t, s] = o ? H(e, o) : e;
 			t < n && (n = t), s < r && (r = s), t > i && (i = t), s > a && (a = s);
 		}
 	}
@@ -2806,7 +2806,7 @@ function An(e) {
 //#region src/track/builder.ts
 function jn(e, t = [0, 0], n = 0, r = 1) {
 	let i = {
-		id: Me(),
+		id: je(),
 		type: e,
 		position: t,
 		rotation: n
@@ -2826,7 +2826,7 @@ function Mn(e, t, n = {}) {
 	if (!e.active) throw Error("No active end to attach to.");
 	let r = n.attachingEndIndex ?? 0, i = n.continueEndIndex ?? 1, a = Fe(t, r, e.active);
 	if (!a) throw Error(`Polarity mismatch attaching ${t}.ends[${r}] to active end.`);
-	let o = R(t).ends.map((e) => ke(e, {
+	let o = z(t).ends.map((e) => Oe(e, {
 		position: a.position,
 		rotation: a.rotation
 	})), s = {
@@ -2869,7 +2869,7 @@ function Nn(e) {
 			magic: i.magic
 		};
 	});
-	Ne(r.length);
+	Me(r.length);
 	let i = null;
 	if (n >= 4) {
 		let e = t.seed;
@@ -2895,15 +2895,614 @@ var Fn = {
 	"curve-22": "curve-22-r",
 	"curve-45": "curve-45-r",
 	"switch-y": "switch-y-r"
+}, In = {
+	version: 4,
+	pieces: [
+		{
+			type: "switch-parallel-r",
+			position: [78.4501036348434, 0],
+			rotation: 0
+		},
+		{
+			type: "straight-long",
+			position: [-66.50678650839882, 0],
+			rotation: 0
+		},
+		{
+			type: "curve-45-l",
+			position: [223.40699377808562, 22],
+			rotation: 0
+		},
+		{
+			type: "curve-45-l",
+			position: [-211.4636766516411, 60.04310985675774],
+			rotation: -.7853981633974483
+		},
+		{
+			type: "curve-45-l",
+			position: [-271.5067865083989, 205],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "straight-long",
+			position: [368.3638839213279, 82.04310985675778],
+			rotation: .7853981633974483
+		},
+		{
+			type: "straight-long",
+			position: [470.8638839213279, 184.54310985675775],
+			rotation: .7853981633974483
+		},
+		{
+			type: "curve-45-r",
+			position: [223.40699377808562, -22],
+			rotation: 0
+		},
+		{
+			type: "curve-45-r",
+			position: [368.3638839213279, -82.04310985675778],
+			rotation: -.7853981633974483
+		},
+		{
+			type: "curve-45-r",
+			position: [428.4069937780857, -227.00000000000006],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "curve-45-r",
+			position: [368.3638839213279, -371.9568901432423],
+			rotation: -2.356194490192345
+		},
+		{
+			type: "switch-parallel-mff-l",
+			position: [78.4501036348434, -454.00000000000006],
+			rotation: 0
+		},
+		{
+			type: "curve-45-r",
+			position: [78.4501036348434, -454.00000000000006],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "straight-long",
+			position: [-66.50678650839885, -393.9568901432423],
+			rotation: 2.356194490192345
+		},
+		{
+			type: "switch-parallel-r",
+			position: [-169.00678650839882, -291.4568901432423],
+			rotation: 2.356194490192345
+		},
+		{
+			type: "straight-long",
+			position: [-255.95043732229476, -173.40054095713825],
+			rotation: 2.356194490192345
+		},
+		{
+			type: "straight-short",
+			position: [-358.45043732229476, -70.90054095713826],
+			rotation: 2.356194490192345
+		},
+		{
+			type: "curve-45-r",
+			position: [-413.92303758727996, -15.427940692153065],
+			rotation: 2.356194490192345
+		},
+		{
+			type: "straight-long",
+			position: [-473.9661474440377, 129.5289494510892],
+			rotation: 1.5707963267948966
+		},
+		{
+			type: "straight-short",
+			position: [-271.5067865083989, 283.4501036348434],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "curve-45-l",
+			position: [-211.46367665164115, 428.4069937780857],
+			rotation: -2.356194490192345
+		},
+		{
+			type: "curve-45-l",
+			position: [-66.5067865083989, 488.45010363484346],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "switch-parallel-mff-l",
+			position: [-66.5067865083989, 488.45010363484346],
+			rotation: 0
+		},
+		{
+			type: "switch-parallel-l",
+			position: [223.40699377808554, 532.4501036348435],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "straight-long",
+			position: [368.3638839213278, 532.4501036348435],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "straight-long",
+			position: [513.3207740645701, 532.4501036348435],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "straight-long",
+			position: [658.2776642078122, 532.4501036348435],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "straight-long",
+			position: [803.2345543510544, 532.4501036348435],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "curve-45-l",
+			position: [223.4069937780856, 406.4069937780857],
+			rotation: 2.356194490192345
+		},
+		{
+			type: "straight-long",
+			position: [325.90699377808545, 303.9069937780856],
+			rotation: 2.356194490192344
+		},
+		{
+			type: "straight-long",
+			position: [428.40699377808534, 201.40699377808554],
+			rotation: 2.356194490192344
+		},
+		{
+			type: "straight-long",
+			position: [530.9069937780852, 98.90699377808545],
+			rotation: 2.356194490192344
+		},
+		{
+			type: "straight-long",
+			position: [633.406993778085, -3.593006221914635],
+			rotation: 2.356194490192344
+		},
+		{
+			type: "curve-45-l",
+			position: [693.4501036348427, -148.54989636515694],
+			rotation: 1.5707963267948957
+		},
+		{
+			type: "curve-45-l",
+			position: [633.4069937780848, -293.50678650839916],
+			rotation: .7853981633974474
+		},
+		{
+			type: "curve-45-r",
+			position: [573.3638839213269, -438.4636766516413],
+			rotation: 1.5707963267948957
+		},
+		{
+			type: "curve-45-r",
+			position: [633.4069937780845, -583.4205667948836],
+			rotation: 2.356194490192344
+		},
+		{
+			type: "curve-45-r",
+			position: [778.3638839213266, -643.4636766516415],
+			rotation: 3.1415926535897922
+		},
+		{
+			type: "curve-45-r",
+			position: [923.3207740645689, -583.4205667948838],
+			rotation: -2.356194490192345
+		},
+		{
+			type: "curve-45-r",
+			position: [983.3638839213266, -438.46367665164155],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "curve-45-r",
+			position: [573.3638839213279, 287.0431098567577],
+			rotation: .7853981633974483
+		},
+		{
+			type: "straight-long",
+			position: [983.3638839213266, -293.50678650839933],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "switch-parallel-r",
+			position: [1005.3638839213266, -148.5498963651571],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "straight-long",
+			position: [1005.3638839213266, -3.593006221914891],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "switch-parallel-mff-l",
+			position: [1005.3638839213266, -3.593006221914891],
+			rotation: 1.5707963267948966
+		},
+		{
+			type: "curve-45-r",
+			position: [923.3207740645689, 286.3207740645696],
+			rotation: -.7853981633974483
+		},
+		{
+			type: "curve-45-r",
+			position: [778.3638839213266, 346.3638839213274],
+			rotation: 0
+		},
+		{
+			type: "magic-connector",
+			position: [0, 0],
+			rotation: 0,
+			magic: {
+				ends: [{
+					position: [778.3638839213266, 346.3638839213274],
+					angle: 6.283185307179586,
+					polarity: "M"
+				}, {
+					position: [718.3207740645702, 347.08621971351545],
+					angle: 3.141592653589793,
+					polarity: "F"
+				}],
+				arms: [{
+					kind: "composite",
+					parts: [
+						{
+							kind: "arc",
+							from: [778.3638839213266, 346.3638839213274],
+							to: [775.7872986114693, 346.3800767361231],
+							center: [778.3638839213266, 551.3638839213274],
+							radius: 205,
+							ccw: !1
+						},
+						{
+							kind: "line",
+							from: [775.7872986114693, 346.3800767361231],
+							to: [720.8973593744275, 347.0700268987198]
+						},
+						{
+							kind: "arc",
+							from: [720.8973593744275, 347.0700268987198],
+							to: [718.3207740645702, 347.08621971351545],
+							center: [718.3207740645702, 142.08621971351545],
+							radius: 205,
+							ccw: !0
+						}
+					]
+				}],
+				bounds: {
+					min: [513.3207740645702, -62.91378028648455],
+					max: [983.3638839213266, 756.3638839213274]
+				}
+			}
+		},
+		{
+			type: "straight-nub",
+			position: [818.8392501862406, 532.4501036348435],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "curve-45-l",
+			position: [963.7961403294829, 472.4069937780857],
+			rotation: 2.356194490192345
+		},
+		{
+			type: "curve-45-l",
+			position: [1023.8392501862405, 327.45010363484334],
+			rotation: 1.5707963267948957
+		},
+		{
+			type: "magic-connector",
+			position: [0, 0],
+			rotation: 0,
+			magic: {
+				ends: [{
+					position: [1023.8392501862405, 327.45010363484334],
+					angle: 7.853981633974482,
+					polarity: "M"
+				}, {
+					position: [1027.3638839213268, 141.36388392132733],
+					angle: 4.71238898038469,
+					polarity: "M"
+				}],
+				arms: [{
+					kind: "composite",
+					parts: [
+						{
+							kind: "arc",
+							from: [1023.8392501862405, 327.45010363484334],
+							to: [1023.8776314014733, 323.4833889831694],
+							center: [1228.8392501862404, 327.4501036348431],
+							radius: 205,
+							ccw: !0
+						},
+						{
+							kind: "line",
+							from: [1023.8776314014733, 323.4833889831694],
+							to: [1027.3255027060939, 145.33059857300103]
+						},
+						{
+							kind: "arc",
+							from: [1027.3255027060939, 145.33059857300103],
+							to: [1027.3638839213268, 141.36388392132733],
+							center: [822.3638839213268, 141.36388392132733],
+							radius: 205,
+							ccw: !1
+						}
+					]
+				}],
+				bounds: {
+					min: [617.3638839213268, -63.63611607867267],
+					max: [1433.8392501862404, 532.4501036348431]
+				}
+			}
+		},
+		{
+			type: "straight-long",
+			position: [78.45010363484332, 554.4501036348435],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "straight-long",
+			position: [-66.5067865083989, 554.4501036348435],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "straight-tiny",
+			position: [-211.46367665164112, 554.4501036348435],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "curve-45-l",
+			position: [-271.5067865083989, 554.4501036348435],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "curve-45-l",
+			position: [-416.4636766516411, 494.4069937780857],
+			rotation: -2.356194490192345
+		},
+		{
+			type: "magic-connector",
+			position: [0, 0],
+			rotation: 0,
+			magic: {
+				ends: [{
+					position: [-476.5067865083988, 349.4501036348434],
+					angle: 1.5707963267948966,
+					polarity: "F"
+				}, {
+					position: [-473.9661474440377, 274.4858395943314],
+					angle: 4.71238898038469,
+					polarity: "F"
+				}],
+				arms: [{
+					kind: "composite",
+					parts: [
+						{
+							kind: "arc",
+							from: [-476.5067865083988, 349.4501036348434],
+							to: [-476.3605134897459, 341.70733011034406],
+							center: [-271.5067865083988, 349.4501036348434],
+							radius: 205,
+							ccw: !0
+						},
+						{
+							kind: "line",
+							from: [-476.3605134897459, 341.70733011034406],
+							to: [-474.1124204626906, 282.22861311883076]
+						},
+						{
+							kind: "arc",
+							from: [-474.1124204626906, 282.22861311883076],
+							to: [-473.9661474440377, 274.4858395943314],
+							center: [-678.9661474440377, 274.4858395943314],
+							radius: 205,
+							ccw: !1
+						}
+					]
+				}],
+				bounds: {
+					min: [-883.9661474440377, 69.48583959433142],
+					max: [-66.50678650839882, 554.4501036348433]
+				}
+			}
+		},
+		{
+			type: "straight-long",
+			position: [1027.3638839213268, -293.50678650839933],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "straight-long",
+			position: [1027.3638839213268, -438.46367665164155],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "curve-45-r",
+			position: [1027.3638839213268, -583.4205667948838],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "curve-45-r",
+			position: [967.320774064569, -728.3774569381261],
+			rotation: -2.356194490192345
+		},
+		{
+			type: "switch-parallel-r",
+			position: [822.3638839213268, -788.4205667948838],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "magic-connector",
+			position: [0, 0],
+			rotation: 0,
+			magic: {
+				ends: [{
+					position: [677.4069937780846, -766.4205667948838],
+					angle: 6.283185307179586,
+					polarity: "F"
+				}, {
+					position: [223.40699377808562, -476.00000000000006],
+					angle: 3.141592653589793,
+					polarity: "M"
+				}],
+				arms: [{
+					kind: "composite",
+					parts: [
+						{
+							kind: "arc",
+							from: [677.4069937780846, -766.4205667948838],
+							to: [529.7231108514159, -703.5981695447614],
+							center: [677.4069937780846, -561.4205667948838],
+							radius: 205,
+							ccw: !1
+						},
+						{
+							kind: "line",
+							from: [529.7231108514159, -703.5981695447614],
+							to: [371.09087670475435, -538.8223972501224]
+						},
+						{
+							kind: "arc",
+							from: [371.09087670475435, -538.8223972501224],
+							to: [223.40699377808562, -476.00000000000006],
+							center: [223.40699377808562, -681],
+							radius: 205,
+							ccw: !0
+						}
+					]
+				}],
+				bounds: {
+					min: [18.40699377808562, -886],
+					max: [882.4069937780846, -356.4205667948838]
+				}
+			}
+		},
+		{
+			type: "curve-45-l",
+			position: [-287.0631356945028, -204.51323932934633],
+			rotation: 2.356194490192345
+		},
+		{
+			type: "curve-45-l",
+			position: [-432.0200258377451, -144.47012947258858],
+			rotation: 3.141592653589793
+		},
+		{
+			type: "curve-45-l",
+			position: [-576.9769159809873, -204.51323932934633],
+			rotation: -2.356194490192345
+		},
+		{
+			type: "straight-long",
+			position: [-637.020025837745, -349.4701294725886],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "straight-long",
+			position: [-637.020025837745, -494.42701961583083],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "curve-45-l",
+			position: [-637.020025837745, -639.383909759073],
+			rotation: -1.5707963267948966
+		},
+		{
+			type: "curve-45-l",
+			position: [-576.9769159809872, -784.3407999023153],
+			rotation: -.7853981633974483
+		},
+		{
+			type: "straight-long",
+			position: [-432.0200258377449, -844.383909759073],
+			rotation: 0
+		},
+		{
+			type: "straight-long",
+			position: [-287.0631356945027, -844.383909759073],
+			rotation: 0
+		},
+		{
+			type: "straight-long",
+			position: [-142.10624555126049, -844.383909759073],
+			rotation: 0
+		},
+		{
+			type: "straight-long",
+			position: [2.850644591981734, -844.383909759073],
+			rotation: 0
+		},
+		{
+			type: "straight-long",
+			position: [147.80753473522395, -844.383909759073],
+			rotation: 0
+		},
+		{
+			type: "straight-long",
+			position: [292.7644248784662, -844.383909759073],
+			rotation: 0
+		},
+		{
+			type: "magic-connector",
+			position: [0, 0],
+			rotation: 0,
+			magic: {
+				ends: [{
+					position: [437.7213150217084, -844.383909759073],
+					angle: 3.141592653589793,
+					polarity: "F"
+				}, {
+					position: [677.4069937780846, -810.4205667948838],
+					angle: 6.283185307179586,
+					polarity: "F"
+				}],
+				arms: [{
+					kind: "composite",
+					parts: [
+						{
+							kind: "arc",
+							from: [437.7213150217084, -844.383909759073],
+							to: [471.04822615178807, -841.6567873144384],
+							center: [437.7213150217084, -639.383909759073],
+							radius: 205,
+							ccw: !0
+						},
+						{
+							kind: "line",
+							from: [471.04822615178807, -841.6567873144384],
+							to: [644.0800826480049, -813.1476892395185]
+						},
+						{
+							kind: "arc",
+							from: [644.0800826480049, -813.1476892395185],
+							to: [677.4069937780846, -810.4205667948838],
+							center: [677.4069937780846, -1015.4205667948838],
+							radius: 205,
+							ccw: !1
+						}
+					]
+				}],
+				bounds: {
+					min: [232.7213150217084, -1220.4205667948838],
+					max: [882.4069937780846, -434.38390975907305]
+				}
+			}
+		}
+	]
 };
 //#endregion
 //#region src/layouts/presets.ts
-function In() {
+function Ln() {
 	let e = jn("curve-45-l");
 	for (let t = 0; t < 7; t++) e = Mn(e, "curve-45-l");
 	return e.track;
 }
-function Ln() {
+function Rn() {
 	let e = jn("straight-long");
 	e = Mn(e, "switch-y-l", { continueEndIndex: 1 }), e = Mn(e, "curve-22-l"), e = Mn(e, "straight-short");
 	let t = e.track, n = t.pieces.find((e) => e.type === "switch-y-l"), r = {
@@ -2918,7 +3517,7 @@ function Ln() {
 	};
 	return r = Mn(r, "curve-22-r"), r = Mn(r, "straight-short"), r.track;
 }
-var Rn = {
+var zn = {
 	version: 4,
 	pieces: [
 		{
@@ -3008,10 +3607,10 @@ var Rn = {
 		direction: "AtoB"
 	}
 };
-function zn() {
-	return Nn(Rn).track;
+function Bn() {
+	return Nn(zn).track;
 }
-var Bn = {
+var Vn = {
 	version: 4,
 	pieces: [
 		{
@@ -3147,58 +3746,68 @@ var Bn = {
 		direction: "AtoB"
 	}
 };
-function Vn() {
-	return Nn(Bn).track;
+function Hn() {
+	return Nn(Vn).track;
 }
-var Hn = [
+function Un() {
+	return Nn(In).track;
+}
+var Wn = [
 	{
 		id: "oval",
 		label: "Oval",
 		description: "Closed loop, no switches. Stationary distribution is uniform; bulges are fully one-sided.",
 		closed: !0,
-		seed: Rn.seed,
-		build: zn
+		seed: zn.seed,
+		build: Bn
 	},
 	{
 		id: "oval-diagonal",
 		label: "Oval with diagonal",
 		description: "Oval with a diagonal cross-cut using turnout switches and a magic connector.",
 		closed: !0,
-		seed: Bn.seed,
-		build: Vn
+		seed: Vn.seed,
+		build: Hn
+	},
+	{
+		id: "complex",
+		label: "Complex track",
+		description: "Large multi-loop layout with parallel switches and magic-connector crossings. Fully closed (no free ends).",
+		closed: !0,
+		build: Un
 	},
 	{
 		id: "circle",
 		label: "Closed circle",
 		description: "Smallest closed loop: 8 × curve-45.",
 		closed: !0,
-		build: In
+		build: Ln
 	},
 	{
 		id: "switch-stubs",
 		label: "Y switch with stubs",
 		description: "Trunk straight, Y switch, dead-end stub on each branch. With reflect policy the trunk arm sees ~2× the traffic of each branch.",
 		closed: !1,
-		build: Ln
+		build: Rn
 	}
 ];
-function Un(e) {
-	return Hn.find((t) => t.id === e) ?? null;
+function Gn(e) {
+	return Wn.find((t) => t.id === e) ?? null;
 }
 //#endregion
 //#region src/embed/resolve.ts
-function Wn(e) {
+function Kn(e) {
 	return !!e && typeof e == "object" && Array.isArray(e.pieces) && e.pieces.every((e) => typeof e.id == "string");
 }
-function Gn(e) {
+function qn(e) {
 	if (e.preset) {
-		let t = Un(e.preset);
+		let t = Gn(e.preset);
 		return {
 			track: t ? t.build() : { pieces: [] },
 			seed: null
 		};
 	}
-	if (Wn(e.track)) return {
+	if (Kn(e.track)) return {
 		track: e.track,
 		seed: null
 	};
@@ -3208,7 +3817,7 @@ function Gn(e) {
 		seed: n
 	};
 }
-function Kn(e, t) {
+function Jn(e, t) {
 	if (t) {
 		let n = {
 			pieceIndex: t.pieceIndex,
@@ -3225,11 +3834,11 @@ function Kn(e, t) {
 }
 //#endregion
 //#region src/embed/TrackFigure.tsx
-var qn = /* @__PURE__ */ l("<div>");
-function Jn(n) {
-	let a = m(() => Gn(n)), o = m(() => On(a().track, n.padding ?? 2));
+var Yn = /* @__PURE__ */ l("<div>");
+function Xn(n) {
+	let a = m(() => qn(n)), o = m(() => On(a().track, n.padding ?? 2));
 	return (() => {
-		var s = qn();
+		var s = Yn();
 		return i(s, t(An, {
 			get track() {
 				return a().track;
@@ -3245,10 +3854,10 @@ function Jn(n) {
 }
 //#endregion
 //#region src/scoring/states.ts
-function Yn(e) {
+function Zn(e) {
 	let t = Le(e), n = [], r = /* @__PURE__ */ new Map();
 	for (let t of e.pieces) {
-		let e = R(t.type);
+		let e = z(t.type);
 		for (let i = 0; i < e.connections.length; i++) for (let e of ["AtoB", "BtoA"]) {
 			let a = {
 				pieceId: t.id,
@@ -3264,16 +3873,16 @@ function Yn(e) {
 		junctions: t
 	};
 }
-function Xn(e, t, n = "reflect") {
+function Qn(e, t, n = "reflect") {
 	let r = [], i = new Map(e.pieces.map((e) => [e.id, e]));
 	for (let e of t.states) {
-		let a = i.get(e.pieceId), [o, s] = R(a.type).connections[e.connectionIndex], c = e.direction === "AtoB" ? s : o, l = Re(t.junctions, {
+		let a = i.get(e.pieceId), [o, s] = z(a.type).connections[e.connectionIndex], c = e.direction === "AtoB" ? s : o, l = Re(t.junctions, {
 			pieceId: a.id,
 			endIndex: c
 		}), u = [];
 		if (l) for (let e of l.members) {
 			if (e.pieceId === a.id && e.endIndex === c) continue;
-			let t = R(i.get(e.pieceId).type);
+			let t = z(i.get(e.pieceId).type);
 			for (let n = 0; n < t.connections.length; n++) {
 				let [r, i] = t.connections[n];
 				r === e.endIndex ? u.push({
@@ -3317,13 +3926,13 @@ function Xn(e, t, n = "reflect") {
 }
 //#endregion
 //#region src/scoring/stationary.ts
-function Zn(e, t = {}) {
-	let n = t.iterations ?? 500, r = t.deadEndPolicy ?? "reflect", i = Yn(e), a = i.states.length, o = /* @__PURE__ */ new Map();
+function $n(e, t = {}) {
+	let n = t.iterations ?? 500, r = t.deadEndPolicy ?? "reflect", i = Zn(e), a = i.states.length, o = /* @__PURE__ */ new Map();
 	if (a === 0) return {
 		scores: o,
 		spectralGap: 0
 	};
-	let s = Xn(e, i, r), c = new Float64Array(a);
+	let s = Qn(e, i, r), c = new Float64Array(a);
 	for (let e = 0; e < a; e++) c[e] = 1 / a;
 	let l = new Float64Array(a), u = 0, d = 0;
 	for (let e = 0; e < n; e++) {
@@ -3347,7 +3956,7 @@ function Zn(e, t = {}) {
 	}
 	let f = Math.max(0, Math.min(1, 1 - d));
 	return i.states.forEach((e, t) => {
-		o.set(W(e), c[t]);
+		o.set(Ue(e), c[t]);
 	}), {
 		scores: o,
 		spectralGap: f
@@ -3355,7 +3964,7 @@ function Zn(e, t = {}) {
 }
 //#endregion
 //#region src/scoring/transitions.ts
-function Qn(e) {
+function er(e) {
 	let t = e >>> 0;
 	return () => {
 		t = t + 1831565813 >>> 0;
@@ -3363,7 +3972,7 @@ function Qn(e) {
 		return e = Math.imul(e ^ e >>> 15, e | 1), e ^= e + Math.imul(e ^ e >>> 7, e | 61), ((e ^ e >>> 14) >>> 0) / 4294967296;
 	};
 }
-function $n(e, t) {
+function tr(e, t) {
 	if (e.length === 1) return e[0].col;
 	let n = t(), r = 0, i = e[e.length - 1].col;
 	for (let t = 0; t < e.length; t++) if (r += e[t].p, n < r) {
@@ -3374,26 +3983,26 @@ function $n(e, t) {
 }
 //#endregion
 //#region src/scoring/montecarlo.ts
-function er(e, t = {}) {
-	let n = t.steps ?? 1e5, r = t.deadEndPolicy ?? "reflect", i = Yn(e), a = i.states.length, o = /* @__PURE__ */ new Map();
+function nr(e, t = {}) {
+	let n = t.steps ?? 1e5, r = t.deadEndPolicy ?? "reflect", i = Zn(e), a = i.states.length, o = /* @__PURE__ */ new Map();
 	if (a === 0) return o;
-	let s = Xn(e, i, r), c = Qn(t.seed ?? Date.now()), l = new Uint32Array(a), u = t.startState?.direction ?? t.startDirection ?? (c() < .5 ? "AtoB" : "BtoA"), d = i.states.reduce((e, t, n) => (t.direction === u && e.push(n), e), []), f = Math.max(64, Math.min(512, Math.ceil(n / 5e3))), p = Math.max(1, Math.floor(n / f));
+	let s = Qn(e, i, r), c = er(t.seed ?? Date.now()), l = new Uint32Array(a), u = t.startState?.direction ?? t.startDirection ?? (c() < .5 ? "AtoB" : "BtoA"), d = i.states.reduce((e, t, n) => (t.direction === u && e.push(n), e), []), f = Math.max(64, Math.min(512, Math.ceil(n / 5e3))), p = Math.max(1, Math.floor(n / f));
 	for (let e = 0; e < f; e++) {
 		let e = d[Math.floor(c() * d.length)];
-		for (let t = 0; t < p; t++) l[e] += 1, e = $n(s[e], c);
+		for (let t = 0; t < p; t++) l[e] += 1, e = tr(s[e], c);
 	}
 	let m = 0;
 	for (let e = 0; e < a; e++) m += l[e];
 	return i.states.forEach((e, t) => {
-		o.set(W(e), l[t] / m);
+		o.set(Ue(e), l[t] / m);
 	}), o;
 }
 //#endregion
 //#region src/scoring/piece-stats.ts
-function tr(e, t) {
+function rr(e, t) {
 	let n = /* @__PURE__ */ new Map();
 	for (let r of e.pieces) {
-		let e = R(r.type), i = 0, a = 0;
+		let e = z(r.type), i = 0, a = 0;
 		for (let n = 0; n < e.connections.length; n++) i += t.get(`${r.id}:${n}:AtoB`) ?? 0, a += t.get(`${r.id}:${n}:BtoA`) ?? 0;
 		n.set(r.id, {
 			total: i + a,
@@ -3403,33 +4012,33 @@ function tr(e, t) {
 	}
 	return n;
 }
-function nr(e) {
+function ir(e) {
 	let t = [...e.values()].filter((e) => e > 0);
 	return t.length === 0 ? 0 : t.reduce((e, t) => e - t * Math.log(t), 0) / Math.log(t.length);
 }
-function rr(e) {
+function ar(e) {
 	let t = [...e.values()].filter((e) => e > 0), n = t.length;
 	if (n <= 1) return 0;
 	let r = 0;
 	for (let e = 0; e < n; e++) for (let i = e + 1; i < n; i++) r += Math.abs(t[e] - t[i]);
 	return r / (n - 1);
 }
-function ir(e) {
+function or(e) {
 	if (e.magic) {
 		let t = 0;
-		for (let n of e.magic.arms) t += z(n);
+		for (let n of e.magic.arms) t += B(n);
 		return t;
 	}
-	let t = R(e.type), n = 0;
-	for (let e of t.arms) n += z(e);
+	let t = z(e.type), n = 0;
+	for (let e of t.arms) n += B(e);
 	return n;
 }
-function ar(e, t) {
+function sr(e, t) {
 	let n = t.size > 0 ? 1 / (t.size * 10) : 0, r = 0;
-	for (let t of e.pieces) r += ir(t);
+	for (let t of e.pieces) r += or(t);
 	let i = 0, a = 0;
 	for (let r of e.pieces) {
-		let e = R(r.type), o = ir(r), s = !1, c = !1;
+		let e = z(r.type), o = or(r), s = !1, c = !1;
 		for (let i = 0; i < e.connections.length; i++) {
 			let e = t.get(`${r.id}:${i}:AtoB`) ?? 0, a = t.get(`${r.id}:${i}:BtoA`) ?? 0;
 			(e > n || a > n) && (s = !0), e > n && a > n && (c = !0);
@@ -3444,36 +4053,36 @@ function ar(e, t) {
 }
 //#endregion
 //#region src/embed/TrackScoring.tsx
-var or = /* @__PURE__ */ l("<div><div class=tt-stage>"), sr = /* @__PURE__ */ l("<div class=tt-entropy>");
-function cr(n) {
-	let o = m(() => Gn(n)), c = m(() => On(o().track, n.padding ?? 2)), l = m(() => {
+var cr = /* @__PURE__ */ l("<div><div class=tt-stage>"), lr = /* @__PURE__ */ l("<div class=tt-entropy>");
+function ur(n) {
+	let o = m(() => qn(n)), c = m(() => On(o().track, n.padding ?? 2)), l = m(() => {
 		let e = o();
 		if (e.track.pieces.length !== 0) {
 			if (n.mode === "mc") {
-				let t = Kn(e, n.seed);
+				let t = Jn(e, n.seed);
 				return {
-					scores: er(e.track, {
+					scores: nr(e.track, {
 						steps: T,
 						startState: t ?? void 0
 					}),
 					spectralGap: null
 				};
 			}
-			return Zn(e.track);
+			return $n(e.track);
 		}
 	}), u = m(() => l()?.scores), d = m(() => {
 		let e = u();
-		return e ? ar(o().track, e) : null;
+		return e ? sr(o().track, e) : null;
 	}), f = m(() => {
 		let e = d();
 		if (!e) return null;
 		let t = (t) => Math.round(t / e.totalLength * 100), r = `track length ${(e.totalLength / 1e3).toFixed(2)} m · ${t(e.utilizedLength)}% utilized · ${t(e.bidirectionalLength)}% bidirectional`;
 		if (!n.advancedStats) return r;
 		let i = u();
-		return `entropy ${nr(i).toFixed(3)} · gini ${rr(i).toFixed(3)} · ${r}`;
+		return `entropy ${ir(i).toFixed(3)} · gini ${ar(i).toFixed(3)} · ${r}`;
 	});
 	return (() => {
-		var l = or(), d = l.firstChild;
+		var l = cr(), d = l.firstChild;
 		return i(d, t(An, {
 			get track() {
 				return o().track;
@@ -3490,7 +4099,7 @@ function cr(n) {
 		}), null), i(d, (() => {
 			var e = a(() => !!f());
 			return () => e() && (() => {
-				var e = sr();
+				var e = lr();
 				return i(e, f), e;
 			})();
 		})(), null), r((t) => {
@@ -3504,17 +4113,17 @@ function cr(n) {
 }
 //#endregion
 //#region src/render/Train.tsx
-var lr = /* @__PURE__ */ l("<svg><g></svg>", !1, !0, !1), ur = /* @__PURE__ */ l("<svg><rect x=-15 y=-10 width=30 height=20 rx=3></svg>", !1, !0, !1), dr = /* @__PURE__ */ l("<svg><polygon points=\"15,-10 15,10 25,0\"></svg>", !1, !0, !1), fr = /* @__PURE__ */ l("<svg><g class=\"text-blue-400 dark:text-amber-300\"fill=currentColor stroke=none style=pointer-events:none></svg>", !1, !0, !1);
-function pr(e, t) {
+var dr = /* @__PURE__ */ l("<svg><g></svg>", !1, !0, !1), fr = /* @__PURE__ */ l("<svg><rect x=-15 y=-10 width=30 height=20 rx=3></svg>", !1, !0, !1), pr = /* @__PURE__ */ l("<svg><polygon points=\"15,-10 15,10 25,0\"></svg>", !1, !0, !1), mr = /* @__PURE__ */ l("<svg><g class=\"text-blue-400 dark:text-amber-300\"fill=currentColor stroke=none style=pointer-events:none></svg>", !1, !0, !1);
+function hr(e, t) {
 	let n = t.pieces.find((t) => t.id === e.pieceId);
-	return n ? n.magic ? n.magic.arms[e.connectionIndex] ?? null : H(R(n.type).arms[e.connectionIndex], U(n)) : null;
+	return n ? n.magic ? n.magic.arms[e.connectionIndex] ?? null : U(z(n.type).arms[e.connectionIndex], Ne(n)) : null;
 }
-function mr(e, t, n) {
+function gr(e, t, n) {
 	let r = e.state, i = e.sampleT, a = e.armLen, o = e.arm, s = n, c = 0;
 	for (let n = 0; n < e.trail.length + 1; n++) {
 		let n = r.direction === "AtoB" ? i * a : (1 - i) * a;
 		if (s <= n) {
-			let e = s / a, t = r.direction === "AtoB" ? i - e : i + e, n = B(o, Math.max(0, Math.min(1, t))), c = r.direction === "AtoB" ? n.tangent : [-n.tangent[0], -n.tangent[1]];
+			let e = s / a, t = r.direction === "AtoB" ? i - e : i + e, n = V(o, Math.max(0, Math.min(1, t))), c = r.direction === "AtoB" ? n.tangent : [-n.tangent[0], -n.tangent[1]];
 			return {
 				position: n.point,
 				tangent: c
@@ -3523,30 +4132,30 @@ function mr(e, t, n) {
 		s -= n;
 		let l = e.trail[c++] ?? null;
 		if (!l) {
-			let e = r.direction === "AtoB" ? 0 : 1, t = B(o, e), n = r.direction === "AtoB" ? t.tangent : [-t.tangent[0], -t.tangent[1]];
+			let e = r.direction === "AtoB" ? 0 : 1, t = V(o, e), n = r.direction === "AtoB" ? t.tangent : [-t.tangent[0], -t.tangent[1]];
 			return {
 				position: [t.point[0] - n[0] * s, t.point[1] - n[1] * s],
 				tangent: n
 			};
 		}
 		r = l;
-		let u = pr(r, t);
+		let u = hr(r, t);
 		if (!u) break;
-		o = u, a = z(o), i = +(r.direction === "AtoB");
+		o = u, a = B(o), i = +(r.direction === "AtoB");
 	}
 	return {
 		position: e.position,
 		tangent: e.tangent
 	};
 }
-function hr(e) {
+function _r(e) {
 	return Math.atan2(e[1], e[0]) * 180 / Math.PI;
 }
-function gr(e) {
+function vr(e) {
 	return (() => {
-		var t = lr();
+		var t = dr();
 		return i(t, () => e.children), r((n) => {
-			var r = `translate(${e.position[0]} ${e.position[1]}) rotate(${hr(e.tangent)})`, i = e.opacity;
+			var r = `translate(${e.position[0]} ${e.position[1]}) rotate(${_r(e.tangent)})`, i = e.opacity;
 			return r !== n.e && s(t, "transform", n.e = r), i !== n.t && s(t, "opacity", n.t = i), n;
 		}, {
 			e: void 0,
@@ -3554,12 +4163,12 @@ function gr(e) {
 		}), t;
 	})();
 }
-var _r = 38, vr = 76;
-function yr(e) {
-	let n = () => mr(e.walker, e.track, _r), r = () => mr(e.walker, e.track, vr);
+var yr = 38, br = 76;
+function xr(e) {
+	let n = () => gr(e.walker, e.track, yr), r = () => gr(e.walker, e.track, br);
 	return (() => {
-		var a = fr();
-		return i(a, t(gr, {
+		var a = mr();
+		return i(a, t(vr, {
 			get position() {
 				return r().position;
 			},
@@ -3568,9 +4177,9 @@ function yr(e) {
 			},
 			opacity: 1,
 			get children() {
-				return ur();
+				return fr();
 			}
-		}), null), i(a, t(gr, {
+		}), null), i(a, t(vr, {
 			get position() {
 				return n().position;
 			},
@@ -3579,9 +4188,9 @@ function yr(e) {
 			},
 			opacity: 1,
 			get children() {
-				return ur();
+				return fr();
 			}
-		}), null), i(a, t(gr, {
+		}), null), i(a, t(vr, {
 			get position() {
 				return e.walker.position;
 			},
@@ -3589,29 +4198,29 @@ function yr(e) {
 				return e.walker.tangent;
 			},
 			get children() {
-				return [ur(), dr()];
+				return [fr(), pr()];
 			}
 		}), null), a;
 	})();
 }
 //#endregion
 //#region src/scoring/live-montecarlo.ts
-var br = 20, xr = 5e3;
-function Sr(e, t = !0) {
+var Sr = 20, Cr = 5e3;
+function wr(e, t = !0) {
 	if (e <= 0) return { kind: "paused" };
 	if (e >= 100 && t) return { kind: "snap" };
 	let n = t ? (e - 1) / 98 : (e - 1) / 99;
 	return {
 		kind: "running",
-		unitsPerSecond: br * (xr / br) ** +Math.max(0, Math.min(1, n))
+		unitsPerSecond: Sr * (Cr / Sr) ** +Math.max(0, Math.min(1, n))
 	};
 }
-function Cr(e) {
-	let t = e.deadEndPolicy ?? "reflect", n = Qn((Date.now() ^ 2654435769) >>> 0), r = null, i = null, a = 0, o = null, [s, c] = h(/* @__PURE__ */ new Map()), [l, u] = h(null), [d, f] = h(0);
+function Tr(e) {
+	let t = e.deadEndPolicy ?? "reflect", n = er((Date.now() ^ 2654435769) >>> 0), r = null, i = null, a = 0, o = null, [s, c] = h(/* @__PURE__ */ new Map()), [l, u] = h(null), [d, f] = h(0);
 	function m(r) {
-		let i = Yn(r);
+		let i = Zn(r);
 		if (i.states.length === 0) return null;
-		let a = Xn(r, i, t), o = new Uint32Array(i.states.length), s = e.seed?.() ?? null, c = s ? i.index.get(W(s)) ?? null : null;
+		let a = Qn(r, i, t), o = new Uint32Array(i.states.length), s = e.seed?.() ?? null, c = s ? i.index.get(Ue(s)) ?? null : null;
 		return {
 			enumerated: i,
 			P: a,
@@ -3628,8 +4237,8 @@ function Cr(e) {
 		}
 		let { enumerated: t, counts: n } = r, i = e.track(), a = /* @__PURE__ */ new Map(), o = 0;
 		for (let e = 0; e < n.length; e++) o += n[e];
-		o === 0 ? t.states.forEach((e) => a.set(W(e), 0)) : t.states.forEach((e, t) => {
-			a.set(W(e), n[t] / o);
+		o === 0 ? t.states.forEach((e) => a.set(Ue(e), 0)) : t.states.forEach((e, t) => {
+			a.set(Ue(e), n[t] / o);
 		});
 		let s = 0;
 		for (let e = 0; e < n.length; e++) n[e] > 0 && (s += n[e] * x(t.states[e], i));
@@ -3637,13 +4246,13 @@ function Cr(e) {
 	}
 	function y(e, t) {
 		let n = t.pieces.find((t) => t.id === e.pieceId);
-		return n ? n.magic ? n.magic.arms[e.connectionIndex] : H(R(n.type).arms[e.connectionIndex], U(n)) : null;
+		return n ? n.magic ? n.magic.arms[e.connectionIndex] : U(z(n.type).arms[e.connectionIndex], Ne(n)) : null;
 	}
 	function b(e) {
 		if (!r) return null;
 		let t = r.enumerated.states[r.currentIdx], n = y(t, e);
 		if (!n) return null;
-		let i = t.direction === "AtoB" ? r.armT : 1 - r.armT, a = B(n, Math.max(0, Math.min(1, i))), o = t.direction === "AtoB" ? a.tangent : [-a.tangent[0], -a.tangent[1]], s = z(n);
+		let i = t.direction === "AtoB" ? r.armT : 1 - r.armT, a = V(n, Math.max(0, Math.min(1, i))), o = t.direction === "AtoB" ? a.tangent : [-a.tangent[0], -a.tangent[1]], s = B(n);
 		return {
 			position: a.point,
 			tangent: o,
@@ -3658,7 +4267,7 @@ function Cr(e) {
 	}
 	function x(e, t) {
 		let n = y(e, t);
-		return n ? z(n) : 1;
+		return n ? B(n) : 1;
 	}
 	function S() {
 		let t = e.track();
@@ -3691,7 +4300,7 @@ function Cr(e) {
 		let p = 0;
 		for (; r.armT >= 1 && p < 1e3;) {
 			let e = (r.armT - 1) * f;
-			r.counts[r.currentIdx] += 1, r.trail.unshift(r.enumerated.states[r.currentIdx]), r.trail.length > 8 && (r.trail.length = 8), r.currentIdx = $n(r.P[r.currentIdx], n), f = x(r.enumerated.states[r.currentIdx], s), r.armT = e / Math.max(f, 1e-6), p += 1;
+			r.counts[r.currentIdx] += 1, r.trail.unshift(r.enumerated.states[r.currentIdx]), r.trail.length > 8 && (r.trail.length = 8), r.currentIdx = tr(r.P[r.currentIdx], n), f = x(r.enumerated.states[r.currentIdx], s), r.armT = e / Math.max(f, 1e-6), p += 1;
 		}
 		r.armT > 1 && (r.armT = 0), u(b(s)), t - a > 33 && (v(), a = t);
 	}
@@ -3713,9 +4322,9 @@ function Cr(e) {
 }
 //#endregion
 //#region src/embed/TrackLiveMC.tsx
-var wr = /* @__PURE__ */ l("<div><div class=tt-stage><div class=tt-entropy></div></div><div class=tt-controls><button type=button class=tt-playpause></button><div class=tt-slider><span class=tt-speed-label></span><input type=range min=0 max=100 step=1 aria-label=\"simulation speed\"></div><button type=button class=tt-reset>Reset"), Tr = /* @__PURE__ */ l("<div class=tt-tooltip><div class=tt-tooltip-total>%</div><div class=tt-tooltip-split>→ <!>% / ← <!>%"), Er = /* @__PURE__ */ l("<svg width=12 height=12 viewBox=\"0 0 12 12\"fill=currentColor aria-hidden=true><rect x=0 y=0 width=4 height=12 rx=0.5></rect><rect x=8 y=0 width=4 height=12 rx=0.5>"), Dr = /* @__PURE__ */ l("<svg width=12 height=12 viewBox=\"0 0 12 12\"fill=currentColor aria-hidden=true><polygon points=\"0,0 12,6 0,12\">");
-function Or(n) {
-	let o = m(() => Gn(n)), l = m(() => On(o().track, n.padding ?? 2)), d = m(() => Kn(o(), n.seed)), [p, v] = h(n.initialSpeed ?? 20), [y, b] = h(!0), [x, S] = h(!1), C;
+var Er = /* @__PURE__ */ l("<div><div class=tt-stage><div class=tt-entropy></div></div><div class=tt-controls><button type=button class=tt-playpause></button><div class=tt-slider><span class=tt-speed-label></span><input type=range min=0 max=100 step=1 aria-label=\"simulation speed\"></div><button type=button class=tt-reset>Reset"), Dr = /* @__PURE__ */ l("<div class=tt-tooltip><div class=tt-tooltip-total>%</div><div class=tt-tooltip-split>→ <!>% / ← <!>%"), Or = /* @__PURE__ */ l("<svg width=12 height=12 viewBox=\"0 0 12 12\"fill=currentColor aria-hidden=true><rect x=0 y=0 width=4 height=12 rx=0.5></rect><rect x=8 y=0 width=4 height=12 rx=0.5>"), kr = /* @__PURE__ */ l("<svg width=12 height=12 viewBox=\"0 0 12 12\"fill=currentColor aria-hidden=true><polygon points=\"0,0 12,6 0,12\">");
+function Ar(n) {
+	let o = m(() => qn(n)), l = m(() => On(o().track, n.padding ?? 2)), d = m(() => Jn(o(), n.seed)), [p, v] = h(n.initialSpeed ?? 20), [y, b] = h(!0), [x, S] = h(!1), C;
 	_(() => {
 		if (!C || typeof IntersectionObserver > "u") {
 			S(!0);
@@ -3724,38 +4333,38 @@ function Or(n) {
 		let e = new IntersectionObserver((e) => e.forEach((e) => S(e.isIntersecting)), { threshold: .25 });
 		e.observe(C), g(() => e.disconnect());
 	});
-	let w = Cr({
+	let w = Tr({
 		track: () => o().track,
-		speed: m(() => y() && x() ? Sr(p(), !1) : { kind: "paused" }),
+		speed: m(() => y() && x() ? wr(p(), !1) : { kind: "paused" }),
 		enabled: () => !0,
 		seed: d
-	}), [T, E] = h(null), [ee, D] = h(null), te = m(() => tr(o().track, w.scores())), ne = m(() => nr(w.scores())), O = m(() => rr(w.scores())), k = m(() => ar(o().track, w.scores())), A = () => {
+	}), [T, E] = h(null), [D, O] = h(null), ee = m(() => rr(o().track, w.scores())), te = m(() => ir(w.scores())), k = m(() => ar(w.scores())), A = m(() => sr(o().track, w.scores())), j = () => {
 		let e = p();
 		if (e <= 0) return "paused";
-		let t = Sr(e, !1);
+		let t = wr(e, !1);
 		return t.kind === "running" ? `${(t.unitsPerSecond * 60 / 1e3).toFixed(1)} m/min` : "max";
-	}, re = m(() => {
-		let e = T(), t = ee();
+	}, ne = m(() => {
+		let e = T(), t = D();
 		if (!e || !t) return null;
-		let n = te().get(e);
+		let n = ee().get(e);
 		return !n || n.total === 0 ? null : {
 			pos: t,
 			stat: n
 		};
 	});
-	function ie(e) {
+	function re(e) {
 		let t = e.currentTarget.getBoundingClientRect();
-		D({
+		O({
 			x: e.clientX - t.left,
 			y: e.clientY - t.top
 		});
 	}
-	function j() {
-		D(null), E(null);
+	function M() {
+		O(null), E(null);
 	}
 	return (() => {
-		var d = wr(), m = d.firstChild, h = m.firstChild, g = m.nextSibling.firstChild, _ = g.nextSibling, x = _.firstChild, S = x.nextSibling, T = _.nextSibling, ee = C;
-		return typeof ee == "function" ? u(ee, d) : C = d, m.addEventListener("pointerleave", j), m.$$pointermove = ie, i(m, t(An, {
+		var d = Er(), m = d.firstChild, h = m.firstChild, g = m.nextSibling.firstChild, _ = g.nextSibling, x = _.firstChild, S = x.nextSibling, T = _.nextSibling, D = C;
+		return typeof D == "function" ? u(D, d) : C = d, m.addEventListener("pointerleave", M), m.$$pointermove = re, i(m, t(An, {
 			get track() {
 				return o().track;
 			},
@@ -3777,7 +4386,7 @@ function Or(n) {
 					get when() {
 						return w.walker();
 					},
-					children: (e) => t(yr, {
+					children: (e) => t(xr, {
 						get walker() {
 							return e();
 						},
@@ -3789,16 +4398,16 @@ function Or(n) {
 			}
 		}), h), i(h, (() => {
 			var e = a(() => !!n.advancedStats);
-			return () => e() && `entropy ${ne().toFixed(3)} · gini ${O().toFixed(3)} · `;
-		})(), null), i(h, () => `track length ${(k().totalLength / 1e3).toFixed(2)} m · ${Math.round(k().utilizedLength / k().totalLength * 100)}% utilized · ${Math.round(k().bidirectionalLength / k().totalLength * 100)}% bidirectional`, null), i(h, (() => {
+			return () => e() && `entropy ${te().toFixed(3)} · gini ${k().toFixed(3)} · `;
+		})(), null), i(h, () => `track length ${(A().totalLength / 1e3).toFixed(2)} m · ${Math.round(A().utilizedLength / A().totalLength * 100)}% utilized · ${Math.round(A().bidirectionalLength / A().totalLength * 100)}% bidirectional`, null), i(h, (() => {
 			var e = a(() => w.totalDistance() > 0);
 			return () => e() && ` · ${(w.totalDistance() / 1e3).toFixed(1)} m traveled`;
 		})(), null), i(m, t(f, {
 			get when() {
-				return re();
+				return ne();
 			},
 			children: (e) => (() => {
-				var t = Tr(), n = t.firstChild, a = n.firstChild, o = n.nextSibling, s = o.firstChild.nextSibling, l = s.nextSibling.nextSibling;
+				var t = Dr(), n = t.firstChild, a = n.firstChild, o = n.nextSibling, s = o.firstChild.nextSibling, l = s.nextSibling.nextSibling;
 				return l.nextSibling, i(n, () => (e().stat.total * 100).toFixed(1), a), i(o, () => (e().stat.atob * 100).toFixed(1), s), i(o, () => (e().stat.btoa * 100).toFixed(1), l), r((n) => {
 					var r = `${e().pos.x + 14}px`, i = `${e().pos.y + 14}px`;
 					return r !== n.e && c(t, "left", n.e = r), i !== n.t && c(t, "top", n.t = i), n;
@@ -3809,8 +4418,8 @@ function Or(n) {
 			})()
 		}), null), g.$$click = () => b((e) => !e), i(g, (() => {
 			var e = a(() => !!y());
-			return () => e() ? Er() : Dr();
-		})()), i(x, A), S.$$input = (e) => v(+e.currentTarget.value), T.$$click = () => w.reset(), r((t) => {
+			return () => e() ? Or() : kr();
+		})()), i(x, j), S.$$input = (e) => v(+e.currentTarget.value), T.$$click = () => w.reset(), r((t) => {
 			var r = `tt-embed ${n.class ?? ""}`, i = n.advancedStats || void 0, a = y() ? "pause" : "play", o = `${p() / 100}`;
 			return r !== t.e && e(d, t.e = r), i !== t.t && s(m, "data-advanced", t.t = i), a !== t.a && s(g, "aria-label", t.a = a), o !== t.o && c(_, "--tt-pct", t.o = o), t;
 		}, {
@@ -3828,14 +4437,14 @@ n([
 ]);
 //#endregion
 //#region src/embed/mount.tsx
-function kr(e, n) {
-	return o(() => t(Jn, n), e);
-}
-function Ar(e, n) {
-	return o(() => t(cr, n), e);
-}
 function jr(e, n) {
-	return o(() => t(Or, n), e);
+	return o(() => t(Xn, n), e);
+}
+function Mr(e, n) {
+	return o(() => t(ur, n), e);
+}
+function Nr(e, n) {
+	return o(() => t(Ar, n), e);
 }
 //#endregion
-export { Hn as PRESETS, Jn as TrackFigure, Or as TrackLiveMC, cr as TrackScoring, Un as findPreset, kr as mountTrackFigure, jr as mountTrackLiveMC, Ar as mountTrackScoring, Gn as resolveFigure, Kn as resolveSeed };
+export { Wn as PRESETS, Xn as TrackFigure, Ar as TrackLiveMC, ur as TrackScoring, Gn as findPreset, jr as mountTrackFigure, Nr as mountTrackLiveMC, Mr as mountTrackScoring, qn as resolveFigure, Jn as resolveSeed };
