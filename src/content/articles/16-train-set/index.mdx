@@ -233,20 +233,26 @@ A _symmetric_ bulge means the segment is a two-way street: the train passes thro
   dead weight — it takes up space on the floor but the train ignores it. A layout
   with 20 pieces where only 14 are visited has 70% utilization.
 
-  Each piece also has a directional sub-stat: is it used in both directions, or
-  only one? A piece used in both directions shows a symmetric bulge; a piece used
-  in one direction only shows a lopsided one. A piece with no bulge at all is not
-  utilized.
+Each piece also has a directional sub-stat: is it used in both directions, or
+only one? A piece used in both directions shows a symmetric bulge; a piece used
+in one direction only shows a lopsided one. A piece with no bulge at all is not
+utilized.
 
-  A plain oval is 100% utilized — every piece is visited — but entirely
-  one-directional: the train always goes the same way. A layout with switches can
-  be 100% utilized and bidirectional, meaning every piece is visited and in both
-  directions. That is the ideal.
+A plain oval is 100% utilized — every piece is visited — but entirely
+one-directional: the train always goes the same way. A layout with switches can
+be 100% utilized and bidirectional, meaning every piece is visited and in both
+directions. That is the ideal.
 
-  Keep in mind that the stats shown in the figures are never final due to the
-  Monte Carlo method. They tend toward the true value but approach it
-  asymptotically — watch the figures run for a few seconds before drawing
-  conclusions.
+**Stress that these statistics are stochastic and need time to settle.** The
+simulation is a random walk, so the utilization and bidirectional percentages
+are running estimates, not fixed readouts — they drift as the train runs and
+are never truly final. Early on they read artificially high: the figure counts
+every piece the train has touched so far, so a fresh run can sit at 100%
+utilized before the long-run pattern emerges and idle segments drop out. Tell
+the reader plainly to let each simulation run for a while before trusting the
+numbers — the first few seconds are burn-in, not signal. They tend toward the
+true value but approach it asymptotically.
+
 </Scaffold>
 
 ## Putting the math to work with a virtual train
@@ -297,10 +303,10 @@ If a diagonal interconnect is added to the track, that segment is reachable in o
   The diagonal connector is only ever crossed once — after that, the train is
   locked into a smaller loop and can never reach it again. This means a portion
   of the track sits permanently idle. Utilization drops below 100%: the diagonal
-  itself and the outer bypass are never visited in the long run. The figures show
-  this directly — those pieces have no bulge. Together they diagnose a layout
-  with a hidden dead end: not a stub you can see, but a structural trap that
-  reveals itself only once the train starts moving.
+  itself and the outer bypass are never visited in the long run. The figures
+  show this directly — those pieces have no bulge. Together they diagnose a
+  layout with a hidden dead end: not a stub you can see, but a structural trap
+  that reveals itself only once the train starts moving.
 </Scaffold>
 
 ### Adding a second diagonal
@@ -346,7 +352,7 @@ Write 3-4 sentences interpreting the figure once the layout is chosen.
 
 </Scaffold>
 
-<TrackEmbed src="TrackReal1.json" />
+<TrackEmbed src="TrackReal1.json" showAdapters advancedStats />
 
 ## Key takeaways
 
@@ -398,7 +404,9 @@ Three-beat structure:
 2. Challenge — a concrete goal. E.g. "Can you build a layout where every segment gets equal
    traffic?" (Hint: it's harder than it looks on a layout with switches.)
 
-3. Free play — open invitation. "Now build whatever you like and see what the score tells you."
+3. Free play — open invitation. "Now build whatever you like and see what the
+   score tells you." "Build a real track and create it's digital twin.
+   What sections of your track should you alter to get a 'perfect' track?"
 
 Keep the language light and inviting. This is the kid-on-the-floor moment.
 
@@ -409,30 +417,31 @@ Keep the language light and inviting. This is the kid-on-the-floor moment.
 <Scaffold>
   Two natural extensions to pick up in a follow-up article:
 
-  **Irreducibility.** The diagonal examples show that a layout can look connected
-  while hiding a structural trap — a segment reachable in one direction only,
-  which the train crosses once and never returns to. The formal property is
-  irreducibility: a chain is irreducible if every state is reachable from every
-  other state. An irreducible layout wastes no track. The interesting question is
-  then: what is the minimal set of pieces you would need to add (or reroute) to
-  make a given layout irreducible? That is a graph theory problem with a concrete,
-  hands-on answer.
+**Irreducibility.** The diagonal examples show that a layout can look connected
+while hiding a structural trap — a segment reachable in one direction only,
+which the train crosses once and never returns to. The formal property is
+irreducibility: a chain is irreducible if every state is reachable from every
+other state. An irreducible layout wastes no track. The interesting question is
+then: what is the minimal set of pieces you would need to add (or reroute) to
+make a given layout irreducible? That is a graph theory problem with a concrete,
+hands-on answer.
 
-  **Richer traffic statistics.** Utilization tells you which pieces are used, but
-  not how unevenly the traffic is distributed among the ones that are. Two layouts
-  can both be 100% utilized while one has one wildly overloaded junction and
-  another has perfectly even traffic. A follow-up could introduce entropy (how
-  spread out is the distribution?) and the Gini coefficient (borrowed from
-  economics, where it measures income inequality — here it measures traffic
-  inequality) as complementary lenses on the same question.
+**Richer traffic statistics.** Utilization tells you which pieces are used, but
+not how unevenly the traffic is distributed among the ones that are. Two layouts
+can both be 100% utilized while one has one wildly overloaded junction and
+another has perfectly even traffic. A follow-up could introduce entropy (how
+spread out is the distribution?) and the Gini coefficient (borrowed from
+economics, where it measures income inequality — here it measures traffic
+inequality) as complementary lenses on the same question.
 
-  **Factorio belt balancers.** Factorio players already have strong intuition for
-  "4-to-4 balanced" vs. "throughput unlimited" — two distinctions that map
-  directly onto strong connectivity and uniform stationary distribution. Belt
-  splitters have a parity-like constraint (inputs must equal outputs for a true
-  balancer), and the hidden bottleneck in a naïve layout is exactly the
-  one-diagonal trap from above. The stationary distribution framing applies
-  unchanged; only the physical metaphor shifts.
+**Factorio belt balancers.** Factorio players already have strong intuition for
+"4-to-4 balanced" vs. "throughput unlimited" — two distinctions that map
+directly onto strong connectivity and uniform stationary distribution. Belt
+splitters have a parity-like constraint (inputs must equal outputs for a true
+balancer), and the hidden bottleneck in a naïve layout is exactly the
+one-diagonal trap from above. The stationary distribution framing applies
+unchanged; only the physical metaphor shifts.
+
 </Scaffold>
 
 ## Further reading
