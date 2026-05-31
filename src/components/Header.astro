@@ -50,7 +50,7 @@ const langSwitchHref = switchLocalePath(pathname, otherLang)
         </svg>
       </a>
 
-      <a href={langSwitchHref} aria-label={t.aria.changeLanguage} class={cn("hidden md:flex", "size-9 rounded-full p-2 items-center justify-center text-sm font-semibold uppercase", "bg-transparent hover:bg-black/5 dark:hover:bg-white/20", "hover:text-black hover:dark:text-white", "border border-black/10 dark:border-white/25", "transition-colors duration-100 ease-in-out")}>
+      <a href={langSwitchHref} aria-label={t.aria.changeLanguage} class={cn("hidden md:flex", "size-9 rounded-full p-2 items-center justify-center text-sm uppercase", "bg-transparent hover:bg-black/5 dark:hover:bg-white/20", "hover:text-black hover:dark:text-white", "border border-black/10 dark:border-white/25", "transition-colors duration-100 ease-in-out")}>
         {otherLang}
       </a>
 

@@ -75,7 +75,7 @@ src/
 ├── types.ts                        # Shared types (Links, Socials, etc.)
 ├── consts.ts                       # Site metadata, nav links, social links
 └── env.d.ts                        # Astro environment types
-public/                             # 
+public/                             #
 ├── fonts/                          # Source Sans 3, Source Serif 4 font files
 ├── images/                         # Static images
 ├── js/                             # Global scripts (theme.js, scroll.js, animate.js, copy.js)
@@ -97,13 +97,14 @@ public/                             #
 ## Content Authoring
 
 New articles go in `src/content/articles/<slug>/index.md` (or .mdx) with frontmatter:
+
 ```yaml
 ---
 title: "Article Title"
 summary: "Short description"
 date: "YYYY-MM-DD"
 tags: ["tag1", "tag2"]
-draft: true  # optional, hides from sitemap
+draft: true # optional, hides from sitemap
 ---
 ```
 
@@ -117,13 +118,10 @@ Projects follow the same pattern in `src/content/projects/` with optional `demoU
 - **Event listener memory leaks**: `Header.astro` (lines 92-107) and `Footer.astro` (lines 65-81) add new event listeners on every `astro:after-swap` without removing old ones. Same issue in [TableOfContents.astro](src/components/TableOfContents.astro) where the IntersectionObserver is never disconnected
 - **RoadGrid controls break after navigation**: `controlsBound` flag in [RoadGrid.astro:152](src/components/RoadGrid.astro#L152) is never reset, so controls stop working after Astro page transitions
 - **RoadGrid SVG hardcodes `stroke="black"`**: CSS `dark:stroke-white` class is overridden by the attribute in [RoadGrid.astro:126-134](src/components/RoadGrid.astro#L126-L134), breaking dark mode
-- **Hardcoded copyright year** `2025` in [Footer.astro:36](src/components/Footer.astro#L36) — should use `new Date().getFullYear()`
 - **Type casting error**: [search/index.astro:15](src/pages/search/index.astro#L15) casts projects as `CollectionEntry<"articles">[]`
 
 ### Code Quality
 
-- **Duplicate components**: [Articles.tsx](src/components/Articles.tsx) and [Projects.tsx](src/components/Projects.tsx) are nearly identical (72 lines each) — extract a generic `FilterableList` component
-- **Unused component**: [Counter.tsx](src/components/Counter.tsx) is never imported anywhere
 - **Unused dependency**: `baseline-browser-mapping` in package.json has zero imports
 - **Commented-out code**: Navigation links (Work, Projects) in [consts.ts:40-51](src/consts.ts#L40-L51), projects section on [index.astro:88-110](src/pages/index.astro#L88-L110), font preloads in BaseHead.astro, language toggle in Header.astro — remove or restore
 - **Duplicate SVG arrow pattern**: Same animated arrow SVG repeated in Footer.astro, ArticleTopLayout.astro, and ArticleBottomLayout.astro — extract to `ArrowIcon.astro`
