@@ -64,15 +64,13 @@ IDEAS (resolved — kept for reference, delete when done)
 
 </Scaffold>
 
-<Scaffold>
-  RATIONALE — no heading, flows directly from the title. Open with the physical,
-  intuitive moment: a kid steps back from a finished layout and wonders if it's
-  any good. Then pivot: this article turns that instinct into something
-  measurable. Keep it short — two or three sentences at most before the research
-  questions appear.
-</Scaffold>
+Wooden train tracks like BRIO, IKEA Lillabo, or one of their many compatible cousins are part of the toys in most households.
+Anyone who has snapped together a wooden train track has some point stepped back to wonder whether the layout is any _good_.
+There is a real instinct behind that question, as some tracks feel satisfying to run a train on, while others feel broken an need a lot of interaction.
+While moving the train manually is fine, but automatic trains that require a lot of interaction can get tiring, taking away attention from other parts of the playset, distributed in every other corner of the living room.
+This article turns that instinct into something we can measure.
 
-Anyone who has snapped together a wooden train track — BRIO, IKEA Lillabo, or one of their many compatible cousins — has, at some point, stepped back and wondered whether the layout they just built is any _good_. There's a real instinct behind that question — some tracks feel satisfying to run a train on, others feel broken. This article turns that instinct into something we can measure.
+It's worth thinking of some questions we would like to answer to figure out if the train tracks are good, or actually measure the appeal of a track. These **reseach questions** are answered preliminary with a **hypothesis** to guide the answer.
 
 {questions.map(({ answer, ...q }) => <ResearchQuestion {...q} />)}
 
@@ -141,6 +139,8 @@ not before.
 A single-direction train cannot back up out of a dead end, so reaching every segment imposes a real constraint on the layout. The relevant graph property here is strong connectivity, and — if we want every _segment_ covered rather than every junction — we drift into Eulerian-circuit territory.
 
 ### Eulerian circuits
+
+Maybe we should include this in the rationale, as the present problem is not an Eulerian circuit. It is important to state that these kinds of puzzles are not new, even famous mathematicians where thinking about the math behind games.
 
 <Scaffold>
 An Eulerian circuit visits every edge exactly once and returns to the start. For a directed graph

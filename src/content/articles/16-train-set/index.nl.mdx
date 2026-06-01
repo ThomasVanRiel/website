@@ -1,0 +1,105 @@
+---
+title: "De wiskunde achter een leuk treinspoor"
+summary: 'Turning a kid''s question "is this a good train track?" into something we can actually measure, with a little graph theory and a random walk.'
+date: "05/28/2026"
+draft: true
+tags:
+  - Wiskunde
+  - Interactief
+lang: nl
+translationKey: "16-train-set"
+---
+
+import TrackEmbed from "@components/TrackEmbed.astro";
+import ResearchQuestion from "@components/ResearchQuestion.astro";
+import Scaffold from "@components/Scaffold.astro";
+
+export const questions = [
+  {
+    number: 1,
+    question: "Geraakt de trein overal?",
+    hypothesis:
+      "SCAFFOLD: One-line framing — e.g. 'A train going forward only may not be able to reach all parts of a layout.'",
+    answer:
+      "SCAFFOLD: Short direct answer to Q1 — e.g. 'Only if the layout is strongly connected. One badly placed diagonal can cut off segments; a second one can restore access.'",
+  },
+  {
+    number: 2,
+    question: "Welk deel van het spoor wordt het meest bereden?",
+    hypothesis:
+      "SCAFFOLD: One-line framing — e.g. 'Some segments will be passed far more often than others depending on how switches are arranged.'",
+    answer:
+      "SCAFFOLD: Short direct answer to Q2 — e.g. 'Switches are the great equalizer. More switches spread across the layout means more even traffic. The score figures show exactly where traffic concentrates.'",
+  },
+  {
+    number: 3,
+    question: "Hoe kan ik een leuker trainspoor bouwen?",
+    hypothesis:
+      "SCAFFOLD: One-line framing — e.g. 'The answers to the first two questions translate directly into design rules any builder can apply.'",
+    answer:
+      "SCAFFOLD: Short direct answer to Q3 — point to the quick tips below, or write a one-sentence summary.",
+  },
+];
+
+Houten spoortjes zoals BRIO, IKEA Lillabo, of een van de vele compatibele neefjes zijn deel van bijna elke speelgoedcollectie.
+Iedereen die zich al heeft gewaagd aan het bouwen van een spoor heeft zich al wel eens afgevraagd of het spoor _goed_ is.
+Er schuilt een instinctief antwoord achter die vraag, want sommige sporen zijn _echt_ leuk om mee te spelen, maar andere hebben constant aandacht nodig.
+De trein met de hand bewegen is uiteraard leuk, maar zelfrijdende treinen die steeds bijgestuurd moeten worden wordt snel een sleur. De aandacht gaat zo steeds weg van andere delen van het speelgoed, vaak tot in alle hoeken van de kamer verspreid.
+In dit artikel zetten we het instinct van de bouwer om in een hard en meetbaar antwoord.
+
+Het is belangrijk om enkele vragen op te stellen die we willen beantwoorden in dit artikel. Zo kunnen we gericht onderzoeken of het spoor goed is, of zelfs bepalen _hoe goed_.
+Deze _onderzoeksvragen_ worden alvast voorlopig beantwoord met een _hypothese_, die we ofwel verwerpen, of aanvaarden en eventueel bijsturen.
+
+{questions.map(({ answer, ...q }) => <ResearchQuestion {...q} /> )}
+
+## De wiskunde achter de sporen
+
+### Het spoor als graaf
+
+### Connectiviteit
+
+## Simuleren om de wiskunde te vereenvoudigen
+
+### Markov ketens
+
+### Monte Carlo, de digitale tweeling
+
+### Hoe lees je de figuren?
+
+### Statistieken (werktitel)
+
+## Rijden met de virtuele trein
+
+### Een eenvoudig spoor ...
+
+<TrackEmbed preset="oval" />
+
+### ... met één diagonale verbinding
+
+<TrackEmbed preset="oval-diagonal" />
+
+### ... met twee diagonale verbindingen
+
+<TrackEmbed src="TrackOval2Diagonal.json" />
+
+### Een écht spoor
+
+<TrackEmbed src="TrackReal1.json" />
+
+## Belangrijke conclusies (werktitel, EN. Takeaway?)
+
+### Antwoorden op de onderzoeksvragen
+
+### Enkele basistips
+
+## Simuleer je eigen spoor
+
+### Probeer de simulatie zelf
+
+## En nu?
+
+## Zie ook
+
+[Andere nerds die het over wiskunde achter de treinsporen hebben.](https://puzzling.stackexchange.com/questions/132762/how-many-ikea-train-track-layouts-with-self-intersections)
+
+[3D printbare spoortjes en treintjes.](https://www.printables.com/model/117903-extended-set-of-wooden-train-track-with-50-unique)
