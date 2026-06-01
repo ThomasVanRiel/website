@@ -15,7 +15,6 @@ export type UtilizationStats = {
     totalLength: number;
 };
 export declare function trackUtilization(track: Track, scores: ScoreMap): UtilizationStats;
-export declare function liveUtilization(track: Track, recencyLaps: ScoreMap): UtilizationStats;
 export type SwitchBias = {
     arm0: number;
     arm1: number;

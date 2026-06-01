@@ -38,7 +38,6 @@ export declare function createLiveMC(args: {
     deadEndPolicy?: DeadEndPolicy;
 }): {
     scores: Accessor<ScoreMap>;
-    recentScores: Accessor<ScoreMap>;
     walker: Accessor<Walker | null>;
     reset: () => void;
     currentDirection: () => Direction | null;
