@@ -25,7 +25,8 @@ export const questions = [
   },
   {
     number: 2,
-    question: "Welk deel van het spoor wordt het meest bereden?",
+    question:
+      "Welk deel van het spoor wordt het meest bereden, en in welke richting?",
     hypothesis:
       "SCAFFOLD: One-line framing — e.g. 'Some segments will be passed far more often than others depending on how switches are arranged.'",
     answer:
@@ -35,7 +36,7 @@ export const questions = [
     number: 3,
     question: "Hoe kan ik een leuker trainspoor bouwen?",
     hypothesis:
-      "SCAFFOLD: One-line framing — e.g. 'The answers to the first two questions translate directly into design rules any builder can apply.'",
+      "De antwoorden op de eerste twee vragen geven het perfect inzicht in enkele ontwerpregels. Een trein moet overal op het spoor komen, en liefst in twee richtingen.",
     answer:
       "SCAFFOLD: Short direct answer to Q3 — point to the quick tips below, or write a one-sentence summary.",
   },
@@ -52,9 +53,15 @@ Deze **onderzoeksvragen** worden alvast voorlopig beantwoord met een **hypothese
 
 {questions.map(({ answer, ...q }) => <ResearchQuestion {...q} lang="nl" /> )}
 
+Om deze vragen te kunnen beantwoorden hebben we twee dingen nodig: een methode om het spoor precies te beschrijven en een manier om het spoor te evalueren.
+
 ## De wiskunde achter de sporen
 
+Grafentheorie is een gekende methode in de wiskunde om een netwerk te beschrijven en te evalueren. Dit idee is net wat we nodig hebben om ons probleem op te lossen. De wiskundige Leonard Euler gebruikte het al in de 18de eeuw om wiskundige puzzels op te lossen. Hij vroeg zich af of hij de zeven bruggen van Koningsberg (het huidige Kalinigrad) kon oversteken zónder twee keer over dezelfde brug te lopen.
+
 ### Het spoor als graaf
+
+Een graaf is net wat we nodig hebben om het treinspoor te bekijken. Plaatsen waar de trein een keuze heeft tussen verschillende paden, wissels dus, worden knooppunten.
 
 ### Connectiviteit
 
