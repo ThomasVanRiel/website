@@ -1,12 +1,17 @@
 ---
+import { useTranslations, DEFAULT_LANG } from "@lib/i18n";
+import type { Lang } from "@lib/i18n";
+
 type Props = {
   number: number;
   question: string;
   hypothesis: string;
   answer?: string;
+  lang?: Lang;
 };
 
-const { number, question, hypothesis, answer } = Astro.props;
+const { number, question, hypothesis, answer, lang = DEFAULT_LANG } = Astro.props;
+const t = useTranslations(lang);
 ---
 
 <div class="my-6 border-l-2 border-neutral-300 dark:border-neutral-400 pl-4">
@@ -14,12 +19,12 @@ const { number, question, hypothesis, answer } = Astro.props;
   <div class="text-lg font-bold mb-3">{question}</div>
   <ol class="space-y-2 pl-0">
     <li class="text-sm flex flex-col sm:flex-row gap-1 sm:gap-2">
-      <span class="font-semibold sm:shrink-0 sm:w-20">Hypothesis</span>
+      <span class="font-semibold sm:shrink-0 sm:w-20">{t.hypothesis}</span>
       <div class="flex-1 italic">{hypothesis}</div>
     </li>
     {answer && (
       <li class="text-sm flex flex-col sm:flex-row gap-1 sm:gap-2">
-        <span class="font-semibold sm:shrink-0 sm:w-20">Answer</span>
+        <span class="font-semibold sm:shrink-0 sm:w-20">{t.answer}</span>
         <div class="flex-1">{answer}</div>
       </li>
     )}
