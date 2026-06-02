@@ -192,8 +192,7 @@ The site supports English (`en`) and Dutch (`nl`). UI strings live in `src/lib/i
 
 ### Security & Configuration
 
-- **Analytics tracking ID hardcoded** in [BaseHead.astro:66](src/components/BaseHead.astro#L66) — move to `.env` variable
-- **Counter.dev script missing `integrity` hash**: KaTeX CSS has one, but the analytics script does not
+- **Plausible analytics endpoint hardcoded** in [BaseHead.astro](src/components/BaseHead.astro) — self-hosted at `plausible.thomasvanriel.com`; could move the script URL to a `.env` variable
 - **URL fields not validated**: `demoUrl` and `repoUrl` in [config.ts](src/content/config.ts) use `z.string()` instead of `z.string().url()`
 - **`dateEnd` accepts any string**: Work collection schema should restrict to dates or `"present"`
 - **ESLint CSS parsing errors**: `@eslint/css` can't parse Tailwind's `@apply` directives in global.css — consider excluding CSS files or using a Tailwind-aware linter
