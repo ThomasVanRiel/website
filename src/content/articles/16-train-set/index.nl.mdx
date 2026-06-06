@@ -57,17 +57,49 @@ Om deze vragen te kunnen beantwoorden hebben we twee dingen nodig: een methode o
 
 ## De wiskunde achter de sporen
 
-Grafentheorie is een gekende methode in de wiskunde om een netwerk te beschrijven en te evalueren. Dit idee is net wat we nodig hebben om ons probleem op te lossen. De wiskundige Leonard Euler gebruikte het al in de 18de eeuw om wiskundige puzzels op te lossen. Hij vroeg zich af of hij de zeven bruggen van Koningsberg (het huidige Kalinigrad) kon oversteken zónder twee keer over dezelfde brug te lopen.
+<Scaffold>
+  Bouw rustiger op (besloten in overleg). Volgorde: (1) gewone graaf = knopen +
+  lijnen, intuïtief. (2) Een wissel is GEEN gewone knoop: de twee takken zijn
+  niet met elkaar verbonden, enkel met de stam (trunk<->tak1, trunk<->tak2, maar
+  nooit tak1<->tak2) — een "afslagbeperking" op de knoop. (3) Daarom is de échte
+  graaf waarop de trein rijdt de gerichte lijngraaf: één knoop per
+  segment-MÉT-richting (georiënteerd segment), één lijn per geldige zet. Transit
+  is symmetrisch maar de KEUZE is asymmetrisch (stam in = kiezen/random, tak in =
+  geen keuze). Deze beat verantwoordt later (a) waarom richting telt, (b) sterk
+  vs zwak verbonden in "Connectiviteit", en (c) waarom de Markov-toestand een
+  gericht segment is. Engelse leidende versie heeft de volledige uitleg —
+  spiegelen, niet opnieuw uitvinden.
+</Scaffold>
+
+Grafentheorie is een gekende methode in de wiskunde om een netwerk te beschrijven en te evalueren. Dit idee is net wat we nodig hebben om ons probleem op te lossen. De wiskundige Leonhard Euler gebruikte het al in de 18de eeuw om wiskundige puzzels op te lossen. Hij vroeg zich af of hij de zeven bruggen van Koningsberg (het huidige Kaliningrad) kon oversteken zónder twee keer over dezelfde brug te lopen.
 
 ### Het spoor als graaf
 
-Een graaf is net wat we nodig hebben om het treinspoor te bekijken. Plaatsen waar de trein een keuze heeft tussen verschillende paden, wissels dus, worden knooppunten.
+Een graaf is net wat we nodig hebben om het treinspoor te bekijken. Plaatsen waar de trein een keuze heeft tussen verschillende paden worden knopen, de paden zelf worden de lijnen. De knopen zijn dus de wissels en eindpunten, waar de trein _moet_ omkeren.
 
 ### Connectiviteit
 
 ## Simuleren om de wiskunde te vereenvoudigen
 
 ### Markov ketens
+
+<Scaffold>
+  Spiegel de Engelse leidende versie. Kernbeat: de toestand is een GERICHT
+  segment (segment + richting), niet enkel een segment. Wissel facing = keuze
+  (random, 0.5/0.5), wissel trailing/recht/bocht = geforceerd (kans 1). Introduceer
+  de stationaire vergelijking pi P = pi zacht: P is de tabel met overgangskansen
+  (rij i, kolom j = kans dat de trein van toestand i naar j gaat, elke rij telt op
+  tot 1); pi is de scorevector (langetermijnfractie van de tijd per toestand). pi P =
+  pi betekent: verkeer dat ELKE toestand binnenkomt = verkeer dat er al is —
+  evenwicht, niets stapelt op. Met sum(pi)=1 is dit een eindig lineair stelsel: één
+  keer oplossen = exacte scores, geen burn-in. Dit IS de "gesloten vorm" waar de
+  Monte Carlo-sectie naar verwijst; Monte Carlo is enkel de kijkbare benadering.
+  Uniek positief pi bestaat exact wanneer de keten irreducibel is = de
+  georiënteerde-segmentgraaf sterk verbonden (Perron-Frobenius, naam optioneel);
+  anders is pi nul op de dode segmenten. Micro-voorbeeld: ovaal in één richting
+  forceert 1->2->3->4->1, dus pi=(1/4,1/4,1/4,1/4). Engelse versie heeft de
+  volledige uitleg — niet opnieuw uitvinden.
+</Scaffold>
 
 ### Monte Carlo, de digitale tweeling
 

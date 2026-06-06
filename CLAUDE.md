@@ -4,6 +4,16 @@
 
 Personal portfolio website for Thomas Van Riel (thomasvanriel.com). Built with Astro as a static site generator, Solid.js for interactive components, and Tailwind CSS for styling. Auto-deployed from `main` branch via Netlify.
 
+## Current Work in Progress
+
+**Article 16 — "The math of a good train track"** (`src/content/articles/16-train-set/`) is the article actively being written. Still `draft: true`.
+
+- **English (`index.mdx`)** is the lead version — structure complete, with finished prose in several sections (track-as-graph, connectivity, Markov chains, Monte Carlo, reading the figures, oval/diagonal walkthroughs).
+- **Dutch (`index.nl.mdx`)** lags behind — only the intro, research questions, and the first two graph subsections are translated; sections from "Connectiviteit" onward are empty headings awaiting ported prose.
+- **`<Scaffold>` component** (`@components/Scaffold.astro`) renders visible author-only notes: outlines, to-dos, and "write N sentences here" placeholders. They are drafting aids, **not** published content — every Scaffold block must be resolved (written out and deleted) before the article ships. Treat them as the source of truth for what each section still needs.
+- **Outstanding work**: research-question `hypothesis`/`answer` fields are still `"SCAFFOLD: ..."` placeholders (used in both the intro and conclusion); the "A real track" section is a `PLACEHOLDER` needing a deliberate layout; Quick Tips list, SVG bulge renders, and several interpretation paragraphs remain.
+- The article embeds an interactive track simulator via `<TrackEmbed>` (presets + `.json` layout files in the article dir) and pairs with the external editor at https://brio.thomasvanriel.com/.
+
 ## Tech Stack
 
 - **Framework**: Astro v5.14.1 (SSG)

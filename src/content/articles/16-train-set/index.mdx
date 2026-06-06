@@ -66,11 +66,11 @@ IDEAS (resolved — kept for reference, delete when done)
 
 Wooden train tracks like BRIO, IKEA Lillabo, or one of their many compatible cousins are part of the toys in most households.
 Anyone who has snapped together a wooden train track has some point stepped back to wonder whether the layout is any _good_.
-There is a real instinct behind that question, as some tracks feel satisfying to run a train on, while others feel broken an need a lot of interaction.
-While moving the train manually is fine, but automatic trains that require a lot of interaction can get tiring, taking away attention from other parts of the playset, distributed in every other corner of the living room.
+There is a real instinct behind that question, as some tracks feel satisfying to run a train on, while others feel broken and need a lot of interaction.
+While moving the train manually is fine, automatic trains that require a lot of interaction can get tiring, taking away attention from other parts of the playset, distributed in every other corner of the living room.
 This article turns that instinct into something we can measure.
 
-It's worth thinking of some questions we would like to answer to figure out if the train tracks are good, or actually measure the appeal of a track. These **reseach questions** are answered preliminary with a **hypothesis** to guide the answer.
+It's worth thinking of some questions we would like to answer to figure out if the train tracks are good, or actually measure the appeal of a track. These **research questions** are answered preliminary with a **hypothesis** to guide the answer.
 
 {questions.map(({ answer, ...q }) => <ResearchQuestion {...q} />)}
 
@@ -98,6 +98,27 @@ would help — not an interactive embed, just a hand-drawn-style illustration sh
 becoming a graph. Stress that switches are the interesting nodes: they're the points where the
 train has a choice, and therefore where the math gets interesting.
 
+CRITICAL MODELING BEAT — a switch is NOT an ordinary graph node. An ordinary node means every
+incident edge connects through to every other. A switch breaks that: it has a trunk (point end)
+and two branches, and the allowed through-connections are trunk<->branch1 and trunk<->branch2 but
+NEVER branch1<->branch2. That is a "turn restriction" sitting on the node — the plain
+junctions-as-nodes graph cannot express it. So the directedness here does not live on the edges;
+it lives in WHICH PAIRS of edges connect at the node.
+
+The fix (state it in one friendly sentence, no jargon dump): the real graph the train walks on has
+a node for every segment-PLUS-direction (an oriented segment), and an edge for every legal move
+between them. This is the directed line graph; same trick used for road networks with turn
+restrictions. Two things happen at a switch and they are different:
+  - Transit is symmetric: enter the trunk -> leave on a branch; enter a branch -> forced onto the trunk.
+  - Choice is asymmetric: entering the trunk (facing) you CHOOSE a branch — this is where the
+    randomness enters; entering a branch (trailing) you have NO choice. That choice-asymmetry is
+    what lets a segment end up traversed in only one direction.
+
+This one beat pays off three times later: (a) it justifies why direction matters at all, (b) it
+sets up strong vs weak connectivity in the next subsection, and (c) it explains why the Markov
+state is a DIRECTED segment. Keep it to ~2-3 sentences in the prose; the diagram should show a
+switch with the branch<->branch connection crossed out.
+
 Then: the parity constraint. Every piece has a male and a female end; the track must alternate
 M -> F -> M -> F at every joint. Two male ends or two female ends can't connect. Adapter pieces
 fix this. In the simulator, magic connectors replace real-life freeform fitting: they define a
@@ -121,18 +142,28 @@ There's a subtlety the graph alone hides: every real piece — in BRIO, Lillabo,
 ### Connectivity
 
 <Scaffold>
-Introduce weak vs. strong connectivity with a concrete example before naming the terms.
+Introduce weak vs. strong connectivity with a concrete example before naming the terms. IMPORTANT:
+apply them to the oriented-segment graph from the previous subsection, NOT to the junction graph —
+that distinction is the whole point.
 
-- Weak connectivity: you can get between any two nodes if you ignore direction. The layout is one
-  connected piece with no isolated sections.
-- Strong connectivity: you can get between any two nodes going forward only — no reversing. The
-  train can reach every segment without ever backing up.
+- Weak connectivity: the physical layout is one connected piece — ignore direction and you can get
+  from anywhere to anywhere. Almost always true; the easy condition.
+- Strong connectivity: on the directed oriented-segment graph, you can reach every (segment,
+  direction) state from every other by legal moves — forward only, no lifting the train off the
+  track. Genuinely stronger because the switch turn-restrictions can trap a direction.
 
-A plain oval is strongly connected. Adding a one-way diagonal can break strong connectivity even
-though the layout is still weakly connected.
+The one-diagonal example is the clean SEPARATOR — lead with it: the track stays weakly connected
+(still one physical piece) but is NOT strongly connected. The train crosses the diagonal once, the
+choice it made fixes its orientation, and that state becomes unreachable forever. Two diagonals
+restore strong connectivity. (This is also the dead-end-with-no-visible-stub finding used in the
+Findings section.)
 
 This is the formal answer to research question 1. Name the terms after the intuitive explanation,
 not before.
+
+FORWARD LINK to seed in one clause: strong connectivity here is the same property as irreducibility
+of the Markov chain in the next section — "reaches every directed segment" = strongly connected =
+irreducible. Don't belabor it, just plant it so the Markov section can pay it off.
 
 </Scaffold>
 
@@ -166,12 +197,43 @@ about bridges in Konigsberg. Link to Numberphile for anyone who wants to go deep
 ### Markov chains
 
 <Scaffold>
-When the train hits a switch, it picks a branch at random. The sequence of segments visited is
-then a Markov chain: the next segment depends only on where the train is now, not how it got
-there. That memorylessness is what makes the math tractable.
+When the train hits a switch FACING (entering the trunk) it picks a branch at random — entering a
+branch TRAILING is forced, no choice (callback to the choice-asymmetry from the graph section). The
+sequence of states visited is then a Markov chain: the next state depends only on where the train
+is now, not how it got there. That memorylessness is what makes the math tractable.
 
-Each segment ends up with a long-run probability of being visited — the stationary distribution.
-That probability is the traffic score for that segment.
+State the state space explicitly: the Markov state is a DIRECTED segment (segment + direction), not
+just a segment — this is why the oriented-segment graph from the graph-theory section was the right
+object all along. Pay off the forward link planted in Connectivity: the chain is irreducible iff
+that directed graph is strongly connected, i.e. "reaches every directed segment" = strongly
+connected = irreducible are three names for one property. One sentence is enough.
+
+Each state ends up with a long-run probability of being visited — the stationary distribution.
+That probability is the traffic score for that segment/direction (and is why the figures split each
+bulge by direction).
+
+THE STATIONARY EQUATION, glossed for a general reader (this IS the "closed form" the Monte Carlo
+section refers to — introduce it here, gently, no scary notation up front):
+  - Set it up in plain words first: imagine a table P where each row is a state and the entry P[i][j]
+    is "if the train is on oriented segment i, the chance its next step lands on j." The rules fill it
+    in: forced moves (straight, curve, trailing a switch) are a 1; a facing switch splits 0.5/0.5.
+    Every row sums to 1 — the train always goes somewhere.
+  - Then the score vector pi (one number per state, the long-run fraction of time spent there) is the
+    one that satisfies pi P = pi: the traffic flowing INTO each state equals the traffic already on it,
+    so nothing piles up and nothing drains. It's an equilibrium — if the train's whereabouts are
+    distributed like pi, one more step leaves them distributed like pi. That self-reproducing pattern
+    IS the long-run answer.
+  - Pin it down with the normalization sum(pi)=1. That plus pi P = pi is a finite linear system: solve
+    once, get exact scores — no burn-in, no waiting. (Eigenvector framing optional; only mention
+    "left eigenvector with eigenvalue 1" if the audience-tone allows, otherwise skip the term.)
+  - Tie back to connectivity: a unique all-positive pi exists exactly when the chain is irreducible =
+    the oriented-segment graph is strongly connected (Perron-Frobenius, name optional). If NOT strongly
+    connected, pi is zero on the transient/dead segments — which is why "which pieces are idle" is
+    structural, not statistical.
+  - Worked micro-example to include: a 4-segment one-way oval forces 1->2->3->4->1, so pi=(1/4,1/4,
+    1/4,1/4) — uniform, one-sided. A two-line calculation that reproduces the oval figure's reading.
+  - Framing line for the whole section: pi P = pi is the deterministic target; the Monte Carlo
+    histogram is just the watchable thing wobbling toward it.
 
 The analogies below are already written and should be kept.
 
@@ -415,7 +477,23 @@ Keep the language light and inviting. This is the kid-on-the-floor moment.
 ## Future work
 
 <Scaffold>
-  Two natural extensions to pick up in a follow-up article:
+  Natural extensions to pick up in a follow-up article:
+
+**Computing it exactly, deterministically.** DELIBERATELY CUT FROM THIS ARTICLE —
+too heavy for a general audience; this article keeps Monte Carlo as the intuitive,
+watchable answer and only gestures at "there's a closed form." The follow-up does
+the real machinery: (1) build the oriented-segment line digraph (states = segment +
+direction, edges = legal moves under the switch turn-restriction); (2) connectivity
+is then an exact SCC decomposition (Tarjan/Kosaraju, O(V+E)) — strongly connected
+iff one SCC; the condensation DAG separates the recurrent class from transient/dead
+segments, so "which pieces are idle" is structural, not statistical; (3) the traffic
+scores are the stationary distribution pi solving pi P = pi with sum(pi)=1 — a finite
+linear solve (left eigenvector, eigenvalue 1), exact, no burn-in. Tie-off: Monte
+Carlo is the deterministic target made watchable; Perron-Frobenius guarantees a
+unique positive pi exactly when the chain is irreducible = strongly connected. This
+is the rigorous backbone under everything the main article shows by simulation. See
+the (kept-for-context) scaffolds in "The track as a graph", "Connectivity", and
+"Markov chains" for the full worked notes.
 
 **Irreducibility.** The diagonal examples show that a layout can look connected
 while hiding a structural trap — a segment reachable in one direction only,
