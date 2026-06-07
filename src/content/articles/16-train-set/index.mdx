@@ -8,6 +8,7 @@ tags:
   - Interactive
 ---
 
+import ImageCompare from "@components/ImageCompare.astro";
 import TrackEmbed from "@components/TrackEmbed.astro";
 import ResearchQuestion from "@components/ResearchQuestion.astro";
 import Scaffold from "@components/Scaffold.astro";
@@ -95,13 +96,14 @@ If we look at a **metro map** for instance, the stations are nodes where you hav
 We have a problem though, our switches are _not_ simple nodes. The train cannot go in every direction without reversing, which we have _forbidden_ in research question 1. Switches have a limited choice as
 This seemingly simple constraint complicates the graph immensely, as we no longer have a simple graph.
 
-<Scaffold>
-  Open by explaining why graph theory is the right lens. The track has pieces
-  and junctions; graph theory studies exactly that kind of structure. Once you
-  draw the track as a graph, questions about the train become questions
-  mathematicians have been studying for centuries. Keep it visual and friendly;
-  no equations.
-</Scaffold>
+<ImageCompare
+  beforeSrc="/images/16-train-set/track.svg"
+  afterSrc="/images/16-train-set/graph.svg"
+  alt="The same layout drawn as a physical track and as a simplified graph."
+  beforeLabel="Track"
+  afterLabel="Graph"
+  darkmode={false}
+/>
 
 <Scaffold>
 Explain nodes (junctions / endpoints) and edges (track segments). One simple static diagram here

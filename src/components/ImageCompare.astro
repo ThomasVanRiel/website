@@ -1,0 +1,207 @@
+---
+interface Props {
+  beforeSrc: string;        // top layer, revealed on the left  (e.g. the track map)
+  afterSrc: string;         // bottom layer, revealed on the right (e.g. the graph)
+  alt: string;              // img alt + caption text (Figure convention)
+  caption?: string;         // optional; falls back to `alt` for the <p> caption
+  beforeLabel?: string;     // left badge text; omit/empty => no badge
+  afterLabel?: string;      // right badge text; omit/empty => no badge
+  start?: number;           // initial divider position %, default 50
+  width?: number;
+  height?: number;
+  darkmode?: boolean;       // default true; enables _dark source swapping
+  class?: string;
+}
+
+const {
+  beforeSrc,
+  afterSrc,
+  alt,
+  caption,
+  beforeLabel,
+  afterLabel,
+  start = 50,
+  width,
+  height,
+  darkmode = true,
+  class: className,
+} = Astro.props;
+
+// Derive the dark variant by inserting '_dark' before the extension (matches Figure.astro)
+const getPathWithoutExtension = (path: string) => {
+  const lastDot = path.lastIndexOf(".");
+  return lastDot === -1 ? path : path.substring(0, lastDot);
+};
+const getExtension = (path: string) => {
+  const lastDot = path.lastIndexOf(".");
+  return lastDot === -1 ? "" : path.substring(lastDot);
+};
+const darkVariant = (src: string) =>
+  darkmode ? `${getPathWithoutExtension(src)}_dark${getExtension(src)}` : src;
+
+const beforeDark = darkVariant(beforeSrc);
+const afterDark = darkVariant(afterSrc);
+
+const rootId = `image-compare-${Math.random().toString(36).substring(2, 11)}`;
+const clamped = Math.min(100, Math.max(0, start));
+
+const captionText = caption ?? alt;
+---
+
+<figure class={`image-compare flex flex-col items-center my-0 ${className ?? ""}`}>
+  <div
+    id={rootId}
+    class="relative w-full select-none touch-none overflow-hidden rounded-md"
+    style={`--pos: ${clamped}%;${width ? ` max-width: ${width}px;` : ""}`}
+    data-pos={clamped}
+  >
+    <!-- After layer: in normal flow; defines the frame height from the SVG's aspect ratio. Shown right of the joint -->
+    <img
+      class="block h-auto w-full"
+      style="clip-path: inset(0 0 0 var(--pos));"
+      src={afterSrc}
+      alt={alt}
+      width={width}
+      height={height}
+      draggable="false"
+      data-light-src={afterSrc}
+      data-dark-src={afterDark}
+    />
+
+    <!-- Before layer: overlaid; shown left of the joint. Complementary clip => no overlap, stays transparent -->
+    <img
+      class="absolute inset-0 h-full w-full object-contain"
+      style="clip-path: inset(0 calc(100% - var(--pos)) 0 0);"
+      src={beforeSrc}
+      alt=""
+      aria-hidden="true"
+      width={width}
+      height={height}
+      draggable="false"
+      data-light-src={beforeSrc}
+      data-dark-src={beforeDark}
+    />
+
+    {beforeLabel && (
+      <span
+        data-label="before"
+        class="pointer-events-none absolute left-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white transition-opacity duration-150 dark:bg-white/70 dark:text-black"
+      >
+        {beforeLabel}
+      </span>
+    )}
+    {afterLabel && (
+      <span
+        data-label="after"
+        class="pointer-events-none absolute right-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-xs font-medium text-white transition-opacity duration-150 dark:bg-white/70 dark:text-black"
+      >
+        {afterLabel}
+      </span>
+    )}
+
+    <!-- Joint: divider line + grab handle -->
+    <div
+      class="pointer-events-none absolute inset-y-0 w-0.5 -translate-x-1/2 bg-white shadow-[0_0_0_1px_rgba(0,0,0,0.35)]"
+      style="left: var(--pos);"
+    >
+      <button
+        type="button"
+        data-handle
+        aria-label="Drag to compare images"
+        role="slider"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow={clamped}
+        tabindex="0"
+        class="pointer-events-auto absolute top-1/2 left-1/2 grid h-9 w-5 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize place-items-center rounded-full bg-white text-black shadow-md ring-1 ring-black/20 focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-dk dark:focus-visible:ring-brand-lt"
+      >
+        <svg viewBox="0 0 8 16" class="h-4 w-2" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true">
+          <line x1="2.5" y1="4" x2="2.5" y2="12" />
+          <line x1="5.5" y1="4" x2="5.5" y2="12" />
+        </svg>
+      </button>
+    </div>
+  </div>
+
+  <figcaption class="caption text-sm mt-2 px-10 text-center italic text-gray-600 dark:text-gray-400">
+    {captionText}
+  </figcaption>
+</figure>
+
+<script define:vars={{ rootId, beforeSrc, beforeDark, afterSrc, afterDark }}>
+  const root = document.getElementById(rootId);
+  if (root) {
+    const handle = root.querySelector("[data-handle]");
+    const beforeLabelEl = root.querySelector('[data-label="before"]');
+    const afterLabelEl = root.querySelector('[data-label="after"]');
+
+    const clamp = (n) => Math.min(100, Math.max(0, n));
+
+    function setPos(pos) {
+      pos = clamp(pos);
+      root.style.setProperty("--pos", `${pos}%`);
+      root.dataset.pos = String(pos);
+      if (handle) handle.setAttribute("aria-valuenow", String(Math.round(pos)));
+      // Fade each label as the joint passes over it
+      if (beforeLabelEl) beforeLabelEl.style.opacity = pos < 12 ? "0" : "1";
+      if (afterLabelEl) afterLabelEl.style.opacity = pos > 88 ? "0" : "1";
+    }
+
+    function posFromEvent(e) {
+      const rect = root.getBoundingClientRect();
+      return ((e.clientX - rect.left) / rect.width) * 100;
+    }
+
+    let dragging = false;
+
+    root.addEventListener("pointerdown", (e) => {
+      dragging = true;
+      root.setPointerCapture(e.pointerId);
+      setPos(posFromEvent(e));
+      e.preventDefault();
+    });
+    root.addEventListener("pointermove", (e) => {
+      if (dragging) setPos(posFromEvent(e));
+    });
+    const stop = (e) => {
+      dragging = false;
+      if (root.hasPointerCapture?.(e.pointerId)) root.releasePointerCapture(e.pointerId);
+    };
+    root.addEventListener("pointerup", stop);
+    root.addEventListener("pointercancel", stop);
+
+    if (handle) {
+      handle.addEventListener("keydown", (e) => {
+        const current = Number(root.dataset.pos) || 0;
+        const step = e.shiftKey ? 10 : 2;
+        if (e.key === "ArrowLeft") setPos(current - step);
+        else if (e.key === "ArrowRight") setPos(current + step);
+        else if (e.key === "Home") setPos(0);
+        else if (e.key === "End") setPos(100);
+        else return;
+        e.preventDefault();
+      });
+    }
+
+    // --- Dark-mode source swapping (mirrors Figure.astro) ---
+    const imgs = root.querySelectorAll("img");
+    function updateTheme() {
+      const isDark = document.documentElement.classList.contains("dark");
+      imgs.forEach((img) => {
+        const light = img.dataset.lightSrc;
+        const dark = img.dataset.darkSrc;
+        const next = isDark ? dark : light;
+        if (next && img.getAttribute("src") !== next) img.src = next;
+      });
+    }
+    updateTheme();
+    new MutationObserver((mutations) => {
+      mutations.forEach((m) => {
+        if (m.attributeName === "class") updateTheme();
+      });
+    }).observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    document.addEventListener("astro:after-swap", updateTheme);
+
+    setPos(Number(root.dataset.pos) || 0);
+  }
+</script>
