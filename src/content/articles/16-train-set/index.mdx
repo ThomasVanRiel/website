@@ -15,9 +15,9 @@ import Scaffold from "@components/Scaffold.astro";
 export const questions = [
   {
     number: 1,
-    question: "Can the train reach everywhere?",
+    question: "Can the train reach everywhere without changing direction?",
     hypothesis:
-      "SCAFFOLD: One-line framing — e.g. 'A train going forward only may not be able to reach all parts of a layout.'",
+      "A train going forward only may not be able to reach all parts of a layout.",
     answer:
       "SCAFFOLD: Short direct answer to Q1 — e.g. 'Only if the layout is strongly connected. One badly placed diagonal can cut off segments; a second one can restore access.'",
   },
@@ -74,13 +74,26 @@ It's worth thinking of some questions we would like to answer to figure out if t
 
 {questions.map(({ answer, ...q }) => <ResearchQuestion {...q} />)}
 
-<Scaffold>
-  TRANSITION TO METHODS — one sentence bridging the questions to the methods
-  sections. Something like: "To answer these, we need two things: a precise way
-  to describe the track, and a way to run it virtually."
-</Scaffold>
+To anser these questions, we need two things: a precise way to describe the track, and a way to evaluate it.
 
 ## Graph theory, the math behind train tracks
+
+**Graph theory** is a field of mathematics which studies connections between points or **nodes**.
+The mathematician Leonhard Euler has used it in the 18th century to solve mathemathical puzzles.
+He wondered if he could cross the river in Koningsberg using the seven bridges, using every bridge exactly _once_.
+
+### The track as a graph
+
+When we look at our train track, we can see that it is a similar puzzle.
+The points where the train has a **choice**, such as switches, are the nodes.
+We can then simplify the track by combining all pieces in between two switches and calling them **edges**.
+We have now simplified the many pieces of track into several nodes, connected by edges, which we call a **graph**.
+
+You have probably seen this before, as the simplification is quite common in rail transport.
+If we look at a **metro map** for instance, the stations are nodes where you have a choice (chaning trains or hopping on or off), connected by a simple line.
+
+We have a problem though, our switches are _not_ simple nodes. The train cannot go in every direction without reversing, which we have _forbidden_ in research question 1. Switches have a limited choice as
+This seemingly simple constraint complicates the graph immensely, as we no longer have a simple graph.
 
 <Scaffold>
   Open by explaining why graph theory is the right lens. The track has pieces
@@ -90,8 +103,6 @@ It's worth thinking of some questions we would like to answer to figure out if t
   no equations.
 </Scaffold>
 
-### The track as a graph
-
 <Scaffold>
 Explain nodes (junctions / endpoints) and edges (track segments). One simple static diagram here
 would help — not an interactive embed, just a hand-drawn-style illustration showing a few pieces
@@ -100,8 +111,8 @@ train has a choice, and therefore where the math gets interesting.
 
 CRITICAL MODELING BEAT — a switch is NOT an ordinary graph node. An ordinary node means every
 incident edge connects through to every other. A switch breaks that: it has a trunk (point end)
-and two branches, and the allowed through-connections are trunk<->branch1 and trunk<->branch2 but
-NEVER branch1<->branch2. That is a "turn restriction" sitting on the node — the plain
+and two branches, and the allowed through-connections are trunk->branch1 and trunk->branch2 but
+NEVER branch1->branch2. That is a "turn restriction" sitting on the node — the plain
 junctions-as-nodes graph cannot express it. So the directedness here does not live on the edges;
 it lives in WHICH PAIRS of edges connect at the node.
 
@@ -109,15 +120,41 @@ The fix (state it in one friendly sentence, no jargon dump): the real graph the 
 a node for every segment-PLUS-direction (an oriented segment), and an edge for every legal move
 between them. This is the directed line graph; same trick used for road networks with turn
 restrictions. Two things happen at a switch and they are different:
-  - Transit is symmetric: enter the trunk -> leave on a branch; enter a branch -> forced onto the trunk.
-  - Choice is asymmetric: entering the trunk (facing) you CHOOSE a branch — this is where the
-    randomness enters; entering a branch (trailing) you have NO choice. That choice-asymmetry is
-    what lets a segment end up traversed in only one direction.
+
+- Transit is symmetric: enter the trunk -> leave on a branch; enter a branch -> forced onto the trunk.
+- Choice is asymmetric: entering the trunk (facing) you CHOOSE a branch — this is where the
+  randomness enters; entering a branch (trailing) you have NO choice. That choice-asymmetry is
+  what lets a segment end up traversed in only one direction.
 
 This one beat pays off three times later: (a) it justifies why direction matters at all, (b) it
 sets up strong vs weak connectivity in the next subsection, and (c) it explains why the Markov
 state is a DIRECTED segment. Keep it to ~2-3 sentences in the prose; the diagram should show a
-switch with the branch<->branch connection crossed out.
+switch with the branch->branch connection crossed out.
+
+FORMAL TERMINOLOGY (do NOT put these terms in the body — too heavy; keep here as the precise
+vocabulary for the deeper follow-up article). The track is really TWO graphs, and only one is a
+digraph:
+
+- Physical track = an undirected MULTIGRAPH WITH FORBIDDEN TRANSITIONS (a "transition system").
+  Undirected because segments are bidirectional — direction is NOT a property of the edges.
+  Multigraph because parallel segments and self-loops are possible. Vertices = junctions/endpoints;
+  edges = segments. Endpoints are degree-1 (pendant/leaf) vertices = the "must reverse" points;
+  pass-through joints degree-2; switches degree-3. The switch constraint is exactly a "forbidden
+  transition": only certain pairs of incident edges connect through the vertex. This is the rigorous
+  name for "directed but not in the conventional sense" — the constraint lives in the TRANSITIONS at
+  the vertex, not on the edges. So the track is NOT a digraph.
+- What the train walks / the math object = a genuine DIGRAPH. Build it by: (1) replace each segment
+  with two antiparallel arcs (= the SYMMETRIC DIGRAPH of the track); (2) take its LINE DIGRAPH
+  (vertices = oriented segments (segment,direction); arcs = legal moves) and prune the moves the
+  transition system forbids. This "oriented-segment line digraph" is where digraph / strong
+  connectivity / SCCs / the Markov chain properly live.
+- Dynamics on it = a RANDOM WALK / MARKOV CHAIN on that digraph.
+
+Audience-safe phrasing for the body (constructs the line digraph WITHOUT naming it): call the track
+"an undirected graph", say "a switch is a special node where the branches don't connect to each
+other", and "to follow the train we track each segment together with a direction". That's it — the
+formal names (multigraph / forbidden transitions / symmetric digraph / line digraph) stay parked
+here and in Future work.
 
 Then: the parity constraint. Every piece has a male and a female end; the track must alternate
 M -> F -> M -> F at every joint. Two male ends or two female ends can't connect. Adapter pieces
@@ -214,26 +251,27 @@ bulge by direction).
 
 THE STATIONARY EQUATION, glossed for a general reader (this IS the "closed form" the Monte Carlo
 section refers to — introduce it here, gently, no scary notation up front):
-  - Set it up in plain words first: imagine a table P where each row is a state and the entry P[i][j]
-    is "if the train is on oriented segment i, the chance its next step lands on j." The rules fill it
-    in: forced moves (straight, curve, trailing a switch) are a 1; a facing switch splits 0.5/0.5.
-    Every row sums to 1 — the train always goes somewhere.
-  - Then the score vector pi (one number per state, the long-run fraction of time spent there) is the
-    one that satisfies pi P = pi: the traffic flowing INTO each state equals the traffic already on it,
-    so nothing piles up and nothing drains. It's an equilibrium — if the train's whereabouts are
-    distributed like pi, one more step leaves them distributed like pi. That self-reproducing pattern
-    IS the long-run answer.
-  - Pin it down with the normalization sum(pi)=1. That plus pi P = pi is a finite linear system: solve
-    once, get exact scores — no burn-in, no waiting. (Eigenvector framing optional; only mention
-    "left eigenvector with eigenvalue 1" if the audience-tone allows, otherwise skip the term.)
-  - Tie back to connectivity: a unique all-positive pi exists exactly when the chain is irreducible =
-    the oriented-segment graph is strongly connected (Perron-Frobenius, name optional). If NOT strongly
-    connected, pi is zero on the transient/dead segments — which is why "which pieces are idle" is
-    structural, not statistical.
-  - Worked micro-example to include: a 4-segment one-way oval forces 1->2->3->4->1, so pi=(1/4,1/4,
-    1/4,1/4) — uniform, one-sided. A two-line calculation that reproduces the oval figure's reading.
-  - Framing line for the whole section: pi P = pi is the deterministic target; the Monte Carlo
-    histogram is just the watchable thing wobbling toward it.
+
+- Set it up in plain words first: imagine a table P where each row is a state and the entry P[i][j]
+  is "if the train is on oriented segment i, the chance its next step lands on j." The rules fill it
+  in: forced moves (straight, curve, trailing a switch) are a 1; a facing switch splits 0.5/0.5.
+  Every row sums to 1 — the train always goes somewhere.
+- Then the score vector pi (one number per state, the long-run fraction of time spent there) is the
+  one that satisfies pi P = pi: the traffic flowing INTO each state equals the traffic already on it,
+  so nothing piles up and nothing drains. It's an equilibrium — if the train's whereabouts are
+  distributed like pi, one more step leaves them distributed like pi. That self-reproducing pattern
+  IS the long-run answer.
+- Pin it down with the normalization sum(pi)=1. That plus pi P = pi is a finite linear system: solve
+  once, get exact scores — no burn-in, no waiting. (Eigenvector framing optional; only mention
+  "left eigenvector with eigenvalue 1" if the audience-tone allows, otherwise skip the term.)
+- Tie back to connectivity: a unique all-positive pi exists exactly when the chain is irreducible =
+  the oriented-segment graph is strongly connected (Perron-Frobenius, name optional). If NOT strongly
+  connected, pi is zero on the transient/dead segments — which is why "which pieces are idle" is
+  structural, not statistical.
+- Worked micro-example to include: a 4-segment one-way oval forces 1->2->3->4->1, so pi=(1/4,1/4,
+  1/4,1/4) — uniform, one-sided. A two-line calculation that reproduces the oval figure's reading.
+- Framing line for the whole section: pi P = pi is the deterministic target; the Monte Carlo
+  histogram is just the watchable thing wobbling toward it.
 
 The analogies below are already written and should be kept.
 
