@@ -1,3 +1,4 @@
+import type { Vec2 } from "../pieces/types";
 import type { PieceEndRef, Track, WorldEnd } from "../track/types";
 import type { ScoreMap } from "../scoring/types";
 import type { Walker } from "../scoring/live-montecarlo";
@@ -7,15 +8,19 @@ type Props = {
     track: Track;
     activeRef: PieceEndRef | null;
     pendingMagicEnd: WorldEnd | null;
+    freehandMode: boolean;
+    onFreehandStroke: (stroke: Vec2[], startRef: PieceEndRef | null, endRef: PieceEndRef | null) => void;
     onActivate: (ref: PieceEndRef | null) => void;
-    selectedPieceId: string | null;
-    onSelectPiece: (id: string | null) => void;
+    selectedPieceIds: Set<string>;
+    onSelectPiece: (id: string | null, additive: boolean) => void;
     scores?: ScoreMap;
     pieceStats?: Map<string, PieceStat>;
     seedState?: ChainState | null;
     bulgeScale?: number;
     walker?: Walker | null;
     showAdapters?: boolean;
+    viewMode?: "track" | "graph";
+    graphSimplify?: number;
     svgRef?: (el: SVGSVGElement) => void;
 };
 export default function Canvas(props: Props): import("solid-js").JSX.Element;

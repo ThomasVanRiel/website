@@ -36,6 +36,10 @@ type Props = {
     setDark: (v: boolean) => void;
     showAdapters: () => boolean;
     setShowAdapters: (v: boolean) => void;
+    viewMode: () => "track" | "graph";
+    setViewMode: (v: "track" | "graph") => void;
+    graphSimplify: () => number;
+    setGraphSimplify: (v: number) => void;
 };
 export default function Sidebar(props: Props): import("solid-js").JSX.Element;
 export {};

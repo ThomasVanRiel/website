@@ -10,6 +10,7 @@ tags:
 
 import ImageCompare from "@components/ImageCompare.astro";
 import TrackEmbed from "@components/TrackEmbed.astro";
+import TrackGraphEmbed from "@components/TrackGraphEmbed.astro";
 import ResearchQuestion from "@components/ResearchQuestion.astro";
 import Scaffold from "@components/Scaffold.astro";
 
@@ -81,7 +82,7 @@ To anser these questions, we need two things: a precise way to describe the trac
 
 **Graph theory** is a field of mathematics which studies connections between points or **nodes**.
 The mathematician Leonhard Euler has used it in the 18th century to solve mathemathical puzzles.
-He wondered if he could cross the river in Koningsberg using the seven bridges, using every bridge exactly _once_.
+[He wondered if he could cross the river in Koningsberg using the seven bridges, using every bridge exactly _once_.](https://www.youtube.com/watch?v=W18FDEA1jRQ)
 
 ### The track as a graph
 
@@ -91,10 +92,10 @@ We can then simplify the track by combining all pieces in between two switches a
 We have now simplified the many pieces of track into several nodes, connected by edges, which we call a **graph**.
 
 You have probably seen this before, as the simplification is quite common in rail transport.
-If we look at a **metro map** for instance, the stations are nodes where you have a choice (chaning trains or hopping on or off), connected by a simple line.
+If we look at a **metro map** for instance, the stations are nodes where you have a choice (changing trains or hopping on or off), connected by a simple line.
 
-We have a problem though, our switches are _not_ simple nodes. The train cannot go in every direction without reversing, which we have _forbidden_ in research question 1. Switches have a limited choice as
-This seemingly simple constraint complicates the graph immensely, as we no longer have a simple graph.
+We have a problem though, our switches are _not_ simple nodes. The train cannot go in every direction without reversing, which we have _forbidden_ in research question 1. Switches have a limited choice as the two branches are not connected to eachother, only to the trunk. **(Add figure of tree equivalent?)**
+This seemingly simple constraint complicates the graph immensely, as we no longer have a simple graph. Transit is **symmetric or undirected** as trains can drive in two directions by design. The choice in the nodes on the other hand is **asymmetric**, the train only has a choice when entering from the trunk.
 
 <ImageCompare
   beforeSrc="/images/16-train-set/track.svg"
@@ -180,6 +181,10 @@ There's a subtlety the graph alone hides: every real piece — in BRIO, Lillabo,
 
 ### Connectivity
 
+Remember the directedness we talked about in the previous section? There is an important connection we can make to the research questions. The first question we pose contains the _directedness_: _"Can the train reach everywhere **without changing direction**?"_.
+
+We can translate this into the graph as well. When we place the train on the track, we do not care about the initial direction. The train can go either forward or backward, but still should be able to reach every other part of track. In graph theory, we call this property **strong connectivity**.
+
 <Scaffold>
 Introduce weak vs. strong connectivity with a concrete example before naming the terms. IMPORTANT:
 apply them to the oriented-segment graph from the previous subsection, NOT to the junction graph —
@@ -208,30 +213,9 @@ irreducible. Don't belabor it, just plant it so the Markov section can pay it of
 
 A single-direction train cannot back up out of a dead end, so reaching every segment imposes a real constraint on the layout. The relevant graph property here is strong connectivity, and — if we want every _segment_ covered rather than every junction — we drift into Eulerian-circuit territory.
 
-### Eulerian circuits
-
-Maybe we should include this in the rationale, as the present problem is not an Eulerian circuit. It is important to state that these kinds of puzzles are not new, even famous mathematicians where thinking about the math behind games.
-
-<Scaffold>
-An Eulerian circuit visits every edge exactly once and returns to the start. For a directed graph
-this requires every node to have equal in-degree and out-degree.
-
-Keep this light. The history is the hook: Euler invented graph theory in 1736 to answer a puzzle
-about bridges in Konigsberg. Link to Numberphile for anyone who wants to go deeper:
-
-- Seven Bridges of Konigsberg: https://www.youtube.com/watch?v=W18FDEA1jRQ
-- (add any other relevant Numberphile video here)
-
-</Scaffold>
-
 ## Simplifying the mathematics by simulation
 
-<Scaffold>
-  Transition paragraph: graph theory tells us about structure, but not how much
-  traffic each segment gets. For that we simulate. Frame the simulator as a
-  digital twin: a virtual model that mirrors the physical toy, the same way
-  engineers test a bridge in software before building it.
-</Scaffold>
+Graph theory tells us about the structure of the track, but not how much traffic each segment gets. For that, we **simulate**. We will build a virtual model of the track that mirrors the train set, and use the computer to run the train at very high speeds, much faster than we can run it ourselves. We are making a **digital twin** of the track, an identical copy of the physical track, fully in the computer. The digital twin allows us to check the track really quickly, even before building it, and is what engineers use to test real infrastructure projects.
 
 ### Markov chains
 

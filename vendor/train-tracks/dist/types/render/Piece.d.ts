@@ -9,7 +9,7 @@ type Props = {
     showPolarity?: boolean;
     showAdapters?: boolean;
     selected?: boolean;
-    onSelect?: () => void;
+    onSelect?: (e: MouseEvent) => void;
     onHoverPiece?: (id: string | null) => void;
     renderPass?: "bulge" | "line";
 };

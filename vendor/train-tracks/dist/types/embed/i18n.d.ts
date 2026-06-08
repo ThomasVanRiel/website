@@ -12,5 +12,8 @@ export type Strings = {
     utilized: string;
     bidirectional: string;
     traveled: string;
+    trackLabel: string;
+    graphLabel: string;
+    morphAriaLabel: string;
 };
 export declare function t(lang: Lang | undefined): Strings;

@@ -12,3 +12,4 @@ export declare const MAX_BULGE_HALF_WIDTH = 50;
 export declare const JUNCTION_EPSILON = 0.000001;
 export declare const MC_STEPS = 1000000;
 export declare const TRAIN_TRAIL_ARMS = 8;
+export declare const LIVE_UTILIZATION_LAPS = 6;

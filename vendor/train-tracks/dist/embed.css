@@ -59,9 +59,6 @@
   position: relative;
   padding-top: 2rem;
 }
-.tt-stage[data-advanced] {
-  padding-top: 3.5rem;
-}
 
 /* Entropy readout, pinned to the top-left of the figure. */
 .tt-entropy {
@@ -224,6 +221,16 @@
 }
 .tt-playpause:hover {
   opacity: 0.7;
+}
+
+/* Track ⟷ Graph end labels flanking the morph slider. */
+.tt-morph-end {
+  font-size: 0.8125rem;
+  color: #525252; /* neutral-600 */
+  white-space: nowrap;
+}
+.dark .tt-morph-end {
+  color: #a3a3a3; /* neutral-400 */
 }
 
 .tt-reset {

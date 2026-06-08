@@ -7,8 +7,8 @@ type Props = {
     bbox?: BBox;
     scores?: ScoreMap;
     bulgeScale?: number;
-    selectedPieceId?: string | null;
-    onSelectPiece?: (id: string | null) => void;
+    selectedPieceIds?: Set<string>;
+    onSelectPiece?: (id: string | null, additive: boolean) => void;
     onHoverPiece?: (id: string | null) => void;
     showPolarity?: boolean;
     showAdapters?: boolean;

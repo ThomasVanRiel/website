@@ -1,0 +1,32 @@
+---
+import "train-tracks/embed.css";
+
+const tracks = import.meta.glob<{ default: unknown }>(
+  "/src/content/articles/**/*.json",
+  { eager: true }
+);
+
+type Props = (
+  | { src: string; track?: never; preset?: never }
+  | { track: unknown; src?: never; preset?: never }
+  | { preset: string; src?: never; track?: never }
+) & {
+  showLabels?: boolean;
+  autoplay?: boolean;
+  lang?: "en" | "nl";
+};
+
+const { src, track: trackProp, preset, showLabels, autoplay, lang } = Astro.props;
+
+const track = src
+  ? Object.entries(tracks).find(([k]) => k.endsWith(`/${src}`))?.[1]?.default
+  : trackProp;
+---
+
+<div data-ttg={JSON.stringify({ track, preset, showLabels, autoplay, lang })}></div>
+<script>
+  import { mountTrackToGraph } from "train-tracks";
+  document.querySelectorAll<HTMLElement>("[data-ttg]").forEach((el) => {
+    mountTrackToGraph(el, JSON.parse(el.dataset.ttg!));
+  });
+</script>
