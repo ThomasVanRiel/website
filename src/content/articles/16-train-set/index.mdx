@@ -8,9 +8,7 @@ tags:
   - Interactive
 ---
 
-import ImageCompare from "@components/ImageCompare.astro";
 import TrackEmbed from "@components/TrackEmbed.astro";
-import TrackGraphEmbed from "@components/TrackGraphEmbed.astro";
 import ResearchQuestion from "@components/ResearchQuestion.astro";
 import Scaffold from "@components/Scaffold.astro";
 
@@ -96,15 +94,6 @@ If we look at a **metro map** for instance, the stations are nodes where you hav
 
 We have a problem though, our switches are _not_ simple nodes. The train cannot go in every direction without reversing, which we have _forbidden_ in research question 1. Switches have a limited choice as the two branches are not connected to eachother, only to the trunk. **(Add figure of tree equivalent?)**
 This seemingly simple constraint complicates the graph immensely, as we no longer have a simple graph. Transit is **symmetric or undirected** as trains can drive in two directions by design. The choice in the nodes on the other hand is **asymmetric**, the train only has a choice when entering from the trunk.
-
-<ImageCompare
-  beforeSrc="/images/16-train-set/track.svg"
-  afterSrc="/images/16-train-set/graph.svg"
-  alt="The same layout drawn as a physical track and as a simplified graph."
-  beforeLabel="Track"
-  afterLabel="Graph"
-  darkmode={false}
-/>
 
 <Scaffold>
 Explain nodes (junctions / endpoints) and edges (track segments). One simple static diagram here
@@ -219,69 +208,26 @@ Graph theory tells us about the structure of the track, but not how much traffic
 
 ### Markov chains
 
-<Scaffold>
-When the train hits a switch FACING (entering the trunk) it picks a branch at random — entering a
-branch TRAILING is forced, no choice (callback to the choice-asymmetry from the graph section). The
-sequence of states visited is then a Markov chain: the next state depends only on where the train
-is now, not how it got there. That memorylessness is what makes the math tractable.
+We have already described the track as a graph, but not how it should be driven by the train. After every segment, the train can have a choice. Entering the trunk of the switch, the train chooses between the left or the right branch. It comes from a track segment, and goes to another. The next segment only depends on where the train is **now**, not on the whole path the train has taken. We call this a **Markov Chain**.
 
-State the state space explicitly: the Markov state is a DIRECTED segment (segment + direction), not
-just a segment — this is why the oriented-segment graph from the graph-theory section was the right
-object all along. Pay off the forward link planted in Connectivity: the chain is irreducible iff
-that directed graph is strongly connected, i.e. "reaches every directed segment" = strongly
-connected = irreducible are three names for one property. One sentence is enough.
+The _strongly connected_ property of a graph transfers to Markov Chains, where it is called **irreducible**. If a segment can never be reached it can be removed, _reducing_ the track.
 
-Each state ends up with a long-run probability of being visited — the stationary distribution.
-That probability is the traffic score for that segment/direction (and is why the figures split each
-bulge by direction).
-
-THE STATIONARY EQUATION, glossed for a general reader (this IS the "closed form" the Monte Carlo
-section refers to — introduce it here, gently, no scary notation up front):
-
-- Set it up in plain words first: imagine a table P where each row is a state and the entry P[i][j]
-  is "if the train is on oriented segment i, the chance its next step lands on j." The rules fill it
-  in: forced moves (straight, curve, trailing a switch) are a 1; a facing switch splits 0.5/0.5.
-  Every row sums to 1 — the train always goes somewhere.
-- Then the score vector pi (one number per state, the long-run fraction of time spent there) is the
-  one that satisfies pi P = pi: the traffic flowing INTO each state equals the traffic already on it,
-  so nothing piles up and nothing drains. It's an equilibrium — if the train's whereabouts are
-  distributed like pi, one more step leaves them distributed like pi. That self-reproducing pattern
-  IS the long-run answer.
-- Pin it down with the normalization sum(pi)=1. That plus pi P = pi is a finite linear system: solve
-  once, get exact scores — no burn-in, no waiting. (Eigenvector framing optional; only mention
-  "left eigenvector with eigenvalue 1" if the audience-tone allows, otherwise skip the term.)
-- Tie back to connectivity: a unique all-positive pi exists exactly when the chain is irreducible =
-  the oriented-segment graph is strongly connected (Perron-Frobenius, name optional). If NOT strongly
-  connected, pi is zero on the transient/dead segments — which is why "which pieces are idle" is
-  structural, not statistical.
-- Worked micro-example to include: a 4-segment one-way oval forces 1->2->3->4->1, so pi=(1/4,1/4,
-  1/4,1/4) — uniform, one-sided. A two-line calculation that reproduces the oval figure's reading.
-- Framing line for the whole section: pi P = pi is the deterministic target; the Monte Carlo
-  histogram is just the watchable thing wobbling toward it.
-
-The analogies below are already written and should be kept.
-
-</Scaffold>
-
-Random switch settings turn the train's path into a random walk on the graph of segments. Each segment then has a long-run probability of being occupied — the stationary distribution of a Markov chain — and that probability is a natural "score" for the section. Busy junctions score high; isolated spurs score low.
-
-The same idea shows up all over the place. The closest cousin to our train problem is Monopoly: which square gets landed on the most? It's a Markov chain on the board, and the answer (the orange properties) comes out of exactly the calculation we're about to do here. Google's original PageRank ranked the entire web by modelling a random surfer clicking from page to page. Predictive text on your phone guesses the next word the same way. Markov chains are how you ask "where does this end up, on average, if you let it run forever?"
+By describing the chance of a train taking a certain switch side, we can describe the track as a Markov Chain in a matrix as the state transitions are known. The train's path becoms a random walk on a graph of segments. We can then calculate a score for every segment in a _closed form_ solution to know how much it is visited by the train. Busy segments score high; isolated tracks score low.
 
 ### Monte Carlo, the digital twin
 
-<Scaffold>
-Monte Carlo: run the virtual train for thousands of steps, count visits, divide by total steps.
-The history and analogies below are already written and should be kept.
+To form a better understanding of the behaviour of the train on the track, we will use a more visual method.
+By running a virtual train, we can see the path the train takes on the track. When the train arrives at a switch, it has a chance to take the left track, or to take the right track. We will assume an unbiased choice, the train takes the left track half of the time, the right track the other half.
 
-Add one sentence explicitly naming this a digital twin: "Running thousands of virtual trains this
-way is what engineers call a digital twin — a software model that mirrors a physical system
-closely enough that you can ask questions of the model instead of the object."
+It is also possible to assign other chances to the switch branches, maybe the left track is taken 80% of the time. We can even extend the choice to even more choices if we have a switch with more than two exits. Or if we need to roll two dice to determine the chance, like in board games such as Catan, or Monopoly.
 
-</Scaffold>
+The result of the simulation is not as exact as the closed form solution but can get close _enough_ after a while. It takes time to accumulate sufficient track traversals. The extreme example is right at the start of the simulation: the train has only driven the first pieces, so all other parts of the track was never driven, we might wrongly conclude that they are never visited. Further on in the simulation, some track segments are _difficult_ to reach and are not _yet_ driven. It is important to run the simulation long enough, while at the same time considering the amount of time available to run the simulation.
 
-The stationary distribution has a closed form, but a Monte Carlo simulation — just running a virtual train for a few thousand steps and counting visits — is far more intuitive, and gives us a useful sanity check against the analytical answer.
+The score of each segment is calculated the amount of steps in which the segment was visited, divided by the total number of steps the train took.
 
-The technique is named after the casino in Monaco, and was invented in the 1940s at Los Alamos when physicists working on nuclear reactions realised some problems were easier to _simulate_ than to solve with pen and paper. The same trick is everywhere today: weather services run hundreds of slightly-different simulations to get probability forecasts, banks estimate the risk of a portfolio by rolling thousands of imaginary futures, animated films render realistic lighting by shooting millions of virtual rays of light, and AlphaGo picked its moves by playing out millions of random games in its head. The toy version anyone can try: estimate π by throwing virtual darts at a square and counting how many land inside an inscribed circle.
+We use Monte Carlo in this problem to gain a visual intuition in Markov Chains and the Monte Carlo method, while an exact approach is available to score the tracks. Monte Carlo can also be applied in problems where an exact solution is not available. For weather forecasts for instance, meteorologists can run hundreds of slightly different simulation to generate forecasts. This is actually how we can know minimum and maximum temperatures, with an estimated temperature. This is why the estimates get less accurate the more in the future the forecast lies, more uncertainties have accumulated to skew the result.
+
+In this article, the simulation is shown at a slow speed and might not give an accurate view of the Monte Carlo process. It is commonly ran multiple times at once instead of only one train at a time to save a lot of time.
 
 ### How to read the figures
 
