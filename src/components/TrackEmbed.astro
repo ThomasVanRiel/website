@@ -14,17 +14,19 @@ type Props = (
   initialSpeed?: number;
   showAdapters?: boolean;
   advancedStats?: boolean;
+  hideStats?: boolean;
+  hideControls?: boolean;
   lang?: "en" | "nl";
 };
 
-const { src, track: trackProp, preset, initialSpeed = 20, showAdapters, advancedStats, lang } = Astro.props;
+const { src, track: trackProp, preset, initialSpeed = 20, showAdapters, advancedStats, hideStats, hideControls, lang } = Astro.props;
 
 const track = src
   ? Object.entries(tracks).find(([k]) => k.endsWith(`/${src}`))?.[1]?.default
   : trackProp;
 ---
 
-<div data-tt={JSON.stringify({ track, preset, initialSpeed, showAdapters, advancedStats, lang })}></div>
+<div data-tt={JSON.stringify({ track, preset, initialSpeed, showAdapters, advancedStats, hideStats, hideControls, lang })}></div>
 <script>
   import { mountTrackLiveMC } from "train-tracks";
   document.querySelectorAll<HTMLElement>("[data-tt]").forEach((el) => {

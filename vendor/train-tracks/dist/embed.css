@@ -59,6 +59,11 @@
   position: relative;
   padding-top: 2rem;
 }
+/* No stats readout → no need to reserve room for it above the SVG. Removes the
+   apparent "whitespace on top" that fixed 2rem caused on short, wide tracks. */
+.tt-stage[data-no-stats] {
+  padding-top: 0;
+}
 
 /* Entropy readout, pinned to the top-left of the figure. */
 .tt-entropy {

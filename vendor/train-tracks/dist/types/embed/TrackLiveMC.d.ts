@@ -7,6 +7,8 @@ export type TrackLiveMCProps = TrackInput & {
     padding?: number;
     showAdapters?: boolean;
     advancedStats?: boolean;
+    hideStats?: boolean;
+    hideControls?: boolean;
     lang?: Lang;
     class?: string;
 };

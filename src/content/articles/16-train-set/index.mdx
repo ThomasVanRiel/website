@@ -25,7 +25,7 @@ export const questions = [
     number: 2,
     question: "Which part of the track sees the most traffic?",
     hypothesis:
-      "SCAFFOLD: One-line framing — e.g. 'Some segments will be passed far more often than others depending on how switches are arranged.'",
+      "The train drives more over certain pieces of track due to layout choices, especially switch arrangements.",
     answer:
       "SCAFFOLD: Short direct answer to Q2 — e.g. 'Switches are the great equalizer. More switches spread across the layout means more even traffic. The score figures show exactly where traffic concentrates.'",
   },
@@ -33,54 +33,31 @@ export const questions = [
     number: 3,
     question: "How do I build a better track?",
     hypothesis:
-      "SCAFFOLD: One-line framing — e.g. 'The answers to the first two questions translate directly into design rules any builder can apply.'",
+      "The answers to the first two questions translate directly into design rules any builder can apply.",
     answer:
       "SCAFFOLD: Short direct answer to Q3 — point to the quick tips below, or write a one-sentence summary.",
   },
 ];
 
-<Scaffold>
-IDEAS (resolved — kept for reference, delete when done)
-
-- "State the simplifications I made to the brio tracks (magic connectors, adapters)."
-  Resolved: covered in "The track as a graph" subsection. Magic connectors get one sentence there.
-
-- "Give definitions of mathematical/scientific terminology when they come into play."
-  Resolved: terminology is introduced in the two methods sections with plain-language definitions
-  before any formal name is used.
-
-- "What is ergodic?"
-  Resolved: not needed. The concept is implicit in the stationary distribution discussion but
-  naming it adds nothing for a general audience.
-
-- "Set ground rules at front."
-  Resolved: the three research questions in the rationale serve this purpose.
-
-- "Stress that the figures are random (Monte Carlo)."
-  Resolved: addressed in "How to read the figures" subsection.
-
-- "Is linking the concept to a digital twin a stretch?"
-  Resolved: no, use it. One sentence in the Monte Carlo subsection is enough.
-
-</Scaffold>
-
 Wooden train tracks like BRIO, IKEA Lillabo, or one of their many compatible cousins are part of the toys in most households.
-Anyone who has snapped together a wooden train track has some point stepped back to wonder whether the layout is any _good_.
+Anyone who has snapped together a wooden train track has at some point stepped back to wonder whether the layout is any _good_.
 There is a real instinct behind that question, as some tracks feel satisfying to run a train on, while others feel broken and need a lot of interaction.
 While moving the train manually is fine, automatic trains that require a lot of interaction can get tiring, taking away attention from other parts of the playset, distributed in every other corner of the living room.
 This article turns that instinct into something we can measure.
 
-It's worth thinking of some questions we would like to answer to figure out if the train tracks are good, or actually measure the appeal of a track. These **research questions** are answered preliminary with a **hypothesis** to guide the answer.
+<TrackEmbed src="intro.json" initialSpeed={50} hideStats hideControls />
+
+It's worth thinking of some questions we would like to answer to figure out if the train tracks are good, or actually measure the appeal of a track. Before answering them, we'll commit to a **hypothesis** for each — an educated guess to test our findings against.
 
 {questions.map(({ answer, ...q }) => <ResearchQuestion {...q} />)}
 
-To anser these questions, we need two things: a precise way to describe the track, and a way to evaluate it.
+To answer these questions, we need two things: a precise way to describe the track, and a way to evaluate it.
 
 ## Graph theory, the math behind train tracks
 
 **Graph theory** is a field of mathematics which studies connections between points or **nodes**.
-The mathematician Leonhard Euler has used it in the 18th century to solve mathemathical puzzles.
-[He wondered if he could cross the river in Koningsberg using the seven bridges, using every bridge exactly _once_.](https://www.youtube.com/watch?v=W18FDEA1jRQ)
+The mathematician Leonhard Euler used it in the 18th century to solve mathematical puzzles.
+[He wondered if he could cross the river in Königsberg using the seven bridges, using every bridge exactly _once_.](https://www.youtube.com/watch?v=W18FDEA1jRQ)
 
 ### The track as a graph
 
@@ -92,81 +69,19 @@ We have now simplified the many pieces of track into several nodes, connected by
 You have probably seen this before, as the simplification is quite common in rail transport.
 If we look at a **metro map** for instance, the stations are nodes where you have a choice (changing trains or hopping on or off), connected by a simple line.
 
-We have a problem though, our switches are _not_ simple nodes. The train cannot go in every direction without reversing, which we have _forbidden_ in research question 1. Switches have a limited choice as the two branches are not connected to eachother, only to the trunk. **(Add figure of tree equivalent?)**
+We have a problem though, our switches are _not_ simple nodes. The train cannot go in every direction without reversing, which we have _forbidden_ in research question 1. Switches have a limited choice as the two branches are not connected to each other, only to the trunk.
 This seemingly simple constraint complicates the graph immensely, as we no longer have a simple graph. Transit is **symmetric or undirected** as trains can drive in two directions by design. The choice in the nodes on the other hand is **asymmetric**, the train only has a choice when entering from the trunk.
 
 <Scaffold>
-Explain nodes (junctions / endpoints) and edges (track segments). One simple static diagram here
-would help — not an interactive embed, just a hand-drawn-style illustration showing a few pieces
-becoming a graph. Stress that switches are the interesting nodes: they're the points where the
-train has a choice, and therefore where the math gets interesting.
-
-CRITICAL MODELING BEAT — a switch is NOT an ordinary graph node. An ordinary node means every
-incident edge connects through to every other. A switch breaks that: it has a trunk (point end)
-and two branches, and the allowed through-connections are trunk->branch1 and trunk->branch2 but
-NEVER branch1->branch2. That is a "turn restriction" sitting on the node — the plain
-junctions-as-nodes graph cannot express it. So the directedness here does not live on the edges;
-it lives in WHICH PAIRS of edges connect at the node.
-
-The fix (state it in one friendly sentence, no jargon dump): the real graph the train walks on has
-a node for every segment-PLUS-direction (an oriented segment), and an edge for every legal move
-between them. This is the directed line graph; same trick used for road networks with turn
-restrictions. Two things happen at a switch and they are different:
-
-- Transit is symmetric: enter the trunk -> leave on a branch; enter a branch -> forced onto the trunk.
-- Choice is asymmetric: entering the trunk (facing) you CHOOSE a branch — this is where the
-  randomness enters; entering a branch (trailing) you have NO choice. That choice-asymmetry is
-  what lets a segment end up traversed in only one direction.
-
-This one beat pays off three times later: (a) it justifies why direction matters at all, (b) it
-sets up strong vs weak connectivity in the next subsection, and (c) it explains why the Markov
-state is a DIRECTED segment. Keep it to ~2-3 sentences in the prose; the diagram should show a
-switch with the branch->branch connection crossed out.
-
-FORMAL TERMINOLOGY (do NOT put these terms in the body — too heavy; keep here as the precise
-vocabulary for the deeper follow-up article). The track is really TWO graphs, and only one is a
-digraph:
-
-- Physical track = an undirected MULTIGRAPH WITH FORBIDDEN TRANSITIONS (a "transition system").
-  Undirected because segments are bidirectional — direction is NOT a property of the edges.
-  Multigraph because parallel segments and self-loops are possible. Vertices = junctions/endpoints;
-  edges = segments. Endpoints are degree-1 (pendant/leaf) vertices = the "must reverse" points;
-  pass-through joints degree-2; switches degree-3. The switch constraint is exactly a "forbidden
-  transition": only certain pairs of incident edges connect through the vertex. This is the rigorous
-  name for "directed but not in the conventional sense" — the constraint lives in the TRANSITIONS at
-  the vertex, not on the edges. So the track is NOT a digraph.
-- What the train walks / the math object = a genuine DIGRAPH. Build it by: (1) replace each segment
-  with two antiparallel arcs (= the SYMMETRIC DIGRAPH of the track); (2) take its LINE DIGRAPH
-  (vertices = oriented segments (segment,direction); arcs = legal moves) and prune the moves the
-  transition system forbids. This "oriented-segment line digraph" is where digraph / strong
-  connectivity / SCCs / the Markov chain properly live.
-- Dynamics on it = a RANDOM WALK / MARKOV CHAIN on that digraph.
-
-Audience-safe phrasing for the body (constructs the line digraph WITHOUT naming it): call the track
-"an undirected graph", say "a switch is a special node where the branches don't connect to each
-other", and "to follow the train we track each segment together with a direction". That's it — the
-formal names (multigraph / forbidden transitions / symmetric digraph / line digraph) stay parked
-here and in Future work.
-
-Then: the parity constraint. Every piece has a male and a female end; the track must alternate
-M -> F -> M -> F at every joint. Two male ends or two female ends can't connect. Adapter pieces
-fix this. In the simulator, magic connectors replace real-life freeform fitting: they define a
-specific path between two endpoints so the program can reason about the layout.
-
-Do NOT go further into adapters (the "do adapter-heavy layouts score better?" question from the
-old draft is cut — it led nowhere useful for the reader).
-
+Diagram needed (static, hand-drawn style — not an interactive embed): show a few track pieces
+collapsing into a graph of nodes and edges, and a switch drawn with the branch->branch connection
+crossed out, to make clear a switch is not an ordinary node — the train can pass trunk->branch but
+never branch->branch.
 </Scaffold>
 
 A track is a collection of straight pieces, curves, and switches connecting them. Switches are the interesting part: they're the points where the train has a _choice_. Once we draw each segment as an edge and each junction as a node, the question becomes a question about a graph.
 
 There's a subtlety the graph alone hides: every real piece — in BRIO, Lillabo, and all compatible systems — has a "male" end and a "female" end, so a valid track has to alternate M → F → M → F at every joint. Two male ends or two female ends bumping into each other simply won't connect. That's a _parity_ constraint sitting on top of the graph — and it's exactly what adapter pieces are for.
-
-<Scaffold>
-  OBSOLETE — do not restore: "Do adapter-heavy layouts score better?" The
-  adapter-count-as- complexity-proxy hypothesis doesn't hold. Content is
-  mathematically correct but leads nowhere the reader can use. Cut entirely.
-</Scaffold>
 
 ### Connectivity
 
@@ -185,22 +100,13 @@ that distinction is the whole point.
   direction) state from every other by legal moves — forward only, no lifting the train off the
   track. Genuinely stronger because the switch turn-restrictions can trap a direction.
 
-The one-diagonal example is the clean SEPARATOR — lead with it: the track stays weakly connected
-(still one physical piece) but is NOT strongly connected. The train crosses the diagonal once, the
-choice it made fixes its orientation, and that state becomes unreachable forever. Two diagonals
-restore strong connectivity. (This is also the dead-end-with-no-visible-stub finding used in the
-Findings section.)
-
 This is the formal answer to research question 1. Name the terms after the intuitive explanation,
-not before.
-
-FORWARD LINK to seed in one clause: strong connectivity here is the same property as irreducibility
-of the Markov chain in the next section — "reaches every directed segment" = strongly connected =
-irreducible. Don't belabor it, just plant it so the Markov section can pay it off.
+not before. (The one-diagonal layout is the clean separator between weak and strong connectivity —
+that walkthrough now lives in the "Adding one diagonal" section.)
 
 </Scaffold>
 
-A single-direction train cannot back up out of a dead end, so reaching every segment imposes a real constraint on the layout. The relevant graph property here is strong connectivity, and — if we want every _segment_ covered rather than every junction — we drift into Eulerian-circuit territory.
+A single-direction train cannot back up out of a dead end, so reaching every segment imposes a real constraint on the layout. The relevant graph property here is strong connectivity. And if we want to cover every _segment_ rather than just every junction, we are back to the same kind of puzzle Euler asked about the bridges of Königsberg: can you traverse every one of them exactly _once_?
 
 ## Simplifying the mathematics by simulation
 
@@ -247,7 +153,7 @@ Stress that the figures are stochastic: each one is one run of the Monte Carlo s
 reader should watch for a few seconds before drawing conclusions — the long-run pattern is what
 matters, not the first few steps.
 
-The existing prose below covers the left/right asymmetry well; keep it.
+We will integrate statistics in this section instead of separate.
 
 </Scaffold>
 
@@ -256,8 +162,6 @@ The natural way to surface these per-segment probabilities on the track itself i
 A _symmetric_ bulge means the segment is a two-way street: the train passes through it about as often in each direction. A _lopsided_ bulge means the segment is effectively one-directional — the layout funnels traffic through it in only one orientation. A plain oval shows up as 100% one-sided everywhere; a balloon track shows up as a symmetric trunk feeding a one-sided loop. So the visualisation isn't just an aesthetic display of the score — the symmetry pattern surfaces the directional structure of the layout for free.
 
 <Scaffold>Add SVG renders of different bulge types.</Scaffold>
-
-### Statistics
 
 <Scaffold>
   The key statistic for a layout is **utilization**: what fraction of pieces are
@@ -324,6 +228,12 @@ One interconnect cuts across the oval.
 Point the reader to the specific segment that becomes unreachable and explain why in plain
 language: the diagonal creates a shortcut that the train takes, bypassing the segment on
 subsequent laps.
+
+This is the clean SEPARATOR between weak and strong connectivity (moved here from the Connectivity
+section): the track stays weakly connected — still one physical piece — but is NOT strongly
+connected. The train crosses the diagonal once, the choice it made fixes its orientation, and that
+state becomes unreachable forever. Two diagonals restore strong connectivity. (This is also the
+dead-end-with-no-visible-stub finding.)
 
 </Scaffold>
 
@@ -461,9 +371,24 @@ scores are the stationary distribution pi solving pi P = pi with sum(pi)=1 — a
 linear solve (left eigenvector, eigenvalue 1), exact, no burn-in. Tie-off: Monte
 Carlo is the deterministic target made watchable; Perron-Frobenius guarantees a
 unique positive pi exactly when the chain is irreducible = strongly connected. This
-is the rigorous backbone under everything the main article shows by simulation. See
-the (kept-for-context) scaffolds in "The track as a graph", "Connectivity", and
-"Markov chains" for the full worked notes.
+is the rigorous backbone under everything the main article shows by simulation.
+
+Formal vocabulary for the follow-up (kept out of the main body deliberately). The track is
+really TWO graphs, and only one is a digraph:
+
+- Physical track = an undirected MULTIGRAPH WITH FORBIDDEN TRANSITIONS (a "transition system").
+  Undirected because segments are bidirectional — direction is NOT a property of the edges.
+  Multigraph because parallel segments and self-loops are possible. Vertices = junctions/endpoints;
+  edges = segments. Endpoints are degree-1 (pendant/leaf) vertices = the "must reverse" points;
+  pass-through joints degree-2; switches degree-3. The switch constraint is exactly a "forbidden
+  transition": only certain pairs of incident edges connect through the vertex. So the track is NOT
+  a digraph — the constraint lives in the TRANSITIONS at the vertex, not on the edges.
+- What the train walks / the math object = a genuine DIGRAPH. Build it by: (1) replace each segment
+  with two antiparallel arcs (= the SYMMETRIC DIGRAPH of the track); (2) take its LINE DIGRAPH
+  (vertices = oriented segments (segment, direction); arcs = legal moves) and prune the moves the
+  transition system forbids. This "oriented-segment line digraph" is where digraph / strong
+  connectivity / SCCs / the Markov chain properly live.
+- Dynamics on it = a RANDOM WALK / MARKOV CHAIN on that digraph.
 
 **Irreducibility.** The diagonal examples show that a layout can look connected
 while hiding a structural trap — a segment reachable in one direction only,
