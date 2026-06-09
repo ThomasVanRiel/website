@@ -208,11 +208,11 @@ Graph theory tells us about the structure of the track, but not how much traffic
 
 ### Markov chains
 
-We have already described the track as a graph, but not how it should be driven by the train. After every segment, the train can have a choice. Entering the trunk of the switch, the train chooses between the left or the right branch. It comes from a track segment, and goes to another. The next segment only depends on where the train is **now**, not on the whole path the train has taken. We call this a **Markov Chain**.
+We have already described the track as a graph, but not how it should be driven by the train. After every segment, the train can have a choice. Entering the trunk of the switch, the train chooses between the left or the right branch. The train carries no memory: where it goes next is decided entirely by the segment it's on right **now** — never by the route it took to get there. We call this a **Markov chain**.
 
-The _strongly connected_ property of a graph transfers to Markov Chains, where it is called **irreducible**. If a segment can never be reached it can be removed, _reducing_ the track.
+The _strongly connected_ property of a graph transfers to Markov chains, where it is called **irreducible**. If a segment can never be reached it can be removed, _reducing_ the track.
 
-By describing the chance of a train taking a certain switch side, we can describe the track as a Markov Chain in a matrix as the state transitions are known. The train's path becoms a random walk on a graph of segments. We can then calculate a score for every segment in a _closed form_ solution to know how much it is visited by the train. Busy segments score high; isolated tracks score low.
+Once we assign a probability to each switch side, every transition is known, and the whole track can be collected into a single **transition matrix**: one row per segment, listing the chance of moving to each next segment. The train's path becomes a random walk on a graph of segments. We can then calculate a score for every segment in a _closed form_ solution to know how much it is visited by the train. Busy segments score high; isolated tracks score low.
 
 ### Monte Carlo, the digital twin
 
@@ -221,13 +221,13 @@ By running a virtual train, we can see the path the train takes on the track. Wh
 
 It is also possible to assign other chances to the switch branches, maybe the left track is taken 80% of the time. We can even extend the choice to even more choices if we have a switch with more than two exits. Or if we need to roll two dice to determine the chance, like in board games such as Catan, or Monopoly.
 
-The result of the simulation is not as exact as the closed form solution but can get close _enough_ after a while. It takes time to accumulate sufficient track traversals. The extreme example is right at the start of the simulation: the train has only driven the first pieces, so all other parts of the track was never driven, we might wrongly conclude that they are never visited. Further on in the simulation, some track segments are _difficult_ to reach and are not _yet_ driven. It is important to run the simulation long enough, while at the same time considering the amount of time available to run the simulation.
+The result of the simulation is not as exact as the closed form solution but can get close _enough_ after a while. It takes time to accumulate sufficient track traversals. The clearest example is right at the start: the train has only driven the first few pieces, so every other segment still shows zero traffic. Read too early, the simulation would tell us those segments are never visited — when really they just haven't had their turn yet. Further on in the simulation, some track segments are _difficult_ to reach and are not _yet_ driven. It is important to run the simulation long enough, while at the same time considering the amount of time available to run the simulation.
 
-The score of each segment is calculated the amount of steps in which the segment was visited, divided by the total number of steps the train took.
+The score of each segment is calculated as the number of steps in which the segment was visited, divided by the total number of steps the train took.
 
-We use Monte Carlo in this problem to gain a visual intuition in Markov Chains and the Monte Carlo method, while an exact approach is available to score the tracks. Monte Carlo can also be applied in problems where an exact solution is not available. For weather forecasts for instance, meteorologists can run hundreds of slightly different simulation to generate forecasts. This is actually how we can know minimum and maximum temperatures, with an estimated temperature. This is why the estimates get less accurate the more in the future the forecast lies, more uncertainties have accumulated to skew the result.
+We use Monte Carlo in this problem to gain a visual intuition in Markov chains and the Monte Carlo method, while an exact approach is available to score the tracks. Monte Carlo can also be applied in problems where an exact solution is not available. For weather forecasts for instance, meteorologists can run hundreds of slightly different simulations to generate forecasts. This is actually how we can know minimum and maximum temperatures, with an estimated temperature. This is why the estimates get less accurate the more in the future the forecast lies, more uncertainties have accumulated to skew the result.
 
-In this article, the simulation is shown at a slow speed and might not give an accurate view of the Monte Carlo process. It is commonly ran multiple times at once instead of only one train at a time to save a lot of time.
+In this article, the simulation is shown at a slow speed and might not give an accurate view of the Monte Carlo process. It is commonly run multiple times at once instead of only one train at a time to save a lot of time.
 
 ### How to read the figures
 
