@@ -2,6 +2,7 @@ import rss from "@astrojs/rss"
 import { getCollection } from "astro:content"
 import { SITE } from "@consts"
 import { DEFAULT_LANG } from "@lib/i18n"
+import { fullTitle } from "@lib/utils"
 
 type Context = {
   site: string
@@ -20,7 +21,7 @@ export async function GET(context: Context) {
     description: SITE.DESCRIPTION,
     site: context.site,
     items: items.map((item) => ({
-      title: item.data.title,
+      title: fullTitle(item.data),
       description: item.data.summary,
       pubDate: item.data.date,
       link: item.collection === "articles"

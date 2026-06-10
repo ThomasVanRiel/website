@@ -6,6 +6,10 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
 }
 
+export function fullTitle(data: { title: string; subtitle?: string }) {
+  return data.subtitle ? `${data.title} ${data.subtitle}` : data.title
+}
+
 export function formatDate(date: Date, lang: Lang = DEFAULT_LANG) {
   return Intl.DateTimeFormat(LOCALE_TAG[lang], {
     month: "short",

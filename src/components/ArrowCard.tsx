@@ -1,4 +1,4 @@
-import { formatDate } from "@lib/utils"
+import { formatDate, fullTitle } from "@lib/utils"
 import { DEFAULT_LANG, type Lang, useTranslations, localizePath } from "@lib/i18n"
 import type { CollectionEntry } from "astro:content"
 
@@ -24,7 +24,7 @@ export default function ArrowCard({entry, pill, lang = DEFAULT_LANG}: Props) {
           </div>
         </div>
         <div class="font-semibold mt-3 text-brand-dk dark:text-brand-lt">
-          {entry.data.title}
+          {fullTitle(entry.data)}
         </div>
 
         <div class="text-sm line-clamp-2">
