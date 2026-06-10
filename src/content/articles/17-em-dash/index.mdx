@@ -1,0 +1,179 @@
+---
+title: "The em-dash has always lived between the layers"
+summary: "Everyone is writing the same em-dash essay — that it's an AI tell, that Dickinson loved it. Here is a different one: the mark has always lived between the layers of writing, and the LLM is only the newest layer to re-decide it."
+date: "06/10/2026"
+draft: true
+tags:
+  - Language
+  - Writing
+  - LLM
+---
+
+import Scaffold from "@components/Scaffold.astro";
+import Quote from "@components/Quote.astro";
+
+There is a punctuation mark that almost no keyboard has a dedicated key for, that most people cannot type without looking up a trick — and that, in the last two years, has become the single most accused character in the English language. The em-dash.
+
+The internet has decided the em-dash is a tell for AI-written text, and a small library of essays has rushed to its defence: *but Dickinson used it, but Nabokov used it, it's the punctuation of authentic human thought.* They are all, more or less, the same article. This is not that article.
+
+Here is the claim instead: the em-dash never lived where you type. Writing has always had two layers — the keystrokes you enter and the text that finally prints — and for five hundred years the em-dash lived in the second one, getting re-decided by every technology that sat between an author and a reader. The typewriter, ASCII, the typesetter, the scanner, autocorrect, and now the language model are all just *layers*, and each one makes its own decision about the dash. The AI moment is not a rupture. It is the newest layer doing the oldest thing.
+
+<Scaffold>
+Framing for the whole piece: the differentiator is TECHNICAL + EMPIRICAL + VISUAL, not literary.
+Every source in Further reading is a cultural defence with no data and no diagrams; this site's lane
+is the opposite. Spine = the "two layers / every layer re-decides the dash" thesis. Keep the
+literary history to asides. Land two things no one else has: (1) the layers framing that makes the
+LLM a continuation rather than a break, and (2) an actual measurement of the so-called overuse.
+</Scaffold>
+
+## The mark, briefly
+
+The name is a typographer's measurement. An **em** is the width of the metal body a capital "M" was cast on; an **en** is half that. The three marks are named by the space they fill: the em-dash (—) is the long one, the en-dash (–) the medium one, the hyphen (-) the short one. Three lengths, three jobs — a sentence break, a range, a compound word. In Unicode they finally got their own code points: `U+2014`, `U+2013`, `U+2010`. ASCII, as we will see, gave all of them a single shared stand-in.
+
+<Scaffold>
+ASIDE ONLY — do NOT let this grow into a section; the literary history is the most over-covered part
+of this topic (see all six Further reading sources). One tight paragraph, optional:
+
+- Etymology of "em"/"en" as type-body widths; the nice modern echo that `1em` is now a CSS unit.
+- The "champions of the dash" roster IF used at all: Laurence Sterne's Tristram Shandy (1759) as the
+  early literary champion, through Dickinson to Woolf/Nabokov/Joyce. Sourced but blog-sourced —
+  verify before asserting first-use claims. Keep it to one sentence; it is flavour, not the point.
+</Scaffold>
+
+## Writing has always had two layers
+
+For most of the history of print, the thing a writer produced and the thing a reader saw were made on different machines. The author typed (or wrote) a manuscript; a typesetter then re-set every character in metal to print it. These were two different alphabets with two different inventories of symbols — and the em-dash existed in the second one, the typesetter's, not the first.
+
+That gap is the whole story. The keyboard is only an *input* device. What it can send has almost nothing to do with what the language actually contains, because for centuries a human production layer stood between input and output and quietly fixed the difference. The em-dash didn't need a key. It needed a typesetter.
+
+## Every layer re-decides the dash
+
+**The typewriter dropped it.** Mechanical typewriters had a fixed budget of typebars and cut everything non-essential — so the em-dash was a casualty. Typists were taught to fake it: two hyphens (`--`) for an em-dash, a spaced hyphen for an en-dash, and the same hyphen key doubling as the minus sign. One key, three jobs. The QWERTY layout we still use is essentially that typewriter, frozen in place.
+
+**ASCII froze the gap into the machine.** When character encoding was standardised in the 1960s, ASCII had only 128 slots and spent exactly one of them on a dash: the "hyphen-minus" at `0x2D`, the ambiguous do-everything character. The em-dash and en-dash simply did not exist in the encoding, so there was nothing for a key to send. Keyboards are, at heart, just ASCII transmitters. The typographic dashes did not get their own code points until Unicode, decades later.
+
+<Scaffold>
+Short aside, ties to the site's technical bent (and to the train-track article's theme of one
+overloaded "node" standing in for several real ones): the hyphen-minus is one of the worst-designed
+characters in computing — it conflates hyphen, minus, and dash, three things typography AND
+programming languages treat as genuinely distinct.
+</Scaffold>
+
+**The typesetter put it back.** None of this touched what people actually read. Linotype, Monotype, and later phototypesetting machines carried full character sets — em-dash, en-dash, ligatures, the lot. Books and newspapers were never set on typewriters. The author's `--` was a placeholder in the manuscript; a typesetter or copyeditor restored the real `—` before it printed. The mark was reconstructed downstream, every time, by a human who knew the convention. The em-dash was never gone — it was just temporarily encoded as two hyphens in transit.
+
+**Scanning re-guessed it.** Then we digitised the back catalogue, and a new layer entered: OCR. Scanning print back into text means a machine guessing each glyph — and a hyphen, an en-dash, and an em-dash are just horizontal strokes of slightly different width, which is the first thing OCR throws away. So the dash got re-decided yet again, often wrongly, on the way *out* of print and back into encoded text. (This will matter enormously when we try to measure anything.)
+
+**Autocorrect finally reunited the layers.** In the 1980s, word processors and desktop publishing put real typesetting on ordinary writers' desks — and autocorrect quietly revived `--` → `—` as you typed. For the first time the input device could produce the output character with no human typesetter in between. The eighty-year split between what you type and what prints collapsed into one box.
+
+## Dickinson: the layers, visible in one writer
+
+If you want the whole input/output/editorial story compressed into a single author, it is Emily Dickinson. Her manuscripts are saturated with dashes of varying length and angle — and for the better part of a century her editors quietly *normalised* them, smoothing the strokes into conventional commas and periods before scholars went back to the manuscripts and put them back.
+
+<Quote
+  lines={[
+    "A solemn thing — it was — I said —",
+    "A Woman — White — to be —",
+    "And wear — if God should count me fit —",
+    "Her blameless mystery —",
+  ]}
+  author="Emily Dickinson"
+  year="c. 1861"
+/>
+
+The dash you read in that stanza is not a fact about Dickinson; it is a decision made by whichever layer last touched the text — her pen, her first editors, the typesetter, the scanner, the edition you happen to be holding. Same poem, different mark, depending on the layer.
+
+<Scaffold>
+Get a concrete before/after: one Dickinson poem as manuscript stroke vs. an early "corrected" print
+edition vs. a modern restored scholarly edition (Franklin / Johnson). Side-by-side, this single
+image carries the entire thesis. See the Bartz paper in Further reading and a proper variorum edition.
+A static figure here is the priority visual for the article.
+</Scaffold>
+
+## The newest layer: the language model
+
+Then large language models arrived, and the em-dash became a tell.
+
+The irony is in the mechanism. LLMs are trained overwhelmingly on professionally edited prose — books, journalism, polished web writing. That is exactly the corpus where the em-dash was always alive and used correctly. The model is not inventing a quirk; it is faithfully reproducing the register of edited English, where `—` is a normal, frequent tool. It is doing what the typesetter did: re-deciding the dash from the conventions of the *output* layer.
+
+The mismatch is with how people *casually type*. Because of the keyboard friction this whole article is about, most people writing a message or an email reach for a comma, a hyphen, or an ellipsis instead of hunting down a `—`. So the everyday expectation for informal text is "almost no em-dashes." When a chatbot drops three of them into two paragraphs, it reads as suspiciously well-typeset — and that became the canonical AI tell.
+
+So the dash got pulled across a line it had sat behind for eighty years. It was always a marker of the *edited, published* register; the LLM took that register and dropped it into the casual channel where people had never bothered to produce it. This is not new behaviour. It is the typesetter's job — restore the polished mark the typist left out — running automatically, in a place that used to be purely input. The model is just the latest layer in the chain, and like every layer before it, it re-decides the dash according to the conventions it knows.
+
+The genuinely new part is the feedback loop. Now that `—` flags "machine-written," people are actively stripping em-dashes to look human, some companies' style guides have banned them outright, and writers who have used them correctly for decades are getting accused of botting. The input layer is once again diverging from the output register — except this time *on purpose*, to defeat a detector.
+
+## Can we even measure it?
+
+Every essay in the Further reading list asserts that LLMs overuse the em-dash. Not one of them gives a number. So: can we actually see the spike?
+
+Here the thesis turns on itself in a useful way. You cannot recover the em-dash's history from the obvious corpus, Google Books Ngram, because it collapses all the dashes together — and for reasons that are *exactly* the layers above. The source is scanned print, so OCR already flattened em, en, and hyphen into one stroke; and the tokeniser treats the hyphen-minus as a single token, so even where the scan was right you cannot isolate `U+2014`. The mark resists measurement for the same reason it survived: it never lived in one canonical layer, and every layer — including the corpus pipeline — re-decided it. The resistance is itself the evidence.
+
+The only place the em-dash is cleanly measurable is *born-digital* text, where the bytes are the author's actual keystrokes rather than a scanner's guess. That is also exactly where the LLM spike, if it is real, would show up.
+
+<Scaffold>
+THE EMPIRICAL CENTREPIECE — this is the novel contribution; nobody in the sources has done it.
+
+Measurement to run:
+- Count em-dashes per million words (U+2014 occurrences) in born-digital corpora, NOT Ngram. Use
+  COCA (1990–2019, genre-tagged) and/or news/web dumps; for the AI side, generate a comparable
+  sample from current models and from a pre-LLM human baseline.
+- Slice by era to catch three regimes: pre-autocorrect typing, post-autocorrect/DTP, post-LLM.
+- Slice by register: edited (books/journalism) vs. casual (email/forum/chat) — this is the
+  input/output split made quantitative, and it predicts the AI-tell directly.
+- COCA's web query box won't isolate a raw em-dash (punctuation is normalised at the token layer) —
+  so don't use the UI; download a sample and count the codepoint with a script.
+
+Honesty check: report whatever the data actually shows, including if the "overuse" is smaller than
+the discourse claims. The piece's credibility is that it MEASURED what the others asserted.
+
+THE PRIMARY VISUAL (site identity — this article needs at least one real figure, ideally interactive):
+- Static: em-dashes-per-million over time, two lines (edited vs. casual register), with the
+  autocorrect era and the LLM era marked. One chart settles the whole "overuse" question.
+- Stretch / interactive: "watch the dash get flattened" — type a sentence with an em-dash and step it
+  through the layers (typist's --, ASCII hyphen-minus, OCR guess, tokeniser, LLM restoration),
+  showing what each layer does to the mark. This dramatises the thesis better than any paragraph.
+</Scaffold>
+
+## Why it matters
+
+<Scaffold>
+Conclusion, 3–4 sentences. Throughline: the em-dash is a 500-year-old mark that has been
+continuously "too much trouble to type," and survived every era because writing always had two
+layers and the mark lived in the output one. The LLM panic is the same old story with a new layer
+on top. Land the plot-twist line: the em-dash spent a century being too much trouble to type, and
+now it's trouble *because* something finally types it effortlessly. Optional meta-beat: this article
+is full of correctly-used em-dashes — including, by the logic above, ones my own typing layer would
+never have produced without help.
+</Scaffold>
+
+## Further reading
+
+[Caitlyn Bartz — a paper on Emily Dickinson (West Texas A&M University, EPML _Tracks_)](https://www.wtamu.edu/_files/docs/academics/college-fine-arts-humanities/epml/Tracks%203%20Papers/7%20Dickinson,%20Caitlyn%20Bartz.pdf)
+
+History of the mark:
+
+[Zul M, "Who First Used the Em Dash? A Short History of a Long Mark" (PublishingState, 2025)](https://publishingstate.com/who-first-used-the-em-dash-a-short-history-of-a-long-mark/2025/) — traces it to 18th-century printing, names Laurence Sterne's _Tristram Shandy_ (1759) as its first great literary champion.
+
+[Thao Thai, "A Brief History of the Em Dash" (Substack, 2025)](https://thaothai.substack.com/p/a-brief-history-of-the-em-dash) — the em-dash as an ethos of fragmented, authentic thought; "antidote to AI corporate-speak."
+
+The AI-tell discourse (all 2025–26 defences of the mark):
+
+[Celeste Moure, "The em dash conspiracy" (Microsoft Design, 2025)](https://microsoft.design/articles/the-em-dash-conspiracy-how-pop-culture-declared-war-on-literatures-favorite-punctuation/) — satirical defence; the em-dash as "the punctuation equivalent of a jazz solo."
+
+[John Geracitano, "The Case for the Em Dash" (Harding Project, 2025)](https://www.hardingproject.com/p/the-case-for-the-em-dash) — "we cannot let algorithms dictate the rules of style"; uses "Dickinson Dashes."
+
+[Nishka Mundhra, "The Rise and Fall of the Em Dash: From Literary Tool to AI Tell" (Medium, 2026)](https://medium.com/@nishkamundhra/the-rise-and-fall-of-the-em-dash-from-literary-tool-to-ai-tell-7fe1dae94b59) — the cleanest statement of the LLM-corpus mechanism, but essayistic, no data.
+
+[Merriam-Webster, "Em Dash, En Dash: How to Use Them"](https://www.merriam-webster.com/grammar/em-dash-en-dash-how-to-use) — usage reference (blocked automated fetch; read manually).
+
+<Scaffold>
+SOURCE NOTES — almost everything above is essayistic 2025–26 blog/opinion writing, valuable for the
+AI-tell DISCOURSE but NOT for hard etymology or data. Verify popular-history claims (18th-century
+origin, Sterne 1759, "15th-century printing revolution," "Dickinson Dashes" as a real term) against
+primary typography history before asserting them.
+
+Primary sources still to get:
+- OED entries for "em", "en", "em-dash" (first attestations).
+- Chicago Manual of Style section on dashes (the closed vs. spaced debate, for the "what the mark is" aside).
+- A Dickinson variorum (Franklin / Johnson) for the manuscript-vs-print figure.
+- Any CREDIBLE existing measurement of em-dash frequency in LLM output — none of the sources above has one.
+</Scaffold>

@@ -1,0 +1,29 @@
+---
+type Props = {
+  // For verse or any line-broken quote, pass each line explicitly so the breaks
+  // are preserved. For running prose, use the default slot instead.
+  lines?: string[];
+  author?: string;
+  year?: string;
+};
+
+const { lines, author, year } = Astro.props;
+const attribution = author
+  ? `${author}${year ? `, ${year}` : ""}`
+  : year;
+---
+
+<figure class="quote-block my-8">
+  <blockquote
+    class="border-l-2 border-neutral-300 dark:border-neutral-400 pl-6 font-serif italic text-xl sm:text-2xl leading-relaxed"
+  >
+    {lines
+      ? lines.map((line) => <span class="block">{line}</span>)
+      : <slot />}
+  </blockquote>
+  {attribution && (
+    <figcaption class="mt-4 text-right text-sm not-italic text-neutral-500 dark:text-neutral-400">
+      — {attribution}
+    </figcaption>
+  )}
+</figure>
