@@ -4153,7 +4153,7 @@ function hr(e) {
 //#region src/embed/TrackScoring.tsx
 var gr = /* @__PURE__ */ l("<div><div class=tt-stage>"), _r = /* @__PURE__ */ l("<div class=tt-entropy>");
 function vr(n) {
-	let o = m(() => Xn(n)), c = m(() => An(o().track, n.padding ?? 2)), l = m(() => {
+	let o = m(() => Xn(n)), c = m(() => An(o().track, (n.padding ?? 2) + 50 * (n.bulgeScale ?? 100) / 100)), l = m(() => {
 		let e = o();
 		if (e.track.pieces.length !== 0) {
 			if (n.mode === "mc") {
@@ -4428,7 +4428,7 @@ function Nr(e) {
 //#region src/embed/TrackLiveMC.tsx
 var Pr = /* @__PURE__ */ l("<div class=tt-entropy>"), Fr = /* @__PURE__ */ l("<div class=tt-controls><button type=button class=tt-playpause></button><div class=tt-slider><span class=tt-speed-label></span><input type=range min=0 max=100 step=1></div><button type=button class=tt-reset>"), Ir = /* @__PURE__ */ l("<div><div class=tt-stage>"), Lr = /* @__PURE__ */ l("<div class=tt-tooltip><div class=tt-tooltip-total>%</div><div class=tt-tooltip-split>→ <!>% / ← <!>%"), Rr = /* @__PURE__ */ l("<svg width=12 height=12 viewBox=\"0 0 12 12\"fill=currentColor aria-hidden=true><rect x=0 y=0 width=4 height=12 rx=0.5></rect><rect x=8 y=0 width=4 height=12 rx=0.5>"), zr = /* @__PURE__ */ l("<svg width=12 height=12 viewBox=\"0 0 12 12\"fill=currentColor aria-hidden=true><polygon points=\"0,0 12,6 0,12\">");
 function Br(n) {
-	let o = m(() => Xn(n)), l = m(() => An(o().track, n.padding ?? 2)), d = m(() => Zn(o(), n.seed)), [p, v] = h(n.initialSpeed ?? 20), [y, b] = h(!0), [x, S] = h(!1), C;
+	let o = m(() => Xn(n)), l = m(() => An(o().track, (n.padding ?? 2) + 50 * (n.bulgeScale ?? 100) / 100)), d = m(() => Zn(o(), n.seed)), [p, v] = h(n.initialSpeed ?? 20), [y, b] = h(!0), [x, S] = h(!1), C;
 	_(() => {
 		if (!C || typeof IntersectionObserver > "u") {
 			S(!0);
