@@ -6,13 +6,21 @@ Personal portfolio website for Thomas Van Riel (thomasvanriel.com). Built with A
 
 ## Current Work in Progress
 
-**Article 16 — "The math of a good train track"** (`src/content/articles/16-train-set/`) is the article actively being written. Still `draft: true`.
+Two articles are actively being written, both still `draft: true`. The shared **`<Scaffold>` component** (`@components/Scaffold.astro`) renders visible author-only notes: outlines, to-dos, and "write N sentences here" placeholders. They are drafting aids, **not** published content — every Scaffold block must be resolved (written out and deleted) before an article ships. Treat them as the source of truth for what each section still needs.
+
+### Article 16 — "The math of a good train track" (`src/content/articles/16-train-set/`)
 
 - **English (`index.mdx`)** is the lead version — structure complete, with finished prose in several sections (track-as-graph, connectivity, Markov chains, Monte Carlo, reading the figures, oval/diagonal walkthroughs).
 - **Dutch (`index.nl.mdx`)** lags behind — only the intro, research questions, and the first two graph subsections are translated; sections from "Connectiviteit" onward are empty headings awaiting ported prose.
-- **`<Scaffold>` component** (`@components/Scaffold.astro`) renders visible author-only notes: outlines, to-dos, and "write N sentences here" placeholders. They are drafting aids, **not** published content — every Scaffold block must be resolved (written out and deleted) before the article ships. Treat them as the source of truth for what each section still needs.
 - **Outstanding work**: research-question `hypothesis`/`answer` fields are still `"SCAFFOLD: ..."` placeholders (used in both the intro and conclusion); the "A real track" section is a `PLACEHOLDER` needing a deliberate layout; Quick Tips list, SVG bulge renders, and several interpretation paragraphs remain.
 - The article embeds an interactive track simulator via `<TrackEmbed>` (presets + `.json` layout files in the article dir) and pairs with the external editor at https://brio.thomasvanriel.com/.
+
+### Article 17 — "The em-dash" (`src/content/articles/17-em-dash/`)
+
+- English-only so far (`index.mdx`), no Dutch translation yet. Thesis: the em-dash has always lived in the *output/typeset* layer, re-decided by every technology (typewriter, ASCII, typesetter, OCR, autocorrect, now the LLM) between author and reader; the AI-tell panic is the newest layer doing the oldest thing.
+- The site's lane vs. the many existing essays is **technical + empirical + visual**, not literary. Two novel contributions to land: (1) the "layers" framing, and (2) an actual *measurement* of the claimed LLM overuse — every other source asserts it with no number.
+- **Empirical centerpiece** lives in a separate dir, `~/source/em-dash/` (not in this repo). `~/source/em-dash/output/` holds per-author `*_stats.json` + extracted sentence `.txt` files measuring em-dash frequency across authors (Adams, Austen, Dickens, Rowling, Tolkien). Key gotcha: trust the `functional_em_dash` field, not raw `em_dash` — PDF sources (Adams/Dickens/Tolkien) mangle literal `—` into spaced hyphens/en-dashes via OCR, so literal counts are an extraction artifact; EPUB sources (Austen/Rowling) come through clean.
+- **Outstanding work**: resolve the framing Scaffold (intro), the Dickinson manuscript-vs-print before/after figure (priority static visual), the empirical chart (em-dashes-per-million over time, edited vs. casual register) and optional interactive "watch the dash get flattened" demo, plus the source-verification Scaffold (verify popular-history claims — Sterne 1759, "Dickinson Dashes" — against primary typography sources before asserting).
 
 ## Tech Stack
 
