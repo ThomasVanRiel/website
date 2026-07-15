@@ -50,7 +50,6 @@
         const getThemeColors = () => {
             const dark = isDarkTheme();
             return {
-                axes: dark ? 0xffffff : 0x000000,
                 grid: dark ? 0x444444 : 0xcccccc,
                 gridHelper: dark ? 0x666666 : 0xcccccc,
                 text: dark ? '#ffffff' : '#000000',
@@ -244,21 +243,80 @@
         
         // Get theme colors
         let themeColors = getThemeColors();
-        
-        // Create grid with theme colors
-        let gridHelper = new THREE.GridHelper(1, 10, themeColors.gridHelper, themeColors.grid);
-        gridHelper.translateX(0.5);
-        gridHelper.translateZ(0.5);
-        scene.add(gridHelper);
-        
-        // Create axes with theme colors
-        const axesHelper = new THREE.AxesHelper(1);
-        axesHelper.setColors(
-            new THREE.Color(themeColors.axes), 
-            new THREE.Color(themeColors.axes), 
-            new THREE.Color(themeColors.axes)
-        );
-        scene.add(axesHelper);
+
+        // Bounding-box walls: gridded planes on all six sides of the unit cube.
+        // Only the three walls facing away from the camera are shown each frame,
+        // so the solid always sits in front of a gridded room corner.
+        type WallAxis = 'x' | 'y' | 'z';
+        type Wall = { axis: WallAxis; positive: boolean; grid: THREE.GridHelper };
+        let walls: Wall[] = [];
+        const buildWalls = () => {
+            for (const wall of walls) {
+                scene.remove(wall.grid);
+                wall.grid.dispose();
+            }
+            walls = [];
+            const defs: {
+                axis: WallAxis;
+                positive: boolean;
+                position: [number, number, number];
+                rotation: [number, number, number];
+            }[] = [
+                { axis: 'y', positive: false, position: [0.5, 0, 0.5], rotation: [0, 0, 0] },
+                { axis: 'y', positive: true, position: [0.5, 1, 0.5], rotation: [0, 0, 0] },
+                { axis: 'x', positive: false, position: [0, 0.5, 0.5], rotation: [0, 0, Math.PI / 2] },
+                { axis: 'x', positive: true, position: [1, 0.5, 0.5], rotation: [0, 0, Math.PI / 2] },
+                { axis: 'z', positive: false, position: [0.5, 0.5, 0], rotation: [Math.PI / 2, 0, 0] },
+                { axis: 'z', positive: true, position: [0.5, 0.5, 1], rotation: [Math.PI / 2, 0, 0] },
+            ];
+            for (const def of defs) {
+                const grid = new THREE.GridHelper(1, 10, themeColors.gridHelper, themeColors.grid);
+                grid.position.set(...def.position);
+                grid.rotation.set(...def.rotation);
+                scene.add(grid);
+                walls.push({ axis: def.axis, positive: def.positive, grid });
+            }
+        };
+        buildWalls();
+
+        // Flattened silhouettes of the machining window, one per axis, shown on
+        // that axis' visible wall
+        const projectionMaterial = new THREE.MeshBasicMaterial({
+            color: 0x888888,
+            transparent: true,
+            opacity: 0.35,
+            depthWrite: true,
+            depthFunc: THREE.LessDepth, // flattened faces share a depth: draw each pixel once
+            side: THREE.DoubleSide,
+        });
+        const projectionMeshes: Record<WallAxis, THREE.Mesh> = {
+            x: new THREE.Mesh(new THREE.BufferGeometry(), projectionMaterial),
+            y: new THREE.Mesh(new THREE.BufferGeometry(), projectionMaterial),
+            z: new THREE.Mesh(new THREE.BufferGeometry(), projectionMaterial),
+        };
+        for (const mesh of Object.values(projectionMeshes)) {
+            mesh.visible = false;
+            scene.add(mesh);
+        }
+
+        // A wall is a background wall when its outward normal points along the
+        // view direction; each projection parks on its axis' background wall
+        const viewDir = new THREE.Vector3();
+        const WALL_OFFSET = 0.002;
+        const updateBoxWalls = () => {
+            camera.getWorldDirection(viewDir);
+            const positiveVisible: Record<WallAxis, boolean> = {
+                x: viewDir.x >= 0,
+                y: viewDir.y >= 0,
+                z: viewDir.z >= 0,
+            };
+            for (const wall of walls) {
+                wall.grid.visible = wall.positive === positiveVisible[wall.axis];
+            }
+            projectionMeshes.x.position.x = positiveVisible.x ? 1 - WALL_OFFSET : WALL_OFFSET;
+            projectionMeshes.y.position.y = positiveVisible.y ? 1 - WALL_OFFSET : WALL_OFFSET;
+            projectionMeshes.z.position.z = positiveVisible.z ? 1 - WALL_OFFSET : WALL_OFFSET;
+        };
         
         // Materials
         const dashedLineMaterial = new THREE.LineDashedMaterial({ 
@@ -326,20 +384,9 @@
         const updateThemeColors = () => {
             themeColors = getThemeColors();
             
-            // Update grid colors - need to recreate grid for color changes
-            scene.remove(gridHelper);
-            gridHelper = new THREE.GridHelper(1, 10, themeColors.gridHelper, themeColors.grid);
-            gridHelper.translateX(0.5);
-            gridHelper.translateZ(0.5);
-            scene.add(gridHelper);
-            
-            // Update axes colors
-            axesHelper.setColors(
-                new THREE.Color(themeColors.axes),
-                new THREE.Color(themeColors.axes),
-                new THREE.Color(themeColors.axes)
-            );
-            
+            // Rebuild box walls with the new grid colors
+            buildWalls();
+
             // Update dashed line material
             dashedLineMaterial.color.setHex(themeColors.dashedLine);
             
@@ -822,12 +869,29 @@
                 scene.add(intersectMesh);
                 hoverTargetMesh = intersectMesh;
 
+                // Refresh the wall projections: the solid flattened along each axis
+                (['x', 'y', 'z'] as const).forEach((axis, axisIndex) => {
+                    const src = coloredGeometry.getAttribute('position');
+                    const flat = new Float32Array(src.array);
+                    for (let i = axisIndex; i < flat.length; i += 3) {
+                        flat[i] = 0;
+                    }
+                    const geo = new THREE.BufferGeometry();
+                    geo.setAttribute('position', new THREE.BufferAttribute(flat, 3));
+                    projectionMeshes[axis].geometry.dispose();
+                    projectionMeshes[axis].geometry = geo;
+                    projectionMeshes[axis].visible = true;
+                });
+
                 // Optionally hide original meshes
                 volumeMesh.visible = false;
                 boxMesh.visible = false;
                 prismMesh.visible = false;
             } catch (err) {
                 console.warn('CSG intersection failed:', err);
+                for (const mesh of Object.values(projectionMeshes)) {
+                    mesh.visible = false;
+                }
             }
         };
         
@@ -855,6 +919,7 @@
         let animationId: number;
         const animate = () => {
             animationId = requestAnimationFrame(animate);
+            updateBoxWalls();
             renderer.render(scene, camera);
         };
         
