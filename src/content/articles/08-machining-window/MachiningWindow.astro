@@ -5,6 +5,10 @@
 <div id="machining-container" class="w-full h-[48rem] overflow-hidden border-2 border-dashed" style="background: transparent;">
 </div>
 
+<!-- Legend entries will be dynamically inserted here -->
+<div id="legend-container" class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
+</div>
+
 <!-- Sliders will be dynamically inserted here -->
 <div id="slider-container" class="flex gap-4 mt-4">
 </div>
@@ -54,6 +58,38 @@
             };
         };
         
+        // Colors identifying which constraint is active on each surface of the
+        // machining window (categorical palette, separate steps per theme)
+        const LIMIT_COLORS = {
+            taylor: { label: 'Tool life (Taylor)',            light: '#2a78d6', dark: '#3987e5' },
+            kienzle: { label: 'Machine power (Kienzle)',      light: '#008300', dark: '#008300' },
+            v: { label: 'Cutting speed (v min / v max)',      light: '#e87ba4', dark: '#d55181' },
+            h: { label: 'Chip thickness (h min / h max)',     light: '#eda100', dark: '#c98500' },
+            b: { label: 'Width of cut (b min / b max)',       light: '#1baf7a', dark: '#199e70' },
+            bh: { label: 'Chip slenderness (b/h)',            light: '#eb6834', dark: '#d95926' },
+        } as const;
+        type LimitName = keyof typeof LIMIT_COLORS;
+        const limitColor = (name: LimitName) => LIMIT_COLORS[name][isDarkTheme() ? 'dark' : 'light'];
+
+        // Build the legend
+        const legendContainer = document.getElementById('legend-container');
+        const legendSwatches: { name: LimitName; el: HTMLSpanElement }[] = [];
+        if (legendContainer) {
+            for (const name of Object.keys(LIMIT_COLORS) as LimitName[]) {
+                const item = document.createElement('span');
+                item.className = 'flex items-center gap-1.5';
+                const swatch = document.createElement('span');
+                swatch.className = 'inline-block w-3 h-3 rounded-sm shrink-0';
+                swatch.style.background = limitColor(name);
+                const text = document.createElement('span');
+                text.textContent = LIMIT_COLORS[name].label;
+                item.appendChild(swatch);
+                item.appendChild(text);
+                legendContainer.appendChild(item);
+                legendSwatches.push({ name, el: swatch });
+            }
+        }
+
         // Initialize slider generator
         const sliderGen = new SliderGenerator();
         
@@ -69,7 +105,7 @@
             containerClass: 'flex flex-col',
             onUpdate: (value) => {
                 bhmin = value;
-                Generate();
+                requestGenerate();
             }
         });
         
@@ -84,7 +120,7 @@
             containerClass: 'flex flex-col',
             onUpdate: (value) => {
                 bhmax = value;
-                Generate();
+                requestGenerate();
             }
         });
         const vminSlider = sliderGen.createSlider({
@@ -98,7 +134,7 @@
             containerClass: 'flex flex-col',
             onUpdate: (value) => {
             vmin = value;
-            Generate();
+            requestGenerate();
             }
         });
 
@@ -113,7 +149,7 @@
             containerClass: 'flex flex-col',
             onUpdate: (value) => {
             vmax = value;
-            Generate();
+            requestGenerate();
             }
         });
 
@@ -128,7 +164,7 @@
             containerClass: 'flex flex-col',
             onUpdate: (value) => {
                 z_kienzle = value;
-                Generate();
+                requestGenerate();
             }
         });
 
@@ -143,7 +179,7 @@
             containerClass: 'flex flex-col',
             onUpdate: (value) => {
                 P = value;
-                Generate();
+                requestGenerate();
             }
         });
 
@@ -158,7 +194,7 @@
             containerClass: 'flex flex-col',
             onUpdate: (value) => {
                 T = value;
-                Generate();
+                requestGenerate();
             }
         });
         sliderContainer.appendChild(TSlider.container);
@@ -246,6 +282,15 @@
             side: THREE.DoubleSide,
         });
 
+        // Same look, but tinted per-face by the active limit
+        const limitSurfaceMaterial = new THREE.MeshMatcapMaterial({
+            color: 0xffffff,
+            vertexColors: true,
+            opacity: 0.8,
+            transparent: true,
+            side: THREE.DoubleSide,
+        });
+
         
         
         // Add axis labels
@@ -319,12 +364,180 @@
                 label.material.map = texture;
                 label.material.needsUpdate = true;
             });
+
+            // Re-tint legend swatches and surface colors for the new theme
+            for (const { name, el } of legendSwatches) {
+                el.style.background = limitColor(name);
+            }
+            if (activeGhostLimit) {
+                ghostMaterial.color.set(limitColor(activeGhostLimit));
+            }
+            Generate();
         };
         
-        const Generate = () => {
-            // Remove old surface from scene
+        // Taylor surface
+        const taylorSurfaceFn = (x: number, z: number) => {
+            return CTVB * Math.pow(vb, n) / (Math.pow(z, q) * Math.pow(x, p) * Math.pow(T, m));
+        };
+
+        // Kienzle surface
+        const kienzleSurfaceFn = (x: number, z: number) => {
+            // Example Kienzle formula: y = ks11 * P * Math.pow(x, m) * Math.pow(z, n)
+            // Adjust the formula as needed for your use case
+            return P * 60 / (ks11 * x*Math.pow(z, 1-z_kienzle));
+        };
+
+        // vmax limit plane
+        const vmaxPlaneFn = (_x: number, _z: number) => {
+            return vmax;
+        };
+
+        // Ghost preview: while a slider is held, the full, unclipped constraint
+        // surface it controls is shown transparently in its limit color.
+        const ghostMaterial = new THREE.MeshMatcapMaterial({
+            color: 0xffffff,
+            transparent: true,
+            opacity: 0.3,
+            side: THREE.DoubleSide,
+            depthWrite: false,
+        });
+
+        // Taylor/Kienzle blow up near x=0 or z=0; cap the ghost so it stays in view
+        const GHOST_Y_CLAMP = 1.5;
+        const surfaceGhostGeometry = (fn: (x: number, z: number) => number) => {
+            const segments = 48;
+            const geometry = new THREE.PlaneGeometry(1, 1, segments, segments);
+            geometry.rotateX(-Math.PI / 2);
+            geometry.translate(0.5, 0, 0.5);
+            const pos = geometry.getAttribute('position');
+            for (let i = 0; i < pos.count; i++) {
+                pos.setY(i, Math.min(fn(pos.getX(i), pos.getZ(i)), GHOST_Y_CLAMP));
+            }
+            geometry.computeVertexNormals();
+            return geometry;
+        };
+        const planeGhostGeometry = (y: number) => {
+            const geometry = new THREE.PlaneGeometry(1, 1);
+            geometry.rotateX(-Math.PI / 2);
+            geometry.translate(0.5, y, 0.5);
+            return geometry;
+        };
+        const bhGhostGeometry = (bh: number) => {
+            // Vertical plane through the origin along the b/h ratio line
+            const ex = bh > 0.5 ? (1 - bh) * 2 : 1;
+            const ez = bh < 0.5 ? bh * 2 : 1;
+            const geometry = new THREE.BufferGeometry().setFromPoints([
+                new THREE.Vector3(0, 0, 0), new THREE.Vector3(ex, 0, ez), new THREE.Vector3(ex, 1, ez),
+                new THREE.Vector3(0, 0, 0), new THREE.Vector3(ex, 1, ez), new THREE.Vector3(0, 1, 0),
+            ]);
+            geometry.computeVertexNormals();
+            return geometry;
+        };
+
+        let ghostMesh: THREE.Mesh | null = null;
+        let activeGhostBuilder: (() => THREE.BufferGeometry) | null = null;
+        let activeGhostLimit: LimitName | null = null;
+
+        const updateGhost = () => {
+            if (ghostMesh) {
+                scene.remove(ghostMesh);
+                ghostMesh.geometry.dispose();
+                ghostMesh = null;
+            }
+            if (activeGhostBuilder) {
+                ghostMesh = new THREE.Mesh(activeGhostBuilder(), ghostMaterial);
+                scene.add(ghostMesh);
+            }
+        };
+        const hideGhost = () => {
+            activeGhostBuilder = null;
+            activeGhostLimit = null;
+            updateGhost();
+        };
+        const attachGhost = (
+            elements: { slider: HTMLInputElement },
+            limit: LimitName,
+            builder: () => THREE.BufferGeometry
+        ) => {
+            elements.slider.addEventListener('pointerdown', () => {
+                activeGhostBuilder = builder;
+                activeGhostLimit = limit;
+                ghostMaterial.color.set(limitColor(limit));
+                updateGhost();
+            });
+            elements.slider.addEventListener('pointerup', hideGhost);
+            elements.slider.addEventListener('pointercancel', hideGhost);
+            elements.slider.addEventListener('change', hideGhost);
+        };
+
+        attachGhost(TSlider, 'taylor', () => surfaceGhostGeometry(taylorSurfaceFn));
+        attachGhost(PSlider, 'kienzle', () => surfaceGhostGeometry(kienzleSurfaceFn));
+        attachGhost(zkienzleSlider, 'kienzle', () => surfaceGhostGeometry(kienzleSurfaceFn));
+        attachGhost(vminSlider, 'v', () => planeGhostGeometry(vmin));
+        attachGhost(vmaxSlider, 'v', () => planeGhostGeometry(vmax));
+        attachGhost(bhminSlider, 'bh', () => bhGhostGeometry(bhmin));
+        attachGhost(bhmaxSlider, 'bh', () => bhGhostGeometry(bhmax));
+
+        // Hover tooltip: raycast the pointer against the machining window and show
+        // the legend entry of the limit surface under the cursor
+        let hoverTargetMesh: THREE.Mesh | null = null;
+
+        const tooltip = document.createElement('div');
+        tooltip.className = 'absolute hidden pointer-events-none z-10 flex items-center gap-1.5 px-2 py-1 rounded text-xs bg-white/90 dark:bg-gray-800/90 border border-gray-300 dark:border-gray-600';
+        const tooltipSwatch = document.createElement('span');
+        tooltipSwatch.className = 'inline-block w-3 h-3 rounded-sm shrink-0';
+        const tooltipText = document.createElement('span');
+        tooltip.appendChild(tooltipSwatch);
+        tooltip.appendChild(tooltipText);
+        container.appendChild(tooltip);
+
+        const hideTooltip = () => tooltip.classList.add('hidden');
+
+        const raycaster = new THREE.Raycaster();
+        const pointerNDC = new THREE.Vector2();
+        const handlePointerMove = (event: PointerEvent) => {
+            // Don't fight with orbit rotation
+            if (!hoverTargetMesh || event.buttons !== 0) {
+                hideTooltip();
+                return;
+            }
+            const rect = renderer.domElement.getBoundingClientRect();
+            pointerNDC.x = ((event.clientX - rect.left) / rect.width) * 2 - 1;
+            pointerNDC.y = -((event.clientY - rect.top) / rect.height) * 2 + 1;
+            raycaster.setFromCamera(pointerNDC, camera);
+            const hit = raycaster.intersectObject(hoverTargetMesh, false)[0];
+            const faceLimits = hoverTargetMesh.geometry.userData.faceLimits as LimitName[] | undefined;
+            if (hit && hit.faceIndex != null && faceLimits && faceLimits[hit.faceIndex]) {
+                const limit = faceLimits[hit.faceIndex];
+                tooltipSwatch.style.background = limitColor(limit);
+                tooltipText.textContent = LIMIT_COLORS[limit].label;
+                tooltip.style.left = `${event.clientX - rect.left + 14}px`;
+                tooltip.style.top = `${event.clientY - rect.top + 14}px`;
+                tooltip.classList.remove('hidden');
+            } else {
+                hideTooltip();
+            }
+        };
+        renderer.domElement.addEventListener('pointermove', handlePointerMove);
+        renderer.domElement.addEventListener('pointerleave', hideTooltip);
+
+        // Cached BSP trees for the CSG booleans — building these dominates the
+        // cost of Generate(), and most sliders only invalidate one of them.
+        let volumeCSGCache: { key: string; csg: CSG } | null = null;
+        let boxCSGCache: { key: string; csg: CSG } | null = null;
+        let prismCSGCache: { key: string; csg: CSG } | null = null;
+        let volumeBoxCSGCache: { key: string; csg: CSG } | null = null;
+
+        const FINAL_SEGMENTS = 50;
+
+        const Generate = (segments: number = FINAL_SEGMENTS) => {
+            // Remove old surface from scene and free its GPU buffers
+            hoverTargetMesh = null;
             for (let obj of objects) {
                 scene.remove(obj);
+                if (obj instanceof THREE.Mesh || obj instanceof THREE.Line) {
+                    obj.geometry.dispose();
+                }
             }
             objects.length = 0; // Clear the array
             
@@ -391,23 +604,6 @@
             objects.push(prismMesh);
             scene.add(prismMesh);
 
-            // Taylor surface
-            const taylorSurfaceFn = (x: number, z: number) => {
-                return CTVB * Math.pow(vb, n) / (Math.pow(z, q) * Math.pow(x, p) * Math.pow(T, m));
-            };
-
-            // Kienzle surface
-            const kienzleSurfaceFn = (x: number, z: number) => {
-                // Example Kienzle formula: y = ks11 * P * Math.pow(x, m) * Math.pow(z, n)
-                // Adjust the formula as needed for your use case
-                return P * 60 / (ks11 * x*Math.pow(z, 1-z_kienzle));
-            };
-
-            // vmax limit plane
-            const vmaxPlaneFn = (_x: number, _z: number) => {
-                return vmax;
-            };
-
             // Combine into a mesh: at each (x, z), y = max(vminPlane, min(taylorSurface, kienzleSurface))
             function combinedSurfaceFn(x: number, z: number) {
                 const taylorY = taylorSurfaceFn(x, z);
@@ -416,9 +612,63 @@
                 return Math.min(taylorY, kienzleY, vminY);
             }
 
+            // Decide which constraint a face of the CSG result belongs to, from its
+            // orientation and centroid:
+            // - downward faces are the v min cut, near-vertical axis-aligned walls are
+            //   the h/b box cuts, other near-vertical walls are the slanted b/h prism cut
+            // - the remaining (top) faces take whichever of Taylor / Kienzle / v max is
+            //   lowest at the centroid, since the top surface is the min of the three
+            const classifyFace = (cx: number, cz: number, normal: THREE.Vector3): LimitName => {
+                if (normal.y <= -0.5) return 'v';
+                if (Math.abs(normal.y) < 0.05) {
+                    if (Math.abs(normal.x) > 0.99) return 'h';
+                    if (Math.abs(normal.z) > 0.99) return 'b';
+                    return 'bh';
+                }
+                const taylorY = taylorSurfaceFn(cx, cz);
+                const kienzleY = kienzleSurfaceFn(cx, cz);
+                if (vmax <= taylorY && vmax <= kienzleY) return 'v';
+                return taylorY <= kienzleY ? 'taylor' : 'kienzle';
+            };
+
+            // Paint each face of the result with the color of its active limit, and
+            // record the per-triangle limit for hover lookups
+            const colorizeByLimit = (geometry: THREE.BufferGeometry): THREE.BufferGeometry => {
+                const geo = geometry.index ? geometry.toNonIndexed() : geometry;
+                const faceLimits: LimitName[] = [];
+                const pos = geo.getAttribute('position');
+                const colors = new Float32Array(pos.count * 3);
+                const pA = new THREE.Vector3();
+                const pB = new THREE.Vector3();
+                const pC = new THREE.Vector3();
+                const cb = new THREE.Vector3();
+                const ab = new THREE.Vector3();
+                const faceColor = new THREE.Color();
+                for (let i = 0; i < pos.count; i += 3) {
+                    pA.fromBufferAttribute(pos, i);
+                    pB.fromBufferAttribute(pos, i + 1);
+                    pC.fromBufferAttribute(pos, i + 2);
+                    cb.subVectors(pC, pB);
+                    ab.subVectors(pA, pB);
+                    cb.cross(ab).normalize();
+                    const cx = (pA.x + pB.x + pC.x) / 3;
+                    const cz = (pA.z + pB.z + pC.z) / 3;
+                    const limit = classifyFace(cx, cz, cb);
+                    faceLimits.push(limit);
+                    faceColor.set(limitColor(limit));
+                    for (let j = 0; j < 3; j++) {
+                        colors[(i + j) * 3] = faceColor.r;
+                        colors[(i + j) * 3 + 1] = faceColor.g;
+                        colors[(i + j) * 3 + 2] = faceColor.b;
+                    }
+                }
+                geo.setAttribute('color', new THREE.BufferAttribute(colors, 3));
+                geo.userData.faceLimits = faceLimits;
+                return geo;
+            };
+
             // Create a mesh from the base plane (y=0) up to the combined surface
-            function createVolumeMesh(surfaceFn: (x: number, z: number) => number, _color = 0x90caf9) {
-                const segments = 50;
+            function createVolumeMesh(surfaceFn: (x: number, z: number) => number) {
                 const geometry = new THREE.BufferGeometry();
                 const positions = [];
                 const normals = [];
@@ -512,7 +762,7 @@
                 return new THREE.Mesh(geometry, surfaceMaterial);
             }
 
-            const volumeMesh = createVolumeMesh(combinedSurfaceFn, 0x90caf9);
+            const volumeMesh = createVolumeMesh(combinedSurfaceFn);
             objects.push(volumeMesh);
             scene.add(volumeMesh);
             // Create box geometry with limits in x (hmin, hmax) and z (bmin, bmax)
@@ -536,19 +786,41 @@
             // Using ThreeCSG for mesh boolean operations
 
             try {
-                // Convert meshes to CSG
-                const volumeCSG = CSG.fromMesh(volumeMesh);
-                const boxCSG = CSG.fromMesh(boxMesh);
-                const prismCSG = CSG.fromMesh(prismMesh);
+                // Convert meshes to CSG, reusing cached BSP trees whose inputs haven't changed
+                const volumeKey = [segments, T, vb, p, q, m, n, CTVB, P, ks11, z_kienzle, vmax].join('|');
+                const boxKey = [hmin, hmax, vmin, vmax, bmin, bmax].join('|');
+                const prismKey = [bhmin, bhmax].join('|');
+
+                if (!volumeCSGCache || volumeCSGCache.key !== volumeKey) {
+                    volumeCSGCache = { key: volumeKey, csg: CSG.fromMesh(volumeMesh) };
+                }
+                if (!boxCSGCache || boxCSGCache.key !== boxKey) {
+                    boxCSGCache = { key: boxKey, csg: CSG.fromMesh(boxMesh) };
+                }
+                if (!prismCSGCache || prismCSGCache.key !== prismKey) {
+                    prismCSGCache = { key: prismKey, csg: CSG.fromMesh(prismMesh) };
+                }
 
                 // Perform intersection: volume ∩ box ∩ prism
-                const intersectCSG = volumeCSG.intersect(boxCSG).subtract(prismCSG);
+                const volumeBoxKey = `${volumeKey}||${boxKey}`;
+                if (!volumeBoxCSGCache || volumeBoxCSGCache.key !== volumeBoxKey) {
+                    volumeBoxCSGCache = {
+                        key: volumeBoxKey,
+                        csg: volumeCSGCache.csg.intersect(boxCSGCache.csg)
+                    };
+                }
+                const intersectCSG = volumeBoxCSGCache.csg.subtract(prismCSGCache.csg);
 
-                // Create mesh from result
-                const intersectMesh = CSG.toMesh(intersectCSG, volumeMesh.matrix, surfaceMaterial);
-                intersectMesh.material = surfaceMaterial;
+                // Create mesh from result, colored per-face by the active limit
+                const rawMesh = CSG.toMesh(intersectCSG, volumeMesh.matrix, limitSurfaceMaterial);
+                const coloredGeometry = colorizeByLimit(rawMesh.geometry);
+                if (coloredGeometry !== rawMesh.geometry) {
+                    rawMesh.geometry.dispose();
+                }
+                const intersectMesh = new THREE.Mesh(coloredGeometry, limitSurfaceMaterial);
                 objects.push(intersectMesh);
                 scene.add(intersectMesh);
+                hoverTargetMesh = intersectMesh;
 
                 // Optionally hide original meshes
                 volumeMesh.visible = false;
@@ -559,6 +831,23 @@
             }
         };
         
+        // While a slider is being dragged, regenerate at most once per frame at a
+        // coarser resolution, then refine to full resolution once input settles.
+        const INTERACTIVE_SEGMENTS = 20;
+        let generateQueued = false;
+        let refineTimeout: ReturnType<typeof setTimeout> | undefined;
+        const requestGenerate = () => {
+            updateGhost();
+            clearTimeout(refineTimeout);
+            refineTimeout = setTimeout(() => Generate(FINAL_SEGMENTS), 200);
+            if (generateQueued) return;
+            generateQueued = true;
+            requestAnimationFrame(() => {
+                generateQueued = false;
+                Generate(INTERACTIVE_SEGMENTS);
+            });
+        };
+
         // Initial generation
         Generate();
         
@@ -599,6 +888,7 @@
             if (animationId) {
                 cancelAnimationFrame(animationId);
             }
+            clearTimeout(refineTimeout);
             window.removeEventListener('resize', handleResize);
             themeObserver.disconnect();
             if (container && renderer.domElement) {
