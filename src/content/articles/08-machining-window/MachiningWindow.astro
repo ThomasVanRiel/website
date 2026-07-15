@@ -2,15 +2,11 @@
 // MachiningWindow.astro
 ---
 
-<div id="machining-container" class="w-full h-[48rem] overflow-hidden border-2 border-dashed" style="background: transparent;">
+<div id="machining-container" class="w-full h-[48rem] overflow-hidden" style="background: transparent;">
 </div>
 
-<!-- Legend entries will be dynamically inserted here -->
-<div id="legend-container" class="flex flex-wrap gap-x-4 gap-y-1 mt-2 text-sm">
-</div>
-
-<!-- Sliders will be dynamically inserted here -->
-<div id="slider-container" class="flex gap-4 mt-4">
+<!-- Slider groups will be dynamically inserted here -->
+<div id="slider-container" class="flex flex-wrap justify-center gap-x-10 gap-y-4 mt-4">
 </div>
 
 <script>
@@ -68,25 +64,6 @@
         } as const;
         type LimitName = keyof typeof LIMIT_COLORS;
         const limitColor = (name: LimitName) => LIMIT_COLORS[name][isDarkTheme() ? 'dark' : 'light'];
-
-        // Build the legend
-        const legendContainer = document.getElementById('legend-container');
-        const legendSwatches: { name: LimitName; el: HTMLSpanElement }[] = [];
-        if (legendContainer) {
-            for (const name of Object.keys(LIMIT_COLORS) as LimitName[]) {
-                const item = document.createElement('span');
-                item.className = 'flex items-center gap-1.5';
-                const swatch = document.createElement('span');
-                swatch.className = 'inline-block w-3 h-3 rounded-sm shrink-0';
-                swatch.style.background = limitColor(name);
-                const text = document.createElement('span');
-                text.textContent = LIMIT_COLORS[name].label;
-                item.appendChild(swatch);
-                item.appendChild(text);
-                legendContainer.appendChild(item);
-                legendSwatches.push({ name, el: swatch });
-            }
-        }
 
         // Initialize slider generator
         const sliderGen = new SliderGenerator();
@@ -151,6 +128,66 @@
             }
         });
 
+        const hminSlider = sliderGen.createSlider({
+            name: 'hmin',
+            min: 0.01,
+            max: 1,
+            step: 0.01,
+            defaultValue: hmin,
+            displayPrecision: 2,
+            label: 'h min',
+            containerClass: 'flex flex-col',
+            onUpdate: (value) => {
+                hmin = value;
+                requestGenerate();
+            }
+        });
+
+        const hmaxSlider = sliderGen.createSlider({
+            name: 'hmax',
+            min: 0.01,
+            max: 1,
+            step: 0.01,
+            defaultValue: hmax,
+            displayPrecision: 2,
+            label: 'h max',
+            containerClass: 'flex flex-col',
+            onUpdate: (value) => {
+                hmax = value;
+                requestGenerate();
+            }
+        });
+
+        const bminSlider = sliderGen.createSlider({
+            name: 'bmin',
+            min: 0.01,
+            max: 1,
+            step: 0.01,
+            defaultValue: bmin,
+            displayPrecision: 2,
+            label: 'b min',
+            containerClass: 'flex flex-col',
+            onUpdate: (value) => {
+                bmin = value;
+                requestGenerate();
+            }
+        });
+
+        const bmaxSlider = sliderGen.createSlider({
+            name: 'bmax',
+            min: 0.01,
+            max: 1,
+            step: 0.01,
+            defaultValue: bmax,
+            displayPrecision: 2,
+            label: 'b max',
+            containerClass: 'flex flex-col',
+            onUpdate: (value) => {
+                bmax = value;
+                requestGenerate();
+            }
+        });
+
         const zkienzleSlider = sliderGen.createSlider({
             name: 'z_kienzle',
             min: 0.01,
@@ -195,15 +232,22 @@
                 requestGenerate();
             }
         });
-        sliderContainer.appendChild(TSlider.container);
-        sliderContainer.appendChild(PSlider.container);
-        
-        // Add sliders to container
-        sliderContainer.appendChild(vminSlider.container);
-        sliderContainer.appendChild(vmaxSlider.container);
-        sliderContainer.appendChild(bhminSlider.container);
-        sliderContainer.appendChild(bhmaxSlider.container);
-        sliderContainer.appendChild(zkienzleSlider.container);
+        // Group the sliders into vertical columns
+        const addSliderGroup = (title: string, sliders: { container: HTMLDivElement }[]) => {
+            const group = document.createElement('div');
+            group.className = 'flex flex-col gap-2';
+            const heading = document.createElement('span');
+            heading.className = 'text-sm font-semibold';
+            heading.textContent = title;
+            group.appendChild(heading);
+            for (const slider of sliders) {
+                group.appendChild(slider.container);
+            }
+            sliderContainer.appendChild(group);
+        };
+        addSliderGroup('Machine', [PSlider, zkienzleSlider]);
+        addSliderGroup('Tool', [TSlider, vminSlider, vmaxSlider]);
+        addSliderGroup('Chip', [hminSlider, hmaxSlider, bminSlider, bmaxSlider, bhminSlider, bhmaxSlider]);
         
         // Scene setup (keeping your existing Three.js code)
         const scene = new THREE.Scene();
@@ -435,10 +479,7 @@
             buildWalls();
             axisLineMaterial.color.setHex(themeColors.axis);
 
-            // Re-tint legend swatches and surface colors for the new theme
-            for (const { name, el } of legendSwatches) {
-                el.style.background = limitColor(name);
-            }
+            // Re-tint surface colors for the new theme
             if (activeGhostLimit) {
                 ghostMaterial.color.set(limitColor(activeGhostLimit));
             }
@@ -490,6 +531,17 @@
             const geometry = new THREE.PlaneGeometry(1, 1);
             geometry.rotateX(-Math.PI / 2);
             geometry.translate(0.5, y, 0.5);
+            return geometry;
+        };
+        const hPlaneGhostGeometry = (x: number) => {
+            const geometry = new THREE.PlaneGeometry(1, 1);
+            geometry.rotateY(Math.PI / 2);
+            geometry.translate(x, 0.5, 0.5);
+            return geometry;
+        };
+        const bPlaneGhostGeometry = (z: number) => {
+            const geometry = new THREE.PlaneGeometry(1, 1);
+            geometry.translate(0.5, 0.5, z);
             return geometry;
         };
         const bhGhostGeometry = (bh: number) => {
@@ -547,6 +599,10 @@
         attachGhost(vmaxSlider, 'v', () => planeGhostGeometry(vmax));
         attachGhost(bhminSlider, 'bh', () => bhGhostGeometry(bhmin));
         attachGhost(bhmaxSlider, 'bh', () => bhGhostGeometry(bhmax));
+        attachGhost(hminSlider, 'h', () => hPlaneGhostGeometry(hmin));
+        attachGhost(hmaxSlider, 'h', () => hPlaneGhostGeometry(hmax));
+        attachGhost(bminSlider, 'b', () => bPlaneGhostGeometry(bmin));
+        attachGhost(bmaxSlider, 'b', () => bPlaneGhostGeometry(bmax));
 
         // Hover tooltip: raycast the pointer against the machining window and show
         // the legend entry of the limit surface under the cursor
