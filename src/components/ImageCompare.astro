@@ -128,7 +128,8 @@ const captionText = caption ?? alt;
   </figcaption>
 </figure>
 
-<script define:vars={{ rootId, beforeSrc, beforeDark, afterSrc, afterDark }}>
+<script is:inline define:vars={{ rootId, beforeSrc, beforeDark, afterSrc, afterDark }}>
+  // @ts-nocheck rootId etc. are injected at runtime by define:vars above; the checker can't see that for is:inline scripts
   const root = document.getElementById(rootId);
   if (root) {
     const handle = root.querySelector("[data-handle]");

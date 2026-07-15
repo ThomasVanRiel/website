@@ -481,8 +481,7 @@
     
     // Apply population density weighting based on latitude
     let densityMultiplier = 1.0;
-    const absLat = Math.abs(lat);
-    
+
     if (lat >= 30 && lat <= 60) {
       // Northern temperate zone (Europe, US, China, Japan) - highest density
       densityMultiplier = 5.0;

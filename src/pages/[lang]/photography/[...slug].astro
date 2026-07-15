@@ -29,7 +29,7 @@ export async function getStaticPaths() {
 
 type Props = CollectionEntry<"photography">
 const lang = Astro.params.lang as Lang
-const photo = Astro.props
+const photo: Props = Astro.props
 const { title, summary, photos, license, date } = photo.data
 
 function thumbUrl(slug: string, src: string, width: number) {

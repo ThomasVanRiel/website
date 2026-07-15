@@ -391,74 +391,10 @@
             objects.push(prismMesh);
             scene.add(prismMesh);
 
-            function createSurfaceMesh(surfaceFn: (x: number, z: number) => number, color = 0x2196f3) {
-                const segments = 100;
-                const geometry = new THREE.BufferGeometry();
-                const positions = [];
-                const normals = [];
-                const indices = [];
-
-                for (let i = 0; i <= segments; i++) {
-                    for (let j = 0; j <= segments; j++) {
-                        const x = i / segments;
-                        const z = j / segments;
-                        const y = surfaceFn(x, z);
-
-                        positions.push(x, y, z);
-                        normals.push(0, 1, 0); // Approximate normal
-                    }
-                }
-
-                for (let i = 0; i < segments; i++) {
-                    for (let j = 0; j < segments; j++) {
-                        const a = i * (segments + 1) + j;
-                        const b = a + 1;
-                        const c = a + (segments + 1);
-                        const d = c + 1;
-
-                        indices.push(a, b, d);
-                        indices.push(a, d, c);
-                    }
-                }
-
-                for (let i = 0; i <= segments; i++) {
-                    for (let j = 0; j <= segments; j++) {
-                        // Calculate normal using central differences
-                        const x = i / segments;
-                        const z = j / segments;
-                        const dx = 1 / segments;
-                        const dz = 1 / segments;
-
-                        // Partial derivatives
-                        const y = surfaceFn(x, z);
-                        const y_dx = surfaceFn(Math.min(x + dx, 1), z) - surfaceFn(Math.max(x - dx, 0), z);
-                        const y_dz = surfaceFn(x, Math.min(z + dz, 1)) - surfaceFn(x, Math.max(z - dz, 0));
-
-                        // Normal vector
-                        const normal = new THREE.Vector3(-y_dx, 2 * dx, -y_dz);
-                        normal.normalize();
-
-                        // Replace the approximate normal
-                        const idx = (i * (segments + 1) + j) * 3;
-                        normals[idx] = normal.x;
-                        normals[idx + 1] = normal.y;
-                        normals[idx + 2] = normal.z;
-                    }
-                }
-
-                geometry.setAttribute('position', new THREE.Float32BufferAttribute(positions, 3));
-                geometry.setAttribute('normal', new THREE.Float32BufferAttribute(normals, 3));
-                geometry.setIndex(indices);
-
-                return new THREE.Mesh(geometry, surfaceMaterial);
-            }
-
             // Taylor surface
             const taylorSurfaceFn = (x: number, z: number) => {
                 return CTVB * Math.pow(vb, n) / (Math.pow(z, q) * Math.pow(x, p) * Math.pow(T, m));
             };
-
-            const taylorSurfaceMesh = createSurfaceMesh(taylorSurfaceFn, 0x2196f3);
 
             // Kienzle surface
             const kienzleSurfaceFn = (x: number, z: number) => {
@@ -467,13 +403,10 @@
                 return P * 60 / (ks11 * x*Math.pow(z, 1-z_kienzle));
             };
 
-            const kienzleSurfaceMesh = createSurfaceMesh(kienzleSurfaceFn, 0x2196f3);
-
             // vmax limit plane
-            const vmaxPlaneFn = (x: number, z: number) => {
+            const vmaxPlaneFn = (_x: number, _z: number) => {
                 return vmax;
             };
-            const vmaxPlaneMesh = createSurfaceMesh(vmaxPlaneFn, 0x4caf50);
 
             // Combine into a mesh: at each (x, z), y = max(vminPlane, min(taylorSurface, kienzleSurface))
             function combinedSurfaceFn(x: number, z: number) {
@@ -483,12 +416,8 @@
                 return Math.min(taylorY, kienzleY, vminY);
             }
 
-            const combinedSurfaceMesh = createSurfaceMesh(combinedSurfaceFn, 0xff9800);
-            //objects.push(combinedSurfaceMesh);
-            //scene.add(combinedSurfaceMesh);
-
             // Create a mesh from the base plane (y=0) up to the combined surface
-            function createVolumeMesh(surfaceFn: (x: number, z: number) => number, color = 0x90caf9) {
+            function createVolumeMesh(surfaceFn: (x: number, z: number) => number, _color = 0x90caf9) {
                 const segments = 50;
                 const geometry = new THREE.BufferGeometry();
                 const positions = [];

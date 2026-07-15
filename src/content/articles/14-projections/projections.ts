@@ -26,23 +26,6 @@ export interface ProjectionConfig {
   ) => d3.GeoProjection;
 }
 
-// Helper to create feature collection for fitting projections
-function createFeatureCollection(data: DataPoint[]) {
-  return {
-    type: 'FeatureCollection' as const,
-    features: [
-      {
-        type: 'Feature' as const,
-        geometry: {
-          type: 'MultiPoint' as const,
-          coordinates: data.map(d => [d.lon, d.lat])
-        },
-        properties: {}
-      }
-    ]
-  };
-}
-
 // Helper to create sphere feature for centering projections
 function createSphere() {
   return {type: 'Sphere'} as const;
@@ -215,7 +198,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Azimuthal',
     isGlobe: false,
     favorite: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3.geoAzimuthalEqualArea()
@@ -230,7 +213,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Equidistant',
     category: 'Azimuthal',
     isGlobe: false,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3.geoAzimuthalEquidistant()
@@ -248,7 +231,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Cylindrical',
     isGlobe: false,
     favorite: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3.geoMercator()
@@ -263,7 +246,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Transverse Mercator',
     category: 'Cylindrical',
     isGlobe: false,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3.geoTransverseMercator()
@@ -279,7 +262,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Cylindrical',
     isGlobe: false,
     disable: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3.geoEquirectangular()
@@ -295,7 +278,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Cylindrical',
     isGlobe: false,
     favorite: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3.geoNaturalEarth1()
@@ -313,7 +296,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Conic',
     isGlobe: false,
     disable: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3.geoAlbers()
@@ -330,7 +313,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Equal Area',
     category: 'Conic',
     isGlobe: false,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3.geoConicEqualArea()
@@ -346,7 +329,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Equidistant',
     category: 'Conic',
     isGlobe: false,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3.geoConicEquidistant()
@@ -365,7 +348,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Compromise',
     isGlobe: false,
     favorite: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3.geoEqualEarth()
@@ -381,7 +364,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Compromise',
     isGlobe: false,
     disable: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3GeoProjection.geoRobinson()
@@ -396,7 +379,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Winkel Tripel',
     category: 'Compromise',
     isGlobe: false,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3GeoProjection.geoWinkel3()
@@ -412,7 +395,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Compromise',
     isGlobe: false,
     disable: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3GeoProjection.geoEckert4()
@@ -428,7 +411,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Compromise',
     isGlobe: false,
     favorite: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3GeoProjection.geoMollweide()
@@ -443,7 +426,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Hammer',
     category: 'Compromise',
     isGlobe: false,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3GeoProjection.geoHammer()
@@ -458,7 +441,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Wagner VI',
     category: 'Compromise',
     isGlobe: false,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3GeoProjection.geoWagner6()
@@ -510,7 +493,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Waterman Butterfly',
     category: 'Special',
     isGlobe: false,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3GeoProjection.geoPolyhedralWaterman()
@@ -525,7 +508,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Interrupted Goode',
     category: 'Special',
     isGlobe: false,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3GeoProjection.geoInterruptedMollweideHemispheres()
@@ -541,7 +524,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Special',
     isGlobe: false,
     disable: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3GeoProjection.geoInterruptedBoggs()
@@ -557,7 +540,7 @@ export const projections: ProjectionConfig[] = [
     category: 'Special',
     isGlobe: false,
     favorite: true,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3GeoProjection.geoInterruptedMollweide()
@@ -572,7 +555,7 @@ export const projections: ProjectionConfig[] = [
     label: 'Interrupted Homolosine',
     category: 'Special',
     isGlobe: false,
-    setup: (width, height, rotation, gridData, showWaterPoints) => {
+    setup: (width, height, _rotation, _gridData, _showWaterPoints) => {
       const padding = 0;
       
       return d3GeoProjection.geoInterruptedHomolosine()

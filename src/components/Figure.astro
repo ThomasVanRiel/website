@@ -23,7 +23,7 @@ const getExtension = (path: string) => {
 };
 
 const darkSrc = darkmode ? `${getPathWithoutExtension(src)}_dark${getExtension(src)}` : src;
-const imageId = `themed-image-${Math.random().toString(36).substr(2, 9)}`;
+const imageId = `themed-image-${Math.random().toString(36).slice(2, 11)}`;
 
 // Check if the source is a video file
 const videoExtensions = ['.mp4', '.webm', '.ogg'];
@@ -62,7 +62,7 @@ const isVideo = videoExtensions.some(ext => src.toLowerCase().endsWith(ext));
 </div>
 <p class="caption text-sm mt-0 px-10 text-center italic text-gray-600 dark:text-gray-400">{Astro.props.alt}</p>
 
-<script define:vars={{ imageId, src, darkSrc }}>
+<script is:inline define:vars={{ imageId, src, darkSrc }}>
   function updateMedia() {
     const media = document.getElementById(imageId);
     if (!media) return;

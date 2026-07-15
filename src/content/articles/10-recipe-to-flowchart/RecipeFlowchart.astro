@@ -318,11 +318,6 @@ Out"
   // Cache for the embedded font data URL
   let cachedFontDataUrl: string | null = null;
 
-  // Color scale for different node types
-  const colorScale = d3.scaleOrdinal()
-    .domain(["ingredient", "process", "output"])
-    .range(["#93c5fd", "#fcd34d", "#86efac"]);
-
   function initSVG() {
     d3.select("#recipe-flowchart").selectAll("*").remove();
     
@@ -360,9 +355,8 @@ Out"
       .attr("fill", "var(--text-color)")
       .text(instructionTitle);
 
-    // Get computed border color and node stroke color
+    // Get computed border color
     const borderColor = 'currentColor';
-    const nodeStrokeColor = 'currentColor';
 
     // Draw sketch-style rectangles using Rough.js with dynamic CSS colors
     // Top-left quadrant (Ingredients title)
@@ -627,7 +621,6 @@ Out"
     // Add rounded rectangles to nodes (only for non-ingredient nodes)
     node.filter((d: Node) => d.group !== "ingredient")
       .each(function(this: SVGGElement, d: Node) {
-        const g = d3.select(this);
         const rectWidth = nodeRadius * rectWidthMultiplier;
         const rectHeight = nodeRadius * rectHeightMultiplier;
         const x = -rectWidth / 2;
@@ -831,7 +824,6 @@ Out"
                 for (let attempt = 0; attempt < maxAttempts; attempt++) {
                   try {
                     const expanded = polysArr.map(p => closeRing(offsetPolygonWithClipper(p, pad)));
-                    const args = expanded.map(p => [p]);
                     // First try Clipper union (robust integer boolean ops)
                     let result: any = null;
                     try {
@@ -1220,7 +1212,7 @@ Out"
         let subOutputs: any[] = [];
         let pendingSubIngredients: Node[] = [];
         
-        subprocessLines.forEach((subLine: string, idx: number) => {
+        subprocessLines.forEach((subLine: string, _idx: number) => {
           const subLineLower = subLine.toLowerCase();
           if (subLineLower.startsWith('add ')) {
             let ingredient = subLine.substring(4).trim();
@@ -1354,7 +1346,6 @@ Out"
             const nextLineLower = nextLine.toLowerCase();
             if (!nextLineLower.startsWith('add ') && !nextLineLower.startsWith('subprocess ') && !nextLine.startsWith('}')) {
               // This is the next process step, link subprocess output to it
-              const nextId = `next_${j}`;
               // We'll link this after we create the node
               if (subOutput) {
                 // Store for later linking
@@ -1391,7 +1382,7 @@ Out"
           }
           
           // Link subprocess outputs if this is their target
-          for (const [subName, outputs] of subprocesses) {
+          for (const [_subName, outputs] of subprocesses) {
             outputs.forEach((output: any) => {
               if (output.pendingLinks && output.pendingLinks.includes(i)) {
                 addLink(output.node.id, id);
@@ -1457,7 +1448,7 @@ Out"
           }
           
           // Link subprocess outputs if this is their target
-          for (const [subName, outputs] of subprocesses) {
+          for (const [_subName, outputs] of subprocesses) {
             outputs.forEach((output: any) => {
               if (output.pendingLinks && output.pendingLinks.includes(i)) {
                 addLink(output.node.id, id);
@@ -1962,11 +1953,12 @@ Out `;
   }
 
   // URL encoding/decoding functions using hash fragment for shorter URLs
-  function encodeRecipeToURL(recipe: string, positions?: {[hash: string]: {x: number, y: number}}): string {
+  function encodeRecipeToURL(recipe: string, _positions?: {[hash: string]: {x: number, y: number}}): string {
     const url = new URL(window.location.href);
-    
+
     // Only encode the recipe text - skip positions to keep URLs short
-    const encoded = btoa(unescape(encodeURIComponent(recipe)));
+    // (unescape/encodeURIComponent is the standard UTF-8-safe pairing for btoa, which is Latin1-only)
+    const encoded = btoa(encodeURIComponent(recipe).replace(/%([0-9A-F]{2})/g, (_, hex) => String.fromCharCode(parseInt(hex, 16))));
     
     // Use hash fragment instead of query params for cleaner URLs
     url.hash = encoded;
@@ -1983,8 +1975,8 @@ Out `;
     }
     
     try {
-      // Decode base64
-      const recipe = decodeURIComponent(escape(atob(hash)));
+      // Decode base64 (the UTF-8-safe pairing for atob, which is Latin1-only)
+      const recipe = decodeURIComponent(atob(hash).split('').map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0')).join(''));
       
       return {
         recipe: recipe || null,
@@ -2108,6 +2100,14 @@ Out `;
     URL.revokeObjectURL(url);
   });
   
+  // Detect iOS Safari (touch-capable "MacIntel" is iPadOS reporting as desktop Safari).
+  // navigator.platform is deprecated but there's no working replacement here: userAgentData
+  // isn't implemented in Safari, which is exactly the browser this needs to detect.
+  function isIOSDevice(): boolean {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      ((navigator as any).platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+  }
+
   // Helper: rasterize an SVG element into a canvas (returns Promise<HTMLCanvasElement>)
   async function exportSVGToCanvas(svgElement: SVGSVGElement, scale = (window.devicePixelRatio || 1), whiteBackground = false) {
     // Clone to avoid mutating original
@@ -2154,8 +2154,7 @@ Out `;
       img.onload = () => {
         // Additional delay for iOS to ensure font renders properly
         // iOS Safari needs extra time to process embedded fonts in SVG images
-        const delay = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1) ? 200 : 0;
+        const delay = isIOSDevice() ? 200 : 0;
         
         setTimeout(() => {
           try {
@@ -2197,10 +2196,7 @@ Out `;
       const dataUrl = canvas.toDataURL('image/png');
       
       // iOS Safari doesn't support download attribute well, so we need a different approach
-      const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) || 
-                    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
-      
-      if (isIOS) {
+      if (isIOSDevice()) {
         // For iOS: Create an image element and display it for manual saving
         // This avoids any blob URL issues
         const img = new Image();
@@ -2362,7 +2358,7 @@ Out `;
   // Pots toggle: hide/show voronoi background and legend
   const togglePotsEl = document.getElementById('toggle-pots') as HTMLInputElement | null;
   if (togglePotsEl) {
-    togglePotsEl.addEventListener('change', (e) => {
+    togglePotsEl.addEventListener('change', () => {
       showPots = !!(togglePotsEl && togglePotsEl.checked);
       if (!showPots) {
         try {
@@ -2385,7 +2381,7 @@ Out `;
   // Ingredient width slider: adjust the left column width
   const ingredientWidthSlider = document.getElementById('ingredient-width-slider') as HTMLInputElement | null;
   if (ingredientWidthSlider) {
-    ingredientWidthSlider.addEventListener('input', (e) => {
+    ingredientWidthSlider.addEventListener('input', () => {
       const percentage = parseInt(ingredientWidthSlider.value);
       leftColumnWidth = (width * percentage) / 100;
       rightColumnWidth = width - leftColumnWidth;
