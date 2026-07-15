@@ -52,8 +52,7 @@
             return {
                 grid: dark ? 0x444444 : 0xcccccc,
                 gridHelper: dark ? 0x666666 : 0xcccccc,
-                text: dark ? '#ffffff' : '#000000',
-                dashedLine: dark ? 0xffffff : 0x000000
+                axis: dark ? 0xaaaaaa : 0x999999
             };
         };
         
@@ -299,6 +298,38 @@
             scene.add(mesh);
         }
 
+        // Axis lines with tick marks, drawn darker than the grid, along the same
+        // front edges the labels sit on
+        const axisLineMaterial = new THREE.LineBasicMaterial({ color: themeColors.axis });
+        const TICK_VALUES = [0, 0.2, 0.4, 0.6, 0.8, 1];
+        const TICK_LENGTH = 0.025;
+        const buildAxisLine = (axis: WallAxis) => {
+            const dir = { x: [1, 0, 0], y: [0, 1, 0], z: [0, 0, 1] }[axis];
+            // Ticks extend outward in local +z (mirrored per frame), except the
+            // z axis, whose ticks extend in local +x
+            const tick = axis === 'z'
+                ? new THREE.Vector3(TICK_LENGTH, 0, 0)
+                : new THREE.Vector3(0, 0, TICK_LENGTH);
+            const points: THREE.Vector3[] = [
+                new THREE.Vector3(0, 0, 0),
+                new THREE.Vector3(dir[0], dir[1], dir[2]),
+            ];
+            for (const value of TICK_VALUES) {
+                const base = new THREE.Vector3(dir[0] * value, dir[1] * value, dir[2] * value);
+                points.push(base, base.clone().add(tick));
+            }
+            const geometry = new THREE.BufferGeometry().setFromPoints(points);
+            return new THREE.LineSegments(geometry, axisLineMaterial);
+        };
+        const axisLines: Record<WallAxis, THREE.LineSegments> = {
+            x: buildAxisLine('x'),
+            y: buildAxisLine('y'),
+            z: buildAxisLine('z'),
+        };
+        for (const line of Object.values(axisLines)) {
+            scene.add(line);
+        }
+
         // A wall is a background wall when its outward normal points along the
         // view direction; each projection parks on its axis' background wall
         const viewDir = new THREE.Vector3();
@@ -316,17 +347,34 @@
             projectionMeshes.x.position.x = positiveVisible.x ? 1 - WALL_OFFSET : WALL_OFFSET;
             projectionMeshes.y.position.y = positiveVisible.y ? 1 - WALL_OFFSET : WALL_OFFSET;
             projectionMeshes.z.position.z = positiveVisible.z ? 1 - WALL_OFFSET : WALL_OFFSET;
+
+            // Park each axis label just outside the front edge of its visible
+            // wall, so labels flip together with the walls
+            const xVis = positiveVisible.x ? 1 : 0;
+            const yVis = positiveVisible.y ? 1 : 0;
+            const zVis = positiveVisible.z ? 1 : 0;
+            const xNear = 1 - xVis;
+            const zNear = 1 - zVis;
+            const out = (edge: number, amount: number) => edge + (edge === 1 ? amount : -amount);
+            placeLabel(hLabelEl, 0.5, yVis, out(zNear, 0.16));
+            placeLabel(bLabelEl, out(xNear, 0.16), yVis, 0.5);
+            placeLabel(vLabelEl, out(xVis, 0.1), 0.5, out(zNear, 0.1));
+
+            // Axis lines hug the same edges; mirror so ticks point outward
+            axisLines.x.position.set(0, yVis, zNear);
+            axisLines.x.scale.z = zNear === 1 ? 1 : -1;
+            axisLines.z.position.set(xNear, yVis, 0);
+            axisLines.z.scale.x = xNear === 1 ? 1 : -1;
+            axisLines.y.position.set(xVis, 0, zNear);
+            axisLines.y.scale.z = zNear === 1 ? 1 : -1;
+
+            const TICK_LABEL_OFFSET = 0.055;
+            hTickEls.forEach((el, i) => placeLabel(el, TICK_VALUES[i], yVis, out(zNear, TICK_LABEL_OFFSET)));
+            bTickEls.forEach((el, i) => placeLabel(el, out(xNear, TICK_LABEL_OFFSET), yVis, TICK_VALUES[i]));
+            vTickEls.forEach((el, i) => placeLabel(el, out(xVis, 0.04), vTickValues[i], out(zNear, 0.04)));
         };
         
         // Materials
-        const dashedLineMaterial = new THREE.LineDashedMaterial({ 
-            color: themeColors.dashedLine, 
-            linewidth: 1, 
-            scale: 1, 
-            dashSize: 0.03, 
-            gapSize: 0.01 
-        });
-
         //const surfaceMaterial = new THREE.MeshNormalMaterial({
         //    opacity: 0.5,
         //    transparent: true,
@@ -351,34 +399,33 @@
 
         
         
-        // Add axis labels
-        const createAxisLabel = (text: string, position: THREE.Vector3, size: number = 1) => {
-            const canvas = document.createElement('canvas');
-            canvas.width = 256;
-            canvas.height = 256;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-                ctx.font = `bold 128px 'Source Serif 4'`;
-                ctx.fillStyle = themeColors.text;
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.fillText(text, canvas.width / 2, canvas.height / 2);
-            }
-            const texture = new THREE.CanvasTexture(canvas);
-            const material = new THREE.SpriteMaterial({ map: texture, transparent: true });
-            const sprite = new THREE.Sprite(material);
-            sprite.scale.set(0.2*size, 0.2*size, 0.2*size);
-            sprite.position.copy(position);
-            return sprite;
+        // Axis labels: HTML overlay elements projected from 3D anchor points each
+        // frame — crisp site typography, theme styling via classes
+        const createOverlayLabel = (text: string, className = 'font-serif italic text-xl text-black dark:text-white') => {
+            const el = document.createElement('div');
+            el.className = `absolute pointer-events-none select-none -translate-x-1/2 -translate-y-1/2 ${className}`;
+            el.textContent = text;
+            container.appendChild(el);
+            return el;
         };
-        
-        // Axis labels
-        const vLabel = createAxisLabel('v', new THREE.Vector3(0, 1.1, 0));
-        const hLabel = createAxisLabel('h', new THREE.Vector3(1.1, 0, 0));
-        const bLabel = createAxisLabel('b', new THREE.Vector3(0, 0, 1.1));
-        scene.add(vLabel);
-        scene.add(hLabel);
-        scene.add(bLabel);
+        const vLabelEl = createOverlayLabel('v');
+        const hLabelEl = createOverlayLabel('h');
+        const bLabelEl = createOverlayLabel('b');
+
+        // Numeric tick labels; the v axis skips 0 to avoid stacking on the
+        // corner it shares with the h axis
+        const tickLabelClass = 'font-sans text-xs text-gray-600 dark:text-gray-400';
+        const hTickEls = TICK_VALUES.map((value) => createOverlayLabel(String(value), tickLabelClass));
+        const bTickEls = TICK_VALUES.map((value) => createOverlayLabel(String(value), tickLabelClass));
+        const vTickValues = TICK_VALUES.slice(1);
+        const vTickEls = vTickValues.map((value) => createOverlayLabel(String(value), tickLabelClass));
+
+        const labelWorldPos = new THREE.Vector3();
+        const placeLabel = (el: HTMLDivElement, x: number, y: number, z: number) => {
+            labelWorldPos.set(x, y, z).project(camera);
+            el.style.left = `${(labelWorldPos.x * 0.5 + 0.5) * container.clientWidth}px`;
+            el.style.top = `${(-labelWorldPos.y * 0.5 + 0.5) * container.clientHeight}px`;
+        };
         
         // Function to update theme colors dynamically
         const updateThemeColors = () => {
@@ -386,31 +433,7 @@
             
             // Rebuild box walls with the new grid colors
             buildWalls();
-
-            // Update dashed line material
-            dashedLineMaterial.color.setHex(themeColors.dashedLine);
-            
-            // Update axis labels
-            [vLabel, hLabel, bLabel].forEach((label, index) => {
-                const texts = ['v', 'h', 'b'];
-                
-                // Recreate the label with new color
-                const canvas = document.createElement('canvas');
-                canvas.width = 256;
-                canvas.height = 256;
-                const ctx = canvas.getContext('2d');
-                if (ctx) {
-                    ctx.font = `bold 128px 'Source Serif 4'`;
-                    ctx.fillStyle = themeColors.text;
-                    ctx.textAlign = 'center';
-                    ctx.textBaseline = 'middle';
-                    ctx.fillText(texts[index], canvas.width / 2, canvas.height / 2);
-                }
-                const texture = new THREE.CanvasTexture(canvas);
-                label.material.map?.dispose();
-                label.material.map = texture;
-                label.material.needsUpdate = true;
-            });
+            axisLineMaterial.color.setHex(themeColors.axis);
 
             // Re-tint legend swatches and surface colors for the new theme
             for (const { name, el } of legendSwatches) {
@@ -588,7 +611,7 @@
             }
             objects.length = 0; // Clear the array
             
-            // Draw bhmax line
+            // b/h max line endpoints (used to build the prism cut below)
             const bhmaxPoints = [];
             bhmaxPoints.push(new THREE.Vector3(0, 0, 0));
             if (bhmax > 0.5) {
@@ -598,14 +621,8 @@
             } else {
                 bhmaxPoints.push(new THREE.Vector3(1, 0, 1));
             }
-            
-            const bhmaxGeometry = new THREE.BufferGeometry().setFromPoints(bhmaxPoints);
-            const bhmaxLine = new THREE.Line(bhmaxGeometry, dashedLineMaterial);
-            bhmaxLine.computeLineDistances();
-            objects.push(bhmaxLine);
-            scene.add(bhmaxLine);
-            
-            // Draw bhmin line
+
+            // b/h min line endpoints (used to build the prism cut below)
             const bhminPoints = [];
             bhminPoints.push(new THREE.Vector3(0, 0, 0));
             if (bhmin > 0.5) {
@@ -615,13 +632,7 @@
             } else {
                 bhminPoints.push(new THREE.Vector3(1, 0, 1));
             }
-            
-            const bhminGeometry = new THREE.BufferGeometry().setFromPoints(bhminPoints);
-            const bhminLine = new THREE.Line(bhminGeometry, dashedLineMaterial);
-            bhminLine.computeLineDistances();
-            objects.push(bhminLine);
-            scene.add(bhminLine);
-            
+
             // Use ExtrudeGeometry for the prism between bhmin and bhmax
 
             // Define the 2D shape for extrusion (in x-z plane)
