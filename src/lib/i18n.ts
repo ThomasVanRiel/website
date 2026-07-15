@@ -131,7 +131,7 @@ const nl: UIStrings = {
       "Ik ben een <b><i>werktuigkundig ingenieur</i></b>, <b><i>onderzoeker</i></b>, <b><i>knutselaar</i></b> en <b><i>maker</i></b>. (En een nerd)",
       "Ik hou ervan om dingen te bouwen én kapot te maken. Ik krijg energie van uitdagende projecten met zelfgestuurd onderzoek en dynamisch probleemoplossen. Mijn echte passies zijn <b>elegant mechanisch ontwerp</b> en heldere <b>visuele communicatie</b>.",
       "Na het afronden van mijn doctoraat aan het Departement Werktuigkunde van de KU Leuven kon ik blijven als vast lid van het technisch ondersteunend personeel. Als expert in mechanisch ontwerp begeleid ik onderzoekers bij het ontwerp van hun experimentele opstellingen, en vertaal ik hun noden en die van andere partners naar een prototype dat in eigen huis gemaakt kan worden.",
-      " Op deze website schrijf ik onnozele artikels over dingen die me te binnen schieten. Wat je leest is absoluut niet klaar voor publicatie in wetenschappelijke tijdschriften.",
+      " Op deze website schrijf ik onnozele artikels over dingen die me te binnen schieten. Wat je leest is absoluut niet geschikt voor publicatie in wetenschappelijke tijdschriften.",
     ],
     recentArticles: "Recente artikels",
     allArticles: "Alle artikels",
