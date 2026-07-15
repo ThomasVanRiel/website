@@ -24,6 +24,16 @@
       </svg>
       <span>Drag to rotate</span>
     </div>
+    <div class="view-mode-toggle" id="view-mode-toggle">
+      <button class="mode-btn mode-btn-active" data-mode="map" type="button">Map</button>
+      <button class="mode-btn" data-mode="area" type="button">Area</button>
+      <button class="mode-btn" data-mode="length" type="button">Length</button>
+    </div>
+    <div class="distortion-legend" id="distortion-legend">
+      <span class="legend-label">smaller</span>
+      <span class="legend-gradient" id="legend-gradient"></span>
+      <span class="legend-label">larger</span>
+    </div>
   </div>
   <div class="projection-controls" id="projection-controls">
     <!-- Projection list generated dynamically by category -->
@@ -149,6 +159,109 @@
 
     .drag-indicator {
       padding: 4px;
+    }
+  }
+
+  .view-mode-toggle {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    z-index: 2;
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 8px;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  :global(.dark) .view-mode-toggle {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .mode-btn {
+    padding: 4px 10px;
+    border: none;
+    border-radius: 5px;
+    background: transparent;
+    color: white;
+    font-size: 11px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    opacity: 0.7;
+    transition: opacity 0.2s ease, background 0.2s ease;
+  }
+
+  .mode-btn:hover {
+    opacity: 1;
+  }
+
+  .mode-btn-active {
+    opacity: 1;
+    background: rgba(255, 255, 255, 0.25);
+  }
+
+  .distortion-legend {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    z-index: 2;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 6px;
+    color: white;
+    font-size: 10px;
+    font-weight: 500;
+    user-select: none;
+    pointer-events: none;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.2s ease;
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+  }
+
+  .distortion-legend.visible {
+    opacity: 0.85;
+    visibility: visible;
+  }
+
+  :global(.dark) .distortion-legend {
+    background: rgba(255, 255, 255, 0.15);
+  }
+
+  .legend-gradient {
+    width: 56px;
+    height: 8px;
+    border-radius: 4px;
+  }
+
+  @media (max-width: 480px) {
+    .view-mode-toggle {
+      top: 8px;
+      left: 8px;
+      padding: 2px;
+    }
+
+    .mode-btn {
+      padding: 3px 7px;
+      font-size: 10px;
+    }
+
+    .distortion-legend {
+      bottom: 8px;
+      left: 8px;
+      padding: 4px 8px;
+      font-size: 9px;
+    }
+
+    .legend-gradient {
+      width: 40px;
     }
   }
 
@@ -405,6 +518,92 @@
     return Math.max(1, Math.min(4, canvasWidth / 200));
   };
 
+  // Numerically estimate the local Jacobian of a projection at (lon, lat) via central
+  // differences, then derive area scale (Jacobian determinant) and max linear scale
+  // (largest singular value, i.e. the long axis of the Tissot indicatrix). Both are
+  // expressed relative to true ground distance (sphere radius = 1), so a projection
+  // with zero distortion at a point returns area = length = 1.
+  const computeDistortionRaw = (lon: number, lat: number, proj: d3.GeoProjection): { area: number; length: number } | null => {
+    const h = 0.25; // degrees
+    const toRad = Math.PI / 180;
+    const pLonPlus = proj([lon + h, lat]);
+    const pLonMinus = proj([lon - h, lat]);
+    const pLatPlus = proj([lon, lat + h]);
+    const pLatMinus = proj([lon, lat - h]);
+    if (!pLonPlus || !pLonMinus || !pLatPlus || !pLatMinus) return null;
+    if (![...pLonPlus, ...pLonMinus, ...pLatPlus, ...pLatMinus].every(isFinite)) return null;
+
+    const cosPhi = Math.cos(lat * toRad);
+    if (Math.abs(cosPhi) < 1e-3) return null; // too close to the poles to measure reliably
+
+    const dLambda = 2 * h * toRad;
+    const dPhi = 2 * h * toRad;
+
+    // Jacobian mapping true ground displacement (east/north, in radians) to map displacement
+    const m00 = (pLonPlus[0] - pLonMinus[0]) / dLambda / cosPhi;
+    const m10 = (pLonPlus[1] - pLonMinus[1]) / dLambda / cosPhi;
+    const m01 = (pLatPlus[0] - pLatMinus[0]) / dPhi;
+    const m11 = (pLatPlus[1] - pLatMinus[1]) / dPhi;
+
+    const area = Math.abs(m00 * m11 - m01 * m10);
+
+    // Singular values of the Jacobian via eigenvalues of J^T J
+    const E = m00 * m00 + m10 * m10;
+    const F = m00 * m01 + m10 * m11;
+    const G = m01 * m01 + m11 * m11;
+    const mid = (E + G) / 2;
+    const disc = Math.sqrt(Math.max(0, ((E - G) / 2) ** 2 + F * F));
+    const sigmaMaxSq = mid + disc;
+
+    if (!isFinite(area) || !isFinite(sigmaMaxSq) || area === 0) return null;
+
+    return { area, length: Math.sqrt(sigmaMaxSq) };
+  };
+
+  // Maps a scale ratio (value / typical-value-for-this-projection) to a red-white-blue color.
+  // ratio > 1 (larger than typical) -> red, ratio < 1 (smaller) -> blue, ratio = 1 -> neutral gray.
+  // The clamp (log2 units) is fixed per mode, not per projection, so the same color always
+  // means the same magnitude of distortion and projections can be visually compared against
+  // each other. A genuinely equal-area projection reading as flat gray in Area mode is
+  // therefore a correct, meaningful result (it really has ~0 area distortion), not a scaling
+  // artifact. AREA_CLAMP=4 / LENGTH_CLAMP=2 are paired to match how a conformal projection's
+  // linear scale factor relates to its area scale factor (area = length^2).
+  const AREA_CLAMP_LOG2 = Math.log2(4);
+  const LENGTH_CLAMP_LOG2 = Math.log2(2);
+
+  const ratioToColor = (ratio: number, clampLog2: number): string => {
+    const t = Math.max(-1, Math.min(1, Math.log2(ratio) / clampLog2));
+    const neutral = getDistortionNeutral();
+    const target = t >= 0 ? DISTORTION_RED : DISTORTION_BLUE;
+    const f = Math.abs(t);
+    const r = Math.round(neutral[0] + (target[0] - neutral[0]) * f);
+    const g = Math.round(neutral[1] + (target[1] - neutral[1]) * f);
+    const b = Math.round(neutral[2] + (target[2] - neutral[2]) * f);
+    return `rgb(${r}, ${g}, ${b})`;
+  };
+
+  // Computes a per-point distortion color, normalized against the median scale factor for this
+  // projection so the color reflects *relative* distortion rather than absolute scale (which is
+  // arbitrary and depends on the projection's pixel size, e.g. .scale(300) vs .scale(500)).
+  const computeDistortionColors = (data: DataPoint[], proj: d3.GeoProjection, mode: 'area' | 'length'): (string | undefined)[] => {
+    const raw = data.map(d => computeDistortionRaw(d.lon, d.lat, proj));
+    const values = raw
+      .map(r => r ? (mode === 'area' ? r.area : r.length) : null)
+      .filter((v): v is number => v != null && v > 0)
+      .sort((a, b) => a - b);
+
+    if (values.length === 0) return data.map(() => undefined);
+
+    const reference = values[Math.floor(values.length / 2)]; // median
+    const clampLog2 = mode === 'area' ? AREA_CLAMP_LOG2 : LENGTH_CLAMP_LOG2;
+
+    return raw.map(r => {
+      if (!r) return undefined;
+      const v = mode === 'area' ? r.area : r.length;
+      return ratioToColor(v / reference, clampLog2);
+    });
+  };
+
   // Convert color from JSON to RGB string, darkening in dark mode
   const colorToRgb = (color: [number, number, number]): string => {
     const darkModeFactor = cachedIsDark ? 0.4 : 1.0; // Darken by 70% in dark mode
@@ -420,8 +619,17 @@
   let cachedIsDark: boolean = isDarkTheme(); // Cache to avoid repeated calls during render
   // ========================
 
+  // ===== DISTORTION VIEW MODES =====
+  type ViewMode = 'map' | 'area' | 'length';
+  const DISTORTION_RED: [number, number, number] = [178, 24, 43];
+  const DISTORTION_BLUE: [number, number, number] = [33, 102, 172];
+  const getDistortionNeutral = (): [number, number, number] => cachedIsDark ? [190, 190, 190] : [115, 115, 115];
+  // ==================================
+
   // State
   let currentProjectionId: string = projections[0].id;
+  let viewMode: ViewMode = 'map';
+  let cachedDistortionColors: (string | undefined)[] | null = null;
   let gridData: DataPoint[] = [];
   let canvas: HTMLCanvasElement;
   let ctx: CanvasRenderingContext2D;
@@ -575,6 +783,9 @@
 
     // Setup event listeners
     setupEventListeners();
+
+    // Prime the distortion legend gradient for the current theme
+    updateLegendGradient();
   }
 
   async function loadGridData() {
@@ -657,26 +868,42 @@
 
   function projectPoints() {
     const isGlobe = getProjectionById(currentProjectionId)?.isGlobe ?? false;
-    projectedPoints = gridData.map(d => {
+
+    // Recomputing per-point distortion is O(n) numerical Jacobians; skip it on every
+    // mousemove while dragging a globe and reuse the last computed colors instead,
+    // then refresh once the drag ends (see setupEventListeners mouseup/touchend).
+    let distortionColors: (string | undefined)[] | null = null;
+    if (viewMode !== 'map') {
+      if (isDragging && cachedDistortionColors && cachedDistortionColors.length === gridData.length) {
+        distortionColors = cachedDistortionColors;
+      } else {
+        distortionColors = computeDistortionColors(gridData, projection, viewMode);
+        cachedDistortionColors = distortionColors;
+      }
+    }
+
+    projectedPoints = gridData.map((d, i) => {
       const coords = projection([d.lon, d.lat]);
       const alpha = isGlobe ? getClipAlpha(d.lon, d.lat, projection) : 1;
-      
+
       // Use pre-calculated city light color in dark mode only, otherwise use regular colors
       let color: string | undefined;
-      if (cachedIsDark && d.isCityLight && d.cityLightColor) {
+      if (distortionColors) {
+        color = distortionColors[i];
+      } else if (cachedIsDark && d.isCityLight && d.cityLightColor) {
         color = d.cityLightColor;
       } else if (d.color) {
         color = colorToRgb(d.color);
       }
-      
+
       return {
         x: coords?.[0] ?? -9999,
         y: coords?.[1] ?? -9999,
-        visible: alpha > 0 && coords != null && isFinite(coords[0]) && isFinite(coords[1]),
+        visible: alpha > 0 && coords != null && isFinite(coords[0]) && isFinite(coords[1]) && (!distortionColors || color != null),
         alpha,
         type: d.type,
         color,
-        isCityLight: cachedIsDark ? d.isCityLight : false
+        isCityLight: viewMode === 'map' && cachedIsDark ? d.isCityLight : false
       };
     });
   }
@@ -712,15 +939,15 @@
     }
     
     // Draw points
-    const filteredIndices = CONFIG.showWaterPoints 
+    const filteredIndices = (CONFIG.showWaterPoints || viewMode !== 'map')
       ? projectedPoints.map((_, i) => i)
       : projectedPoints.map((p, i) => p.type !== 0 ? i : -1).filter(i => i >= 0);
-    
+
     // First pass: draw regular points (non-city lights)
     filteredIndices.forEach(i => {
       const p = projectedPoints[i];
       if (!p.visible || p.isCityLight) return;
-      
+
       // Use color if available, otherwise fall back to default colors
       ctx.fillStyle = p.color || (p.type === 0 ? CONFIG.water : CONFIG.land);
       ctx.globalAlpha = CONFIG.pointOpacity * p.alpha;
@@ -807,36 +1034,11 @@
     const oldPath = path;
     const oldPoints = [...projectedPoints];
 
-    // Setup new projection
+    // Setup new projection (this also recomputes projectedPoints, including distortion colors)
     setupProjection(currentProjectionId);
-    const newProjection = projection;
     const newPath = path;
     const projConfig = getProjectionById(currentProjectionId);
-
-    // Calculate new projected points
-    const isGlobe = projConfig?.isGlobe ?? false;
-    const newPoints = gridData.map(d => {
-      const coords = newProjection([d.lon, d.lat]);
-      const alpha = isGlobe ? getClipAlpha(d.lon, d.lat, newProjection) : 1;
-      
-      // Use pre-calculated city light color in dark mode only, otherwise use regular colors
-      let color: string | undefined;
-      if (cachedIsDark && d.isCityLight && d.cityLightColor) {
-        color = d.cityLightColor;
-      } else if (d.color) {
-        color = colorToRgb(d.color);
-      }
-      
-      return {
-        x: coords?.[0] ?? -9999,
-        y: coords?.[1] ?? -9999,
-        visible: alpha > 0 && coords != null && isFinite(coords[0]) && isFinite(coords[1]),
-        alpha,
-        type: d.type,
-        color,
-        isCityLight: cachedIsDark ? d.isCityLight : false
-      };
-    });
+    const newPoints = projectedPoints;
 
     const duration = 1000;
     const startTime = performance.now();
@@ -909,7 +1111,7 @@
       });
 
       // Draw points
-      const filteredIndices = CONFIG.showWaterPoints
+      const filteredIndices = (CONFIG.showWaterPoints || viewMode !== 'map')
         ? projectedPoints.map((_: any, i: number) => i)
         : projectedPoints.map((p: any, i: number) => p.type !== 0 ? i : -1).filter((i: number) => i >= 0);
 
@@ -997,6 +1199,7 @@
         isDragging = false;
         const projConfig = getProjectionById(currentProjectionId);
         canvas.style.cursor = projConfig?.isGlobe ? 'grab' : 'default';
+        refreshDistortionColors();
       }
     });
 
@@ -1050,12 +1253,14 @@
     canvas.addEventListener('touchend', () => {
       if (isDragging) {
         isDragging = false;
+        refreshDistortionColors();
       }
     });
 
     canvas.addEventListener('touchcancel', () => {
       if (isDragging) {
         isDragging = false;
+        refreshDistortionColors();
       }
     });
 
@@ -1092,6 +1297,7 @@
     const observer = new MutationObserver(() => {
       cachedIsDark = isDarkTheme();
       CONFIG = getThemeColors();
+      updateLegendGradient();
       projectPoints(); // Recalculate colors for new theme
       render();
     });
@@ -1099,6 +1305,47 @@
       attributes: true,
       attributeFilter: ['class']
     });
+
+    // View mode toggle (map / area distortion / length distortion)
+    document.querySelectorAll<HTMLButtonElement>('.mode-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        const mode = btn.dataset.mode as ViewMode | undefined;
+        if (mode) setViewMode(mode);
+      });
+    });
+  }
+
+  // Re-runs the (skipped-during-drag) distortion computation once a globe drag ends,
+  // so colors settle onto the final rotation instead of staying stale from drag start.
+  function refreshDistortionColors() {
+    if (viewMode === 'map') return;
+    setupProjection(currentProjectionId);
+    render();
+  }
+
+  function setViewMode(mode: ViewMode) {
+    if (mode === viewMode) return;
+    viewMode = mode;
+
+    document.querySelectorAll<HTMLButtonElement>('.mode-btn').forEach(btn => {
+      btn.classList.toggle('mode-btn-active', btn.dataset.mode === mode);
+    });
+
+    document.getElementById('distortion-legend')?.classList.toggle('visible', mode !== 'map');
+    const legendTitle = mode === 'area' ? 'Area distortion' : mode === 'length' ? 'Length distortion' : '';
+    document.getElementById('distortion-legend')?.setAttribute('title', legendTitle);
+
+    setupProjection(currentProjectionId);
+    render();
+  }
+
+  function updateLegendGradient() {
+    const gradientEl = document.getElementById('legend-gradient');
+    if (!gradientEl) return;
+    const [nr, ng, nb] = getDistortionNeutral();
+    const [br, bg, bb] = DISTORTION_BLUE;
+    const [rr, rg, rb] = DISTORTION_RED;
+    gradientEl.style.background = `linear-gradient(to right, rgb(${br}, ${bg}, ${bb}), rgb(${nr}, ${ng}, ${nb}), rgb(${rr}, ${rg}, ${rb}))`;
   }
 
   function syncControlsHeight() {
