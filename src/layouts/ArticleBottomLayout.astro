@@ -1,5 +1,5 @@
 ---
-import type { CollectionEntry } from "astro:content";
+import { render, type CollectionEntry } from "astro:content";
 import type { MarkdownHeading } from "astro";
 import TableOfContents from "@components/TableOfContents.astro";
 import { DEFAULT_LANG, type Lang, useTranslations, localizePath } from "@lib/i18n";
@@ -14,11 +14,11 @@ type Props = {
 };
 
 // Get the requested entry
-const { entry, headings, lang = DEFAULT_LANG, baseSlug = entry.slug, isFallback = false } = Astro.props;
+const { entry, headings, lang = DEFAULT_LANG, baseSlug = entry.id, isFallback = false } = Astro.props;
 const t = useTranslations(lang);
 const { collection, data } = entry;
 const isDraft = "draft" in data && data.draft;
-const { Content } = await entry.render();
+const { Content } = await render(entry);
 
 // Get the next and prev entries (localized) without wraparound
 const items = (await getLocalizedEntries(collection, lang))

@@ -21,7 +21,7 @@ export async function getStaticPaths() {
   const photos = await getCollection("photography")
   return LANGS.flatMap((lang) =>
     photos.map((photo) => ({
-      params: { lang, slug: photo.slug },
+      params: { lang, slug: photo.id },
       props: photo,
     }))
   )
@@ -39,17 +39,17 @@ function thumbUrl(slug: string, src: string, width: number) {
 
 const gallery = await Promise.all(
   photos.map(async ({ src, alt }) => {
-    const originalPath = join(publicDir, "photography", photo.slug, src)
+    const originalPath = join(publicDir, "photography", photo.id, src)
     const meta = await sharp(originalPath).metadata()
     const swap = (meta.orientation ?? 1) >= 5
     const width = (swap ? meta.height : meta.width) ?? 1
     const height = (swap ? meta.width : meta.height) ?? 1
     const largeWidth = Math.min(width, LIGHTBOX_WIDTH)
     const largeHeight = Math.round((largeWidth * height) / width)
-    const fullSrc = `/photography/${photo.slug}/${src}`
-    const largeSrc = thumbUrl(photo.slug, src, LIGHTBOX_WIDTH)
-    const defaultSrc = thumbUrl(photo.slug, src, THUMB_WIDTHS[THUMB_WIDTHS.length - 1])
-    const srcset = THUMB_WIDTHS.map((w) => `${thumbUrl(photo.slug, src, w)} ${w}w`).join(", ")
+    const fullSrc = `/photography/${photo.id}/${src}`
+    const largeSrc = thumbUrl(photo.id, src, LIGHTBOX_WIDTH)
+    const defaultSrc = thumbUrl(photo.id, src, THUMB_WIDTHS[THUMB_WIDTHS.length - 1])
+    const srcset = THUMB_WIDTHS.map((w) => `${thumbUrl(photo.id, src, w)} ${w}w`).join(", ")
     return { alt, width, height, largeWidth, largeHeight, largeSrc, fullSrc, defaultSrc, srcset }
   })
 )

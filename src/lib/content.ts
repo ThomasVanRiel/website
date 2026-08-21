@@ -33,7 +33,7 @@ export async function getLocalizedEntries<C extends CollectionKey>(
   for (const entry of all) {
     const d = dataOf(entry)
     const entryLang = d.lang ?? DEFAULT_LANG
-    const key = d.translationKey ?? entry.slug
+    const key = d.translationKey ?? entry.id
     const group = byKey.get(key) ?? {}
     group[entryLang] = entry
     byKey.set(key, group)
@@ -61,8 +61,8 @@ export async function getLocalizedEntry<C extends CollectionKey>(
 
 /**
  * Flattens a localized entry into a plain object suitable for passing to a client
- * island (`slug` is replaced by the locale-independent `baseSlug`).
+ * island (`id` is replaced by the locale-independent `baseSlug`).
  */
 export function toCardEntry<C extends CollectionKey>({ entry, baseSlug }: LocalizedEntry<C>): CollectionEntry<C> {
-  return { ...entry, slug: baseSlug }
+  return { ...entry, id: baseSlug }
 }

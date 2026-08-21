@@ -1,5 +1,5 @@
 ---
-import type { CollectionEntry } from "astro:content"
+import { render, type CollectionEntry } from "astro:content"
 import PageLayout from "@layouts/PageLayout.astro"
 import TopLayout from "@layouts/TopLayout.astro"
 import BottomLayout from "@layouts/BottomLayout.astro"
@@ -24,7 +24,7 @@ type Props = { entry: CollectionEntry<"articles">; baseSlug: string; isFallback:
 const lang = Astro.params.lang as Lang
 const { entry, baseSlug, isFallback } = Astro.props
 const { summary } = entry.data
-const { headings } = await entry.render()
+const { headings } = await render(entry)
 ---
 
 <PageLayout lang={lang} title={fullTitle(entry.data)} description={summary}>

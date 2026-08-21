@@ -6,7 +6,7 @@ export async function getStaticPaths() {
   const items = await getCollection("legal")
   return items
     .filter((e) => (e.data.lang ?? "en") === "en")
-    .map((e) => ({ params: { slug: e.slug } }))
+    .map((e) => ({ params: { slug: e.id } }))
 }
 
 return Astro.redirect(`/en/legal/${Astro.params.slug}`, 301)

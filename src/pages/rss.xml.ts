@@ -25,8 +25,8 @@ export async function GET(context: Context) {
       description: item.data.summary,
       pubDate: item.data.date,
       link: item.collection === "articles"
-        ? `/${DEFAULT_LANG}/articles/${item.slug}/`
-        : `/${DEFAULT_LANG}/projects/${item.slug}/`,
+        ? `/${DEFAULT_LANG}/articles/${item.id}/`
+        : `/${DEFAULT_LANG}/projects/${item.id}/`,
     })),
   })
 }

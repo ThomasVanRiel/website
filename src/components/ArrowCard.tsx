@@ -11,7 +11,7 @@ type Props = {
 export default function ArrowCard({entry, pill, lang = DEFAULT_LANG}: Props) {
     const t = useTranslations(lang)
     return (
-      <a href={localizePath(`/${entry.collection}/${entry.slug}`, lang)} class="button group p-4 gap-3 flex items-center border rounded-lg border-black/15 dark:border-white/20 transition-colors duration-100 ease-in-out">
+      <a href={localizePath(`/${entry.collection}/${entry.id}`, lang)} class="button group p-4 gap-3 flex items-center border rounded-lg border-black/15 dark:border-white/20 transition-colors duration-100 ease-in-out">
       <div class="w-full group-hover:text-brand-dk group-hover:dark:text-brand-lt blend ">
         <div class="flex flex-wrap items-center gap-2">
           {pill &&

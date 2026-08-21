@@ -1,7 +1,6 @@
 import { defineConfig } from "astro/config"
 import mdx from "@astrojs/mdx"
 import sitemap from "@astrojs/sitemap"
-import tailwind from "@astrojs/tailwind"
 import solidJs from "@astrojs/solid-js"
 import remarkMath from "remark-math"
 import rehypeKatex  from "rehype-katex"
@@ -28,10 +27,11 @@ export default defineConfig({
     "/search": "/en/search",
     "/blog": "/en/articles",
   },
-  integrations: [mdx({
+  markdown: {
     remarkPlugins: [remarkMath],
     rehypePlugins: [[rehypeKatex, { output: 'html' }]],
-  }), sitemap({
+  },
+  integrations: [mdx(), sitemap({
       filter: (page) => {
         // Filter out known draft posts
         const draftPaths = [
@@ -39,5 +39,5 @@ export default defineConfig({
         
         return !draftPaths.some(path => page.includes(path))
       }
-    }), solidJs(), tailwind({ applyBaseStyles: false })],
+    }), solidJs()],
 })
