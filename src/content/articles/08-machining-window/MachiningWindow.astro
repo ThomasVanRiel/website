@@ -9,6 +9,12 @@
 <div id="slider-container" class="flex flex-wrap justify-center gap-x-10 gap-y-4 mt-4">
 </div>
 
+<p class="mt-5 text-center text-sm text-gray-600 dark:text-gray-400">
+    All axes and parameters are <strong class="font-semibold">normalized</strong>: every value runs from 0 to 1
+    and carries no unit. What the model shows is the <em>shape</em> of the machining window &mdash; which limit
+    bounds it where, and how it deforms as you move a limit &mdash; not a set of numbers to dial into a machine.
+</p>
+
 <script>
     import * as THREE from 'three';
     import { OrbitControls } from 'three/addons/controls/OrbitControls.js';

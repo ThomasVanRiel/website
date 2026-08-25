@@ -36,6 +36,9 @@ const posts = (await getLocalizedEntries("articles", lang))
             {t.home.subtitle}
           </p>
           <div id="ctaButtons" class='animated flex flex-wrap gap-4 justify-center mt-5'>
+            <a href="https://gallery.thomasvanriel.com" target="_blank" rel="noopener noreferrer" class='button-invert py-2 px-4 rounded truncate text-xs md:text-sm lg:text-base text-white dark:text-brand-dk hover:opacity-75 blend'>
+              {t.home.viewPhotography}
+            </a>
             <a href={localizePath("/articles", lang)} class='button-invert py-2 px-4 rounded truncate text-xs md:text-sm lg:text-base text-white dark:text-brand-dk hover:opacity-75 blend'>
               {t.home.readArticles}
             </a>
