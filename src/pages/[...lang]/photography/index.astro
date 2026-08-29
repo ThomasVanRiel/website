@@ -4,13 +4,13 @@ import PageLayout from "@layouts/PageLayout.astro"
 import TopLayout from "@layouts/TopLayout.astro"
 import BottomLayout from "@layouts/BottomLayout.astro"
 import Photography from "@components/Photography"
-import { LANGS, type Lang, useTranslations } from "@lib/i18n"
+import { LANGS, useTranslations, langParam, langFromParam } from "@lib/i18n"
 
 export function getStaticPaths() {
-  return LANGS.map((lang) => ({ params: { lang } }))
+  return LANGS.map((lang) => ({ params: { lang: langParam(lang) } }))
 }
 
-const lang = Astro.params.lang as Lang
+const lang = langFromParam(Astro.params.lang)
 const t = useTranslations(lang)
 
 const photos = (await getCollection("photography"))

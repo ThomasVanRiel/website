@@ -4,7 +4,7 @@ import PageLayout from "@layouts/PageLayout.astro"
 import TopLayout from "@layouts/TopLayout.astro"
 import BottomLayout from "@layouts/BottomLayout.astro"
 import { formatDate } from "@lib/utils"
-import { LANGS, type Lang, useTranslations } from "@lib/i18n"
+import { LANGS, useTranslations, langParam, langFromParam } from "@lib/i18n"
 import { getLocalizedEntries } from "@lib/content"
 import { SITE } from "@consts"
 
@@ -12,14 +12,14 @@ export async function getStaticPaths() {
   const paths = []
   for (const lang of LANGS) {
     for (const { entry, baseSlug } of await getLocalizedEntries("legal", lang)) {
-      paths.push({ params: { lang, slug: baseSlug }, props: { entry } })
+      paths.push({ params: { lang: langParam(lang), slug: baseSlug }, props: { entry } })
     }
   }
   return paths
 }
 
 type Props = { entry: CollectionEntry<"legal"> }
-const lang = Astro.params.lang as Lang
+const lang = langFromParam(Astro.params.lang)
 const t = useTranslations(lang)
 const { entry } = Astro.props
 const { title, date } = entry.data

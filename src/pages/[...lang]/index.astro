@@ -2,14 +2,14 @@
 import PageLayout from "@layouts/PageLayout.astro"
 import ArrowCard from "@components/ArrowCard"
 import { SOCIALS } from "@consts"
-import { LANGS, type Lang, useTranslations, localizePath } from "@lib/i18n"
+import { LANGS, useTranslations, localizePath, langParam, langFromParam } from "@lib/i18n"
 import { getLocalizedEntries, toCardEntry } from "@lib/content"
 
 export function getStaticPaths() {
-  return LANGS.map((lang) => ({ params: { lang } }))
+  return LANGS.map((lang) => ({ params: { lang: langParam(lang) } }))
 }
 
-const lang = Astro.params.lang as Lang
+const lang = langFromParam(Astro.params.lang)
 const t = useTranslations(lang)
 
 const posts = (await getLocalizedEntries("articles", lang))

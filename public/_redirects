@@ -1,0 +1,18 @@
+# Netlify edge redirects.
+#
+# Astro's SSG build can only express a redirect as an HTML page with a
+# <meta http-equiv="refresh">, which the browser must download and render before
+# it moves on — a visible flash. These rules make Netlify answer with a real HTTP
+# redirect instead, so no redirect page is ever rendered. They also cover the
+# wildcard cases the `redirects` block in astro.config.mjs cannot enumerate.
+#
+# The trailing "!" (force) is required wherever Astro also emits a file at that
+# path: without it Netlify prefers the static file over the rule.
+#
+# English moved from /en/... to the site root; other locales stay prefixed (/nl/...).
+
+/en                  /                     301!
+/en/*                /:splat               301!
+
+/blog                /articles             301!
+/blog/*              /articles/:splat      301!

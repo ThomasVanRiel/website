@@ -26,11 +26,28 @@ export function stripLang(pathname: string): string {
   return pathname.replace(/(.)\/$/, "$1")
 }
 
-/** Prefix a bare app path with a locale, e.g. ("/articles", "nl") -> "/nl/articles". */
+/**
+ * Prefix a bare app path with a locale, e.g. ("/articles", "nl") -> "/nl/articles".
+ * The default locale is unprefixed and lives at the root: ("/articles", "en") -> "/articles".
+ */
 export function localizePath(path: string, lang: Lang): string {
   if (!path.startsWith("/")) return path // external / mailto / hash
+  if (lang === DEFAULT_LANG) return path
   if (path === "/") return `/${lang}`
   return `/${lang}${path}`
+}
+
+/**
+ * The `[...lang]` route param for a locale. `undefined` for the default locale, which
+ * collapses the segment so its pages are emitted at the root.
+ */
+export function langParam(lang: Lang): Lang | undefined {
+  return lang === DEFAULT_LANG ? undefined : lang
+}
+
+/** The locale a page was built for, read back from its `[...lang]` route param. */
+export function langFromParam(param: string | undefined): Lang {
+  return isLang(param) ? param : DEFAULT_LANG
 }
 
 /** Swap the locale of a full (already-prefixed) pathname. */

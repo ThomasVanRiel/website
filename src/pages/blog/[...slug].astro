@@ -1,7 +1,7 @@
 ---
 import { getCollection } from "astro:content"
 
-// Legacy redirect: /blog/<slug> -> /en/articles/<slug>
+// Legacy redirect: /blog/<slug> -> /articles/<slug>
 export async function getStaticPaths() {
   const items = await getCollection("articles")
   return items
@@ -9,5 +9,5 @@ export async function getStaticPaths() {
     .map((e) => ({ params: { slug: e.id } }))
 }
 
-return Astro.redirect(`/en/articles/${Astro.params.slug}`, 301)
+return Astro.redirect(`/articles/${Astro.params.slug}`, 301)
 ---

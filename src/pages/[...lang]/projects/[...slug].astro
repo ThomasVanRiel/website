@@ -5,21 +5,21 @@ import TopLayout from "@layouts/TopLayout.astro"
 import BottomLayout from "@layouts/BottomLayout.astro"
 import ArticleTopLayout from "@layouts/ArticleTopLayout.astro"
 import ArticleBottomLayout from "@layouts/ArticleBottomLayout.astro"
-import { LANGS, type Lang } from "@lib/i18n"
+import { LANGS, langParam, langFromParam } from "@lib/i18n"
 import { getLocalizedEntries } from "@lib/content"
 
 export async function getStaticPaths() {
   const paths = []
   for (const lang of LANGS) {
     for (const { entry, baseSlug, isFallback } of await getLocalizedEntries("projects", lang)) {
-      paths.push({ params: { lang, slug: baseSlug }, props: { entry, baseSlug, isFallback } })
+      paths.push({ params: { lang: langParam(lang), slug: baseSlug }, props: { entry, baseSlug, isFallback } })
     }
   }
   return paths
 }
 
 type Props = { entry: CollectionEntry<"projects">; baseSlug: string; isFallback: boolean }
-const lang = Astro.params.lang as Lang
+const lang = langFromParam(Astro.params.lang)
 const { entry, baseSlug, isFallback } = Astro.props
 const { title, summary } = entry.data
 ---

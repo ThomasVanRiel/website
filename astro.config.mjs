@@ -8,24 +8,25 @@ import rehypeKatex  from "rehype-katex"
 // https://astro.build/config
 export default defineConfig({
   site: "https://thomasvanriel.com",
-  // English is the default locale and lives under /en. Bare paths redirect to /en.
-  // Routing itself is handled by the manual src/pages/[lang]/ tree; this block only
+  // English is the default locale and is served unprefixed at the root; other locales
+  // are prefixed (/nl/...). Routing is handled by the src/pages/[...lang]/ tree, whose
+  // lang param is `undefined` for English so the segment collapses away. This block only
   // provides locale metadata (helpers + sitemap), not routing/redirect behavior.
   i18n: {
     locales: ["en", "nl"],
     defaultLocale: "en",
   },
-  // Static (non-parameterized) redirects only. Dynamic [...slug] legacy redirects can't be
-  // statically enumerated in SSG, so they live as thin redirect pages under src/pages/
-  // (articles/[...slug].astro, projects/[...slug].astro, legal/[...slug].astro, blog/[...slug].astro).
+  // Redirects for the previous URL scheme, where English lived under /en/. SSG can only
+  // emit these as meta-refresh pages, so public/_redirects mirrors them (plus the
+  // wildcards that can't be enumerated here) as real HTTP redirects on Netlify.
   redirects: {
-    "/": "/en/",
-    "/articles": "/en/articles",
-    "/projects": "/en/projects",
-    "/photography": "/en/photography",
-    "/work": "/en/work",
-    "/search": "/en/search",
-    "/blog": "/en/articles",
+    "/en": "/",
+    "/en/articles": "/articles",
+    "/en/projects": "/projects",
+    "/en/photography": "/photography",
+    "/en/work": "/work",
+    "/en/search": "/search",
+    "/blog": "/articles",
   },
   markdown: {
     remarkPlugins: [remarkMath],
