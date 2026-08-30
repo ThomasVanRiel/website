@@ -73,7 +73,7 @@ const en = {
   },
   home: {
     greeting: "Hello, I am",
-    subtitle: "Mechanical Engineer, Tinkerer, and Creator",
+    subtitle: "Mechanical Engineer and independent researcher",
     viewPhotography: "View my photographs",
     readArticles: "Read my articles",
     tryFlowchart: "Try my flowchart recipe generator",
@@ -142,7 +142,7 @@ const nl: UIStrings = {
   },
   home: {
     greeting: "Hallo, ik ben",
-    subtitle: "Werktuigkundig ingenieur, knutselaar en maker",
+    subtitle: "Werktuigkundig ingenieur en onafhankelijk onderzoeker",
     viewPhotography: "Bekijk mijn foto's",
     readArticles: "Lees mijn artikels",
     tryFlowchart: "Probeer mijn flowchart-receptgenerator",
