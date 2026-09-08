@@ -4,6 +4,7 @@ import sitemap from "@astrojs/sitemap"
 import solidJs from "@astrojs/solid-js"
 import remarkMath from "remark-math"
 import rehypeKatex  from "rehype-katex"
+import { unified } from "@astrojs/markdown-remark"
 
 // https://astro.build/config
 export default defineConfig({
@@ -29,8 +30,10 @@ export default defineConfig({
     "/blog": "/articles",
   },
   markdown: {
-    remarkPlugins: [remarkMath],
-    rehypePlugins: [[rehypeKatex, { output: 'html' }]],
+    processor: unified({
+      remarkPlugins: [remarkMath],
+      rehypePlugins: [[rehypeKatex, { output: 'html' }]],
+    }),
   },
   integrations: [mdx(), sitemap({
       filter: (page) => {
