@@ -1,0 +1,37 @@
+---
+import SolarSpiral from "@components/SolarSpiral.tsx";
+
+type Props = {
+  lat?: number;
+  lon?: number;
+  place?: string;
+};
+
+const { lat, lon, place } = Astro.props;
+---
+
+<SolarSpiral client:visible lat={lat} lon={lon} place={place} />
+
+<style is:global>
+  .solar-spiral {
+    --sp-ink: #0b0b0b;
+    --sp-surface: #fafafa;
+    --sp-muted: #898781;
+    --sp-accent: #c2410c;
+    --sp-edge: rgba(11, 11, 11, 0.55);
+    --sp-coil: rgba(120, 113, 108, 0.4);
+  }
+
+  .dark .solar-spiral {
+    --sp-ink: #f4f4f5;
+    --sp-surface: #1e293b;
+    --sp-muted: #8b93a1;
+    --sp-accent: #d97706;
+    --sp-edge: rgba(244, 244, 245, 0.55);
+    --sp-coil: rgba(203, 213, 225, 0.35);
+  }
+
+  .solar-spiral input[type="range"] {
+    accent-color: var(--sp-accent);
+  }
+</style>

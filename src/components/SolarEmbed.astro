@@ -1,0 +1,41 @@
+---
+import SolarExplorer from "@components/SolarExplorer.tsx";
+
+type Props = {
+  lat?: number;
+  lon?: number;
+  place?: string;
+};
+
+const { lat, lon, place } = Astro.props;
+---
+
+<SolarExplorer client:visible lat={lat} lon={lon} place={place} />
+
+<style is:global>
+  .solar-viz {
+    --sv-surface: #fafafa;
+    --sv-ink: #0b0b0b;
+    --sv-muted: #898781;
+    --sv-grid: #e1e0d9;
+    --sv-axis: #c3c2b7;
+    --sv-accent: #c2410c;
+    --sv-night: rgba(30, 41, 59, 0.06);
+    --sv-golden: rgba(194, 65, 12, 0.08);
+  }
+
+  .dark .solar-viz {
+    --sv-surface: #1e293b;
+    --sv-ink: #f4f4f5;
+    --sv-muted: #8b93a1;
+    --sv-grid: #33415a;
+    --sv-axis: #475569;
+    --sv-accent: #d97706;
+    --sv-night: rgba(0, 0, 0, 0.25);
+    --sv-golden: rgba(217, 119, 6, 0.12);
+  }
+
+  .solar-viz input[type="range"] {
+    accent-color: var(--sv-accent);
+  }
+</style>

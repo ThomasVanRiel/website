@@ -1,0 +1,432 @@
+---
+title: "Where the sun actually is"
+subtitle: "or: a year of Leuven sky, in two angles"
+summary: "The sun's position is just two numbers — how far along the horizon, and how far above it. Plotting those two angles for every hour of every day in Leuven turns the seasons into a shape you can read."
+date: "09/08/2026"
+draft: true
+tags:
+  - Math
+  - Interactive
+  - Astronomy
+---
+
+import Scaffold from "@components/Scaffold.astro";
+import ResearchQuestion from "@components/ResearchQuestion.astro";
+import SolarEmbed from "@components/SolarEmbed.astro";
+import SolarSpiralEmbed from "@components/SolarSpiralEmbed.astro";
+import SolarLocationEmbed from "@components/SolarLocationEmbed.astro";
+
+export const questions = [
+  {
+    number: 1,
+    question: "How high does the sun actually get in Leuven?",
+    hypothesis:
+      "Much lower than it feels. Even at midsummer noon the sun is nowhere near overhead, and in December it barely clears the rooftops.",
+    answer: "SCAFFOLD: one-sentence answer — the two solstice noon elevations (62.6° and 15.7°, computed) and the 46.9° swing between them.",
+  },
+  {
+    number: 2,
+    question: "Does the sun really rise in the east and set in the west?",
+    hypothesis:
+      "Only twice a year. The rest of the time the rise and set points swing tens of degrees north or south along the horizon.",
+    answer: "SCAFFOLD: one-sentence answer — rise and set points swing between ±129° and ±51° azimuth (computed), a 78° arc of horizon at each end; only at the equinoxes is the folk rule literally true.",
+  },
+  {
+    number: 3,
+    question: "Is solar noon at 12:00?",
+    hypothesis:
+      "Almost never. Clock time is a political construct; the sun keeps its own, and the two drift apart by more than half an hour.",
+    answer: "SCAFFOLD: one-sentence answer — Leuven's 41-minute longitude offset plus the equation of time put solar noon between 12:25 and 13:48 on the clock (computed), and never at 12:00.",
+  },
+];
+
+<Scaffold>
+FRAMING FOR THE WHOLE PIECE. The site's lane is technical + empirical + visual.
+There are a thousand "how the seasons work" explainers with a tilted-Earth
+cartoon; this is not one. The spine here is: **the sun's position is exactly two
+angles, and every seasonal intuition you have is a projection of a shape those
+two angles trace.** Show the shape, then explain it.
+
+Everything is Leuven-specific and stated as such: **50.88° N, 4.70° E**. Not a
+generic "mid-latitude" article — concrete numbers for one place people can walk
+around in.
+
+CONVENTION, state it once and hold it everywhere (figures included):
+- **Elevation** = angle above the horizon. Horizon = 0°, zenith = +90°,
+  below the horizon is negative.
+- **Azimuth** = angle along the horizon, **south = 0°**. The sign follows the
+  sun through the day: **negative all morning, zero at solar noon, positive all
+  afternoon.** −90° = due east, +90° = due west, north = ±180°. Say it in those
+  words — "the number counts up as the day runs" is the whole convention, and
+  it means the sign of the azimuth alone tells you morning from evening.
+- Flag explicitly that this is the *astronomical/solar* convention and that
+  navigation and most software use north = 0° clockwise, so anyone comparing
+  against a library gets a 180° surprise. Give the one-line conversion.
+
+Write 3–4 sentences of intro before the questions: the "step outside and point
+at the sun" hook, the claim that its whole position is two numbers, and that a
+year of those numbers has a shape.
+</Scaffold>
+
+{questions.map(({ answer, ...q }) => <ResearchQuestion {...q} />)}
+
+## Two angles and nothing else
+
+<Scaffold>
+Write ~4–6 sentences defining the horizontal coordinate system: the observer
+sits at the centre of a hemisphere, the sun is a point on it, two angles pin it
+down. Emphasise that this is a *local* frame — it is about where you stand, not
+about the solar system. Someone in Sydney sees the same sun at completely
+different angles at the same instant.
+
+Then the sign convention block (see framing scaffold). Consider a `<Definition>`
+block for elevation and azimuth — the component exists and this is exactly the
+dictionary-style use case.
+</Scaffold>
+
+<Scaffold>
+FIGURE 1 — **the sky dome diagram.** Static SVG, the article's orientation
+figure. A hemisphere over a small Leuven skyline silhouette, with:
+- the horizon circle marked N / E / S / W, S labelled **0°**
+- an azimuth arc swept along the horizon from S toward W
+- an elevation arc swept up from the horizon to a sun dot
+- the zenith marked +90°
+
+Two arcs, two labels, nothing else. Every later figure is a projection of this
+picture, so it has to be unambiguous. Dark-mode safe (no hardcoded
+stroke="black" — see the RoadGrid bug in CLAUDE.md).
+</Scaffold>
+
+## What actually moves
+
+<Scaffold>
+The minimum astronomy needed to make the plots legible, and no more. Keep it to
+three moving parts:
+
+1. **Rotation** — 15°/hour, gives the daily arc.
+2. **Axial tilt, 23.44°** — the declination of the sun swings ±23.44° over the
+   year; this is the whole of "seasons".
+3. **Orbital eccentricity + the tilt again** — gives the equation of time,
+   which is why solar noon wanders.
+
+The one equation worth writing out in KaTeX (remark-math is already wired up):
+the solar elevation formula
+
+  sin(h) = sin(φ)sin(δ) + cos(φ)cos(δ)cos(H)
+
+with φ = latitude, δ = declination, H = hour angle. Then immediately do the
+sanity substitutions for Leuven: H = 0 (solar noon) collapses it to
+h = 90° − φ + δ, which hands you 62.6° in June and 15.7° in December. Show that
+arithmetic — it is the moment the reader realises they can now compute this
+themselves.
+
+Azimuth formula: mention it exists, give it, but do not derive it. The quadrant
+disambiguation (atan2) is a footnote-level detail.
+
+DECISION TO MAKE: how much rigour? Options are (a) the simple circular-orbit
+approximation, which is off by a fraction of a degree and fits in one code
+block, or (b) NOAA / Meeus-grade formulas, accurate to arcseconds. Leaning (a)
+for the prose with a note that the *figures* use (b). Verify before asserting
+any accuracy number.
+</Scaffold>
+
+## A day
+
+<Scaffold>
+FIGURE 2 — **elevation over one day.** Line chart, x = clock time, y =
+elevation, with the horizon drawn as a 0° reference line and the below-horizon
+part shown greyed rather than clipped. Overlay 3–5 named days (solstices,
+equinoxes, maybe today's date) so the reader sees the arcs nest inside each
+other.
+
+Then 3–4 sentences reading the figure: the arcs are the same *shape*, just
+shifted up and stretched; day length is where each curve crosses zero; the June
+curve is both taller and wider, which is the compounding reason summer is warm.
+</Scaffold>
+
+<Scaffold>
+Note on the "flat top" — around solar noon the elevation changes very slowly
+(cosine near its max), which is why shadows barely move for an hour around noon
+but sprint at sunrise. This is a nice small observation nobody expects and it
+comes free from the figure. 2–3 sentences.
+</Scaffold>
+
+## A year
+
+<Scaffold>
+FIGURE 3 — **the sun path diagram** (the centrepiece static visual). Polar
+plot: azimuth as the angle, elevation as the radius (horizon on the outside,
+zenith at the centre). Draw the sun's track for each month, plus the hour lines
+crossing them — the classic mesh. South at the bottom/0° per our convention,
+with the negative (morning) half on the left and the positive (afternoon) half
+on the right, so the sun still travels left-to-right the way it does in the
+Cartesian version and the way you'd face it standing in Leuven.
+
+This is the figure that answers Q2 visually: the outer ends of the arcs fan
+across a wide stretch of horizon instead of sitting on E and W.
+
+Alternative worth prototyping before committing: the **Cartesian** sun path
+(x = azimuth running −180° → +180°, y = elevation) — the signed convention pays
+off here, since time simply runs left to right across the plot. Less beautiful, far easier to read angles off,
+and it plays better on a phone. Possibly do both — polar as the hero, Cartesian
+as the reference.
+</Scaffold>
+
+<Scaffold>
+FIGURE 4 — **the heatmap.** x = day of year, y = time of day, colour =
+elevation, with a hard contour at 0° so the sunrise/sunset curves emerge as the
+boundary of the lit region. This one image contains the entire year and it is
+the most information-dense thing in the article.
+
+Reading paragraph should point out: the lens/eye shape of the daylight region,
+the asymmetry of the boundary curves (earliest sunset is *not* the solstice —
+that is the equation of time showing up in a place people have actually noticed
+in real life), and the flat band of high elevation across the summer.
+
+See the `dataviz` skill before picking colours. A diverging scale centred on 0°
+is tempting; check it works in both themes.
+</Scaffold>
+
+## The sun keeps its own time
+
+<Scaffold>
+The equation of time section. Two causes, kept separate:
+- the elliptical orbit (Earth moves faster at perihelion, early January)
+- the axial tilt (projection of the ecliptic onto the equator)
+
+They combine into a ±~16 minute wobble. Add Leuven's longitude correction:
+4.70° E against the 15° E meridian of CET means the clock is offset by roughly
+41 minutes from local solar time before DST is even considered — worth checking
+and stating exactly.
+
+Then the payoff: solar noon in Leuven never lands at 12:00. Computed over a
+full year it runs from **12:25 to 13:48** on the clock, and the equation of
+time alone swings from **−14.2 to +16.5 minutes**. The 41-minute longitude
+correction — 4 minutes per degree, times the 10.3° between Leuven and the 15° E
+meridian that defines CET — is the constant part; the equation of time and DST
+are what make it move.
+
+FIGURE 5 — **the analemma.** Plot the sun's position at a fixed clock time
+across the year and the figure-eight appears. This is the reward for the whole
+section and it is a genuinely startling shape the first time you see it. Fixed
+clock time, stated on the figure, and note that changing that time slides the
+whole eight along the sky.
+</Scaffold>
+
+## The whole thing at once
+
+<SolarLocationEmbed />
+
+<SolarEmbed />
+
+<Scaffold>
+THE CONTROLS ARE ONE INSTRUMENT NOW. Location, date and time are shared page
+state (`@lib/solarState`, held on `window` with DOM events, because each figure
+is its own hydration island). Latitude has a slider on EVERY figure (`SolarLatitude`,
+one component, many copies, all writing the same shared place) so it can be
+scrubbed without scrolling back to the location block — it is the control that
+deforms the figures most. The day and time sliders are likewise the same two
+values wherever they appear, so moving any slider moves every figure at once. Only one
+figure animates at a time: whichever play button is pressed claims playback and
+the others stop rather than fighting over the cursor.
+
+That changes what the section is FOR. It is no longer "here is a figure of
+Leuven"; it is a single instrument the prose drives, and the reader can scrub
+latitude from the equator to the pole and watch every figure deform together.
+The prose should exploit that explicitly — "drag the latitude up to 66° and
+watch the daylight region close into a full ring" is a sentence this now
+supports. Prose needs to introduce it here in a
+sentence — and then the article has to decide how hard it leans on it. The piece
+is written as a Leuven article; the control turns it into a "compare your own
+latitude" article, which is a different (and probably better) piece, but every
+hard number in the prose is still Leuven's. Either caveat the numbers or write
+the prose so the reader is expected to move the control.
+
+TWO THINGS THE CONTROL EXPOSES, both worth prose:
+- **The convention is fixed: south = 0°, everywhere.** Negative all morning, 0°
+  at solar noon, +90° due west. It is stated once and never moves — no
+  hemisphere-relative reference, which was tried and removed as more confusing
+  than the thing it fixed. The honest consequence: south of the equator the noon
+  sun passes to the NORTH, so Santiago's noon azimuth reads ±180° rather than 0°
+  and its arcs sit at the edges of the scale rather than the middle. The plots
+  break their paths at the ±180° seam instead of drawing a line across, so
+  nothing renders wrong. This is a northern-hemisphere article and the
+  convention is chosen for Leuven; one sentence acknowledging that is enough,
+  and there is no need to dwell on it.
+
+- **Clock times are real, DST included — for known locations.** Each preset
+  carries an IANA zone and `zoneOffsetHours` asks the browser's own time-zone
+  database (`Intl`, cached per zone per day), so summer time, political offsets
+  and historical oddities are all exactly right with no dependency and no
+  hand-written rules. A hand-typed longitude has no zone to look up, so it falls
+  back to mean solar time for its meridian with **no DST at all** — the control
+  says which of the two is in play. Latitude scrubbing keeps the zone (a zone is
+  a longitude concept), so sweeping the slider never puts an hour's cliff in the
+  middle of a sweep.
+
+- **THE DST STEP IS NOW A REAL COMPARISON, and it is the best thing the location
+  control buys the article.** Verified in the data: Leuven's sunrise jumps
+  06:26 → 07:24 on 29 March; Santiago's jumps 06:55 → 07:54 on 6 September, the
+  opposite end of the year; Reykjavík never steps at all. Three locations, three
+  different answers, and the astronomy underneath is identical in all of them.
+  That is the "one curve is astronomy, the kink in it is legislation" line,
+  earned with evidence rather than asserted — write it here.
+
+PROTOTYPE — this is the working interactive, not a placeholder. It merges what
+the scaffolds called Figure 2 and Figure 3 into one linked pair driven by a
+shared date and clock time: drag either slider (or drag straight across the day
+plot) and the sun moves in both. "Flat" / "Sky dome" toggles the Cartesian and
+polar versions of the sun path, which is the open figure question from the
+Figure 3 scaffold — pick one after looking at both on a phone.
+
+Implementation notes for whoever picks this up (probably me):
+- Math is `@lib/solar.ts`, NOAA algorithm, validated against published Leuven
+  sunrise/sunset times (June solstice 05:27–21:59 CEST, December 08:41–16:37
+  CET, solar noon 13:43 / 12:39). DST via the EU rule, no tz database.
+- The mesh in the path plot is the 21st of each month crossed by whole-clock-hour
+  strands — those strands are analemma slices, which quietly sets up the
+  equation-of-time section before the reader gets there.
+- One accent colour only; every guide is recessive ink. Validated against the
+  site's real surfaces (light #fafafa, dark #1e293b).
+
+STILL TO DECIDE:
+- Does this belong here as one big instrument, or split back into two figures
+  placed in "A day" and "A year" where the prose needs them? The article reads
+  better split; the component is cheaper whole. Leaning split — it takes props
+  already, so a `plot="day"` / `plot="path"` prop is a small change.
+- The day plot's golden-hour band (0–6°) is currently decoration. Either wire it
+  to the photography payoff in "Why anyone should care" or drop it.
+- Prose is still needed *around* it: an explicit "here is how to read this"
+  paragraph, because two linked plots with a shared scrubber is more than a
+  reader will decode unprompted.
+
+NOT BUILT YET:
+- **The heatmap** (Figure 4). Day-of-year against time-of-day, colour =
+  elevation. This is the one plot that needs a real sequential ramp rather than
+  the single-accent scheme used here — see the dataviz palette before starting.
+- **The shadow simulator.** Still the strongest idea for the payoff section: a
+  building of height h, its shadow sweeping a plan view as the day runs. The
+  angles only matter because of what they do to a garden.
+- **The façade tool** ("how much sun does a north-facing window get?") — most
+  useful, most work, probably a follow-up article rather than this one.
+</Scaffold>
+
+## The whole year at once
+
+<SolarSpiralEmbed />
+
+<Scaffold>
+PROTOTYPE — the spiral. The daily loop is one turn and the year is the radius,
+so 365 turns wind outward from 1 January at the centre to 31 December at the
+rim, with elevation as colour. It is the same data as the day plot above,
+wrapped, and it makes the year's shape legible in a single glance in a way the
+line charts cannot: the daylight region is a fat comma, the two curves bounding
+it are sunrise and sunset, and the darkest core is high summer at noon.
+
+WHY IT WORKS HERE: it is the one figure that shows *daily* and *annual*
+periodicity at once, because the two are on different axes rather than fighting
+for the same one. Everything in the rest of the article is a slice through it —
+the day plot is one turn, the sun path is a re-projection, the analemma is what
+you get reading down a single radius.
+
+THINGS THE FIGURE HANDS THE PROSE FOR FREE (each worth a sentence or two):
+- The daylight comma is **not symmetric about the vertical**, because solar noon
+  is not at 12:00 — it visibly leans. This is the equation-of-time section's
+  argument, made before the section arrives.
+- The **DST step**. Sunrise and sunset jump by a full hour on the two changeover
+  days, and in the spiral they show up as clean discontinuities in otherwise
+  smooth curves. That is a genuinely nice thing to point at: one of the two
+  curves is astronomy, the kink in it is legislation.
+- The **earliest-sunset-is-not-the-solstice** effect is visible as the sunset
+  curve turning before the sunrise curve does.
+
+THE SECOND MODE ("Sky coil") IS THE WEAKER ONE — decide whether it survives:
+it draws the same year in the sky itself, so each day closes into a loop
+(night included, outside the horizon circle) and the year is those loops
+migrating between the solstices. At true daily spacing consecutive loops sit a
+fraction of a pixel apart and flood into a solid band, so it is currently drawn
+every fifth day — 73 loops — which reads as a wound ball of string. Honest
+assessment: it is pretty, it overlaps heavily with the sun-path plot above, and
+it is harder to read than either. Options are (a) cut it, (b) keep it purely as
+an ornament with a one-line caption and no analytical claims, or (c) rebuild it
+as a proper 3D helix seen from outside the celestial sphere, which is the shape
+people actually picture when they hear "the sun spirals". Leaning (b), with (c)
+as the ambitious version.
+
+THE ANIMATION: the chart is fully drawn from the start — colours, sunrise and
+sunset curves, month ticks, all of it. The only thing that moves is the sun: a
+dot travelling the spiral with a short trail behind it, the ring of the day it
+is currently in held faintly under it. Day and time sliders both write to the
+same cursor, so scrubbing either one moves the sun; speed runs from ¼ day/s
+(the daily turn is clearly legible) to 20 days/s (the turn blurs and you read
+the seasonal drift instead).
+
+What the animation is FOR, and what the prose should say while it runs: at a
+slow speed you watch a single day sweep and see how much of the turn is
+daylight; speed it up and the turn blurs into a band that visibly breathes wider
+and narrower. Watching the sun accumulate the year is a different claim from
+seeing the year finished — it makes the *rate* of change legible, which is the
+thing people get wrong (the swing is fastest at the equinoxes, not the
+solstices). If that reads clearly on screen, say it in the prose right here.
+
+DONE — the colour legend. A gradient bar with degree ticks plus a swatch for the
+below-horizon grey now sits under the figure. The ramp is defined in fractions
+of the local ceiling (the highest the sun ever gets at that latitude, 62.6° in
+Leuven) rather than fixed angles, so it re-scales with the location field and
+the top of the scale always means "as high as it ever gets here".
+
+STILL TO DO ON THE SPIRAL ITSELF:
+- Label the solstices and the equinoxes on the rim, so the eye has anchors.
+- Decide whether midnight-at-top is right. Noon-at-top would put the daylight
+  comma symmetric-ish about the vertical and might read better; midnight-at-top
+  keeps the day unbroken across the bottom. Try both.
+- Check it on a phone: it is a square figure with fine radial structure, and
+  365 turns compressed into 300 px of radius is under a pixel per day at
+  full width.
+</Scaffold>
+
+## Why anyone should care
+
+<Scaffold>
+Land the practical consequences — this is where the article earns its keep and
+stops being an astronomy explainer. Candidates, pick 2–3 and go deep rather
+than listing all of them:
+
+- **Solar panels.** The optimal fixed tilt for Leuven ≈ latitude-ish; explain
+  *why* via the cosine of the incidence angle, and why the winter sun costs you
+  twice (low elevation AND short day AND more atmosphere to cross).
+- **Buildings and shade.** Overhang depth that shades a south window in July and
+  lets sun in in December is a solved problem that falls straight out of the
+  62.6°/15.7° pair. This is the best example — it is a real design rule
+  derived from two numbers in this article.
+- **Photography.** Golden hour is an elevation band (roughly 0–6°), not a clock
+  time — which is why it lasts twenty minutes in the tropics and most of an
+  evening here in June. Ties to the site's photography section.
+
+VERIFY every number in this section before publishing; these are the claims a
+reader is most likely to act on.
+</Scaffold>
+
+## Conclusion
+
+<Scaffold>
+Return to the three research questions and answer them plainly — fill in the
+`answer` fields at the top of this file, they render both here and in the intro.
+
+Closing beat: the sky is not random, it is a small deterministic machine with
+two outputs, and once you have seen the shape you cannot walk outside without
+reading it. Keep it short; the figures already made the argument.
+</Scaffold>
+
+<Scaffold>
+SOURCE VERIFICATION — do this before the draft flag comes off:
+- NOAA Solar Calculator (equations + reference implementation)
+- Meeus, *Astronomical Algorithms*, ch. 25 — the authoritative version of the
+  position formulas
+- Leuven's exact coordinates and the CET/CEST offset
+- Every numeric claim above: 62.6°, 15.7°, 23.44°, the ±16 min equation of
+  time, the 41-minute longitude correction, the golden-hour elevation band.
+
+Also decide: Dutch translation (`index.nl.mdx`)? Figures with embedded text
+would need NL variants — see the translation section in CLAUDE.md.
+</Scaffold>
