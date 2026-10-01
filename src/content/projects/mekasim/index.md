@@ -11,7 +11,7 @@ demoUrl: https://mekasim.netlify.app
 ai:
   level: vibecoded
   usage:
-    architecture: ai
+    architecture: human
     code: ai
     tests: ai
     docs: ai

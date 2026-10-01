@@ -9,7 +9,7 @@ tags:
 demoUrl: https://brio.thomasvanriel.com
 # repoUrl: https://github.com/ThomasVanRiel/train-tracks   (private for now)
 ai:
-  level: directed
+  level: vibecoded
   usage:
     architecture: human
     code: ai

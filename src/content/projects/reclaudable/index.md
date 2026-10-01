@@ -8,7 +8,7 @@ tags:
   - Python
 repoUrl: https://github.com/ThomasVanRiel/reclaudable
 ai:
-  level: directed
+  level: vibecoded
   usage:
     architecture: human
     code: ai

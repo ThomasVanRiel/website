@@ -130,7 +130,7 @@ const en = {
       },
       vibecoded: {
         label: "Vibecoded",
-        description: "Built by prompting an AI agent. I judged the result, not the code.",
+        description: "An AI agent wrote the code and I directed it as the architect. I did not need to read the code to get there.",
       },
     },
     category: { architecture: "Architecture", code: "Code", tests: "Tests", docs: "Documentation" },
@@ -224,7 +224,7 @@ const nl: UIStrings = {
       },
       vibecoded: {
         label: "Gevibecoded",
-        description: "Gebouwd door een AI-agent te prompten. Ik beoordeelde het resultaat, niet de code.",
+        description: "Een AI-agent schreef de code en ik stuurde als architect. Ik hoefde de code niet te lezen om er te geraken.",
       },
     },
     category: { architecture: "Architectuur", code: "Code", tests: "Tests", docs: "Documentatie" },

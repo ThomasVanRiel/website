@@ -12,7 +12,7 @@ repoUrl: https://github.com/JoveWorks/joveworks
 ai:
   level: vibecoded
   usage:
-    architecture: ai
+    architecture: human
     code: ai
     tests: ai
     docs: ai

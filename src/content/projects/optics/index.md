@@ -11,7 +11,7 @@ tags:
 ai:
   level: vibecoded
   usage:
-    architecture: ai
+    architecture: human
     code: ai
     docs: ai
 ---
