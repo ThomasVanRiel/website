@@ -2,6 +2,7 @@
 import type { CollectionEntry } from "astro:content";
 import { formatDate, readingTime } from "@lib/utils";
 import { DEFAULT_LANG, type Lang, useTranslations, localizePath } from "@lib/i18n";
+import AiUsage from "@components/AiUsage.astro";
 
 type Props = {
   entry: CollectionEntry<"projects"> | CollectionEntry<"articles"> | CollectionEntry<"photography">;
@@ -15,6 +16,8 @@ const { title, summary, date, tags } = data;
 const subtitle = collection === "articles" ? data.subtitle : null;
 const demoUrl = collection === "projects" ? data.demoUrl : null;
 const repoUrl = collection === "projects" ? data.repoUrl : null;
+const highlight = collection === "projects" ? data.highlight : null;
+const ai = collection === "projects" ? data.ai : null;
 ---
 
 <div>
@@ -78,6 +81,11 @@ const repoUrl = collection === "projects" ? data.repoUrl : null;
   <div class="mt-2">
     {summary}
   </div>
+  {highlight && (
+    <div class="mt-2 font-semibold text-black dark:text-white">
+      {highlight}
+    </div>
+  )}
   <ul class="mt-1 flex flex-wrap gap-2">
     {
       tags.map(
@@ -131,4 +139,5 @@ const repoUrl = collection === "projects" ? data.repoUrl : null;
       </div>
     )
   }
+  {ai && <AiUsage ai={ai} lang={lang} />}
 </div>

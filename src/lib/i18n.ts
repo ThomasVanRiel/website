@@ -67,7 +67,7 @@ const en = {
     home: { title: "Home", description: "Thomas Van Riel's personal website and articles." },
     work: { title: "Work", description: "Places I have worked." },
     articles: { title: "Articles", description: "Writing on topics I am passionate about." },
-    projects: { title: "Projects", description: "Recent projects I have worked on." },
+    projects: { title: "Projects", description: "Small tools I have built, with links and tips." },
     photography: { title: "Photography", description: "A selection of photographs." },
     search: { title: "Search", description: "Search all posts and projects by keyword." },
   },
@@ -111,6 +111,31 @@ const en = {
   hypothesis: "Hypothesis",
   answer: "Answer",
   aiManifesto: "AI Manifesto",
+  ai: {
+    heading: "AI usage",
+    manifesto: "How I use AI",
+    pageNote: "Some of these tools were built with an AI coding agent. The badge on each one says how much. I use it to implement, not to think: the idea, the design decisions and the judgement of the result are mine, the typing often is not. It lets me finish tools I would otherwise never have had the time for.",
+    level: {
+      human: {
+        label: "Human-written",
+        description: "Architecture and code are typed by hand. AI was at most autocomplete, or helped with the documentation.",
+      },
+      assisted: {
+        label: "AI-assisted",
+        description: "Written by me with an AI as pair programmer. I wrote or reviewed every part.",
+      },
+      directed: {
+        label: "AI-built, human-directed",
+        description: "I set the architecture and made the decisions. An AI agent wrote the code.",
+      },
+      vibecoded: {
+        label: "Vibecoded",
+        description: "Built by prompting an AI agent. I judged the result, not the code.",
+      },
+    },
+    category: { architecture: "Architecture", code: "Code", tests: "Tests", docs: "Documentation" },
+    share: { human: "Human", assisted: "AI-assisted", ai: "AI" },
+  },
   allRightsReserved: "All rights reserved",
   pill: { articles: "post", projects: "project", photography: "photo" } as Record<string, string>,
   aria: {
@@ -136,7 +161,7 @@ const nl: UIStrings = {
     home: { title: "Home", description: "De persoonlijke website en artikels van Thomas Van Riel." },
     work: { title: "Werk", description: "Plaatsen waar ik gewerkt heb." },
     articles: { title: "Artikels", description: "Schrijfsels over onderwerpen waar ik gepassioneerd over ben." },
-    projects: { title: "Projecten", description: "Recente projecten waaraan ik gewerkt heb." },
+    projects: { title: "Projecten", description: "Kleine tools die ik gebouwd heb, met links en tips." },
     photography: { title: "Fotografie", description: "Een selectie van foto's." },
     search: { title: "Zoeken", description: "Doorzoek alle artikels en projecten op trefwoord." },
   },
@@ -180,6 +205,31 @@ const nl: UIStrings = {
   hypothesis: "Hypothese",
   answer: "Antwoord",
   aiManifesto: "AI-manifest",
+  ai: {
+    heading: "AI-gebruik",
+    manifesto: "Hoe ik AI gebruik",
+    pageNote: "Een deel van deze tools is gebouwd met een AI-codeeragent. De badge bij elk project toont hoeveel. Ik gebruik AI om te implementeren, niet om te denken: het idee, de ontwerpkeuzes en het oordeel over het resultaat zijn van mij, het typwerk vaak niet. Zo raken tools af waar ik anders nooit de tijd voor had gevonden.",
+    level: {
+      human: {
+        label: "Handgeschreven",
+        description: "Architectuur en code zijn met de hand getypt. AI was hoogstens autocomplete, of hielp bij de documentatie.",
+      },
+      assisted: {
+        label: "AI-ondersteund",
+        description: "Zelf geschreven met een AI als pair programmer. Ik schreef of controleerde elk onderdeel.",
+      },
+      directed: {
+        label: "AI-gebouwd, mens-gestuurd",
+        description: "Ik bepaalde de architectuur en nam de beslissingen. Een AI-agent schreef de code.",
+      },
+      vibecoded: {
+        label: "Gevibecoded",
+        description: "Gebouwd door een AI-agent te prompten. Ik beoordeelde het resultaat, niet de code.",
+      },
+    },
+    category: { architecture: "Architectuur", code: "Code", tests: "Tests", docs: "Documentatie" },
+    share: { human: "Mens", assisted: "AI-ondersteund", ai: "AI" },
+  },
   allRightsReserved: "Alle rechten voorbehouden",
   pill: { articles: "artikel", projects: "project", photography: "foto" },
   aria: {

@@ -1,6 +1,7 @@
 // Server-only helpers (imports astro:content). Do NOT import from client islands.
 import { getCollection, type CollectionEntry, type CollectionKey } from "astro:content"
 import { DEFAULT_LANG, type Lang } from "@lib/i18n"
+import { PROJECT_ORDER } from "@consts"
 
 type Localizable = { lang?: Lang; translationKey?: string; draft?: boolean }
 
@@ -47,6 +48,19 @@ export async function getLocalizedEntries<C extends CollectionKey>(
     result.push({ entry: chosen, baseSlug, lang, isFallback: !localized })
   }
   return result
+}
+
+type Listed = { entry: { collection: string; data: { date: Date } }; baseSlug: string }
+
+/** Whether an entry shows up in listings: a project only when it is in PROJECT_ORDER. */
+export function isListed(item: Listed): boolean {
+  return item.entry.collection !== "projects" || PROJECT_ORDER.includes(item.baseSlug)
+}
+
+/** Listing order: projects follow PROJECT_ORDER, every other collection is newest first. */
+export function byListOrder(a: Listed, b: Listed): number {
+  if (a.entry.collection === "projects") return PROJECT_ORDER.indexOf(a.baseSlug) - PROJECT_ORDER.indexOf(b.baseSlug)
+  return b.entry.data.date.getTime() - a.entry.data.date.getTime()
 }
 
 /** Look up a single localized entry by its base slug. */

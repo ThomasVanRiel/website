@@ -3,8 +3,8 @@ import PageLayout from "@layouts/PageLayout.astro"
 import TopLayout from "@layouts/TopLayout.astro"
 import BottomLayout from "@layouts/BottomLayout.astro"
 import Projects from "@components/Projects"
-import { LANGS, useTranslations, langParam, langFromParam } from "@lib/i18n"
-import { getLocalizedEntries, toCardEntry } from "@lib/content"
+import { LANGS, useTranslations, localizePath, langParam, langFromParam } from "@lib/i18n"
+import { getLocalizedEntries, toCardEntry, byListOrder, isListed } from "@lib/content"
 
 export function getStaticPaths() {
   return LANGS.map((lang) => ({ params: { lang: langParam(lang) } }))
@@ -14,8 +14,8 @@ const lang = langFromParam(Astro.params.lang)
 const t = useTranslations(lang)
 
 const projects = (await getLocalizedEntries("projects", lang))
-  .filter((p) => !p.entry.data.draft)
-  .sort((a, b) => b.entry.data.date.getTime() - a.entry.data.date.getTime())
+  .filter((p) => !p.entry.data.draft && isListed(p))
+  .sort(byListOrder)
   .map(toCardEntry)
 
 const tags = [...new Set(projects.flatMap((project) => project.data.tags))]
@@ -27,6 +27,15 @@ const tags = [...new Set(projects.flatMap((project) => project.data.tags))]
     <div class="animate page-heading">
       {t.pages.projects.title}
     </div>
+    <p class="animate mt-1">
+      {t.pages.projects.description}
+    </p>
+    <p class="animate mt-4 p-4 text-sm rounded-lg border border-black/15 dark:border-white/20">
+      {t.ai.pageNote}{" "}
+      <a href={localizePath("/legal/ai-manifesto", lang)} class="underline decoration-[.5px] underline-offset-2 decoration-black/25 dark:decoration-white/50 hover:decoration-black dark:hover:decoration-white blend">
+        {t.ai.manifesto}
+      </a>
+    </p>
   </TopLayout>
   <BottomLayout>
     <div class="animate">

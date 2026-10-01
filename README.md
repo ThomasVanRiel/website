@@ -21,12 +21,30 @@ Each content type lives under `src/content/` and is validated by `src/content/co
 | Type        | Path                           | Frontmatter                                            |
 | ----------- | ------------------------------ | ------------------------------------------------------ |
 | Article     | `src/content/articles/<slug>/` | `title`, `summary`, `date`, `tags`, `draft?`          |
-| Project     | `src/content/projects/<slug>/` | …above + `demoUrl?`, `repoUrl?`                       |
+| Project     | `src/content/projects/<slug>/` | …above + `demoUrl?`, `repoUrl?`, `highlight?`, `ai?` |
 | Photography | `src/content/photography/<slug>/index.md` | …above + `license?` (default `CC BY 4.0`), `photos[]` |
 | Work        | `src/content/work/<slug>.md`   | `company`, `role`, `dateStart`, `dateEnd`             |
 | Legal       | `src/content/legal/<slug>.md`  | `title`, `date`                                       |
 
 Set `draft: true` to hide an entry from the sitemap and listings.
+
+## Projects
+
+The order of the projects page is the `PROJECT_ORDER` list in `src/consts.ts`, top to bottom by folder name. A project that is not in the list is left out of the projects page, the previous/next buttons and the search; its own URL keeps working. `highlight` is one short line shown on the card. `ai` drives the AI-usage badge and the panel on the project page:
+
+```yaml
+highlight: "Used in …"   # optional
+ai:
+  level: directed        # human | assisted | directed | vibecoded
+  usage:                 # optional, every category is optional
+    architecture: human  # human | assisted | ai
+    code: ai
+    tests: ai
+    docs: assisted
+  note: "Free text shown under the breakdown."   # optional
+```
+
+The vocabulary lives in `src/lib/ai.ts`, the labels and descriptions in `src/lib/i18n.ts` (`ai.*`).
 
 ## Photography
 

@@ -1,6 +1,7 @@
 import { defineCollection } from "astro:content"
 import { z } from "astro/zod"
 import { glob } from "astro/loaders"
+import { AI_LEVELS, AI_SHARES } from "./lib/ai"
 
 const work = defineCollection({
   loader: glob({ pattern: "**/[^_]*.md", base: "./src/content/work" }),
@@ -36,6 +37,18 @@ const projects = defineCollection({
     draft: z.boolean().optional(),
     demoUrl: z.string().optional(),
     repoUrl: z.string().optional(),
+    // One short line shown on the card, e.g. where the project is in use.
+    highlight: z.string().optional(),
+    ai: z.object({
+      level: z.enum(AI_LEVELS),
+      usage: z.object({
+        architecture: z.enum(AI_SHARES).optional(),
+        code: z.enum(AI_SHARES).optional(),
+        tests: z.enum(AI_SHARES).optional(),
+        docs: z.enum(AI_SHARES).optional(),
+      }).optional(),
+      note: z.string().optional(),
+    }).optional(),
     lang: z.enum(["en", "nl"]).default("en"),
     translationKey: z.string().optional(),
   }),

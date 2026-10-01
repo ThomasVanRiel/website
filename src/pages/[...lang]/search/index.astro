@@ -5,7 +5,7 @@ import TopLayout from "@layouts/TopLayout.astro"
 import BottomLayout from "@layouts/BottomLayout.astro"
 import Search from "@components/Search"
 import { LANGS, useTranslations, langParam, langFromParam } from "@lib/i18n"
-import { getLocalizedEntries, toCardEntry } from "@lib/content"
+import { getLocalizedEntries, toCardEntry, isListed } from "@lib/content"
 
 export function getStaticPaths() {
   return LANGS.map((lang) => ({ params: { lang: langParam(lang) } }))
@@ -19,7 +19,7 @@ const posts = (await getLocalizedEntries("articles", lang))
   .map(toCardEntry)
 
 const projects = (await getLocalizedEntries("projects", lang))
-  .filter((p) => !p.entry.data.draft)
+  .filter((p) => !p.entry.data.draft && isListed(p))
   .map(toCardEntry)
 
 const data = [...posts, ...projects] as CollectionEntry<"articles">[]

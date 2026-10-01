@@ -22,25 +22,40 @@ export const LINKS: Links = [
     KEY: "articles",
     HREF: "/articles",
   },
-  /*{
+  {
     KEY: "projects",
     HREF: "/projects",
-  },*/
+  },
   /*{
     KEY: "photography",
     HREF: "/photography",
   },*/
 ]
 
+// Order of the projects page, top to bottom, by folder name in src/content/projects.
+// A project that is not in this list is left out of the page; its own URL keeps working.
+export const PROJECT_ORDER = [
+  "joveworks",
+  "dsmrs",
+  "mekasim",
+  "vogelwijzer",
+  "reclaudable",
+  "train-tracks",
+  "optics",
+  "inky-dashboard",
+  "chipmunk",
+  "website",
+]
+
 // Socials
 export const SOCIALS: Socials = [
-  { 
+  {
     NAME: "Email",
-    ICON: "email", 
+    ICON: "email",
     TEXT: "thomas.van.riel@gmail.com",
     HREF: "mailto:thomas.van.riel@gmail.com",
   },
-  { 
+  {
     NAME: "Github",
     ICON: "github",
     TEXT: "thomasvanriel",
