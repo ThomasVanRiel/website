@@ -6,7 +6,7 @@ tags:
   - Engineering
   - Simulation
   - Web app
-demoUrl: https://mekasim.netlify.app
+demoUrl: https://mekasim.thomasvanriel.com
 # repoUrl: https://github.com/ThomasVanRiel/mekasim   (private for now)
 ai:
   level: vibecoded
